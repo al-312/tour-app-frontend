@@ -3,35 +3,51 @@
 @custom-variant dark (&:where(.dark, .dark *));
 
 :root {
-  --color-app-bg: #fbfbfc;
-  --color-app-fg: #09090b;
+  --font-manrope: 'Manrope', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+
+  --color-app-bg: #f9f9ff;
+  --color-app-fg: #151c27;
   --color-app-surface: #ffffff;
-  --color-app-border: rgba(9, 9, 11, 0.08);
-  --color-app-card-border: rgba(9, 9, 11, 0.05);
-  --color-app-muted: #71717a;
-  --color-app-brand: #6366f1;
-  --color-app-brand-hover: #4f46e5;
-  --color-app-brand-bg: rgba(99, 102, 241, 0.08);
-  --color-app-brand-bg-hover: rgba(99, 102, 241, 0.15);
+  --color-app-surface-variant: #f0f3ff;
+  --color-app-border: rgba(21, 28, 39, 0.08);
+  --color-app-card-border: rgba(21, 28, 39, 0.05);
+  --color-app-muted: #3f4944;
+  
+  --color-app-brand: #004532;
+  --color-app-brand-hover: #002c20;
+  --color-app-brand-bg: rgba(0, 69, 50, 0.08);
+  --color-app-brand-bg-hover: rgba(0, 69, 50, 0.15);
+  
+  --color-app-error: #ba1a1a;
+  --color-app-error-bg: #ffdad6;
 }
 
 .dark {
-  --color-app-bg: #09090b;
-  --color-app-fg: #fafafa;
-  --color-app-surface: #18181b;
-  --color-app-border: rgba(250, 250, 250, 0.08);
-  --color-app-card-border: rgba(250, 250, 250, 0.05);
-  --color-app-muted: #a1a1aa;
-  --color-app-brand: #818cf8;
-  --color-app-brand-hover: #6366f1;
-  --color-app-brand-bg: rgba(129, 140, 248, 0.1);
-  --color-app-brand-bg-hover: rgba(129, 140, 248, 0.2);
+  --color-app-bg: #151c27;
+  --color-app-fg: #ffffff;
+  --color-app-surface: #2a313d;
+  --color-app-surface-variant: rgba(255, 255, 255, 0.05);
+  --color-app-border: rgba(255, 255, 255, 0.05);
+  --color-app-card-border: rgba(255, 255, 255, 0.05);
+  --color-app-muted: #c5c7c8;
+  
+  --color-app-brand: #8bd6b6;
+  --color-app-brand-hover: #a6f2d1;
+  --color-app-brand-bg: #00513b;
+  --color-app-brand-bg-hover: rgba(139, 214, 182, 0.2);
+  
+  --color-app-error: #ffb4ab;
+  --color-app-error-bg: #93000a;
 }
 
 @theme {
+  --font-sans: var(--font-manrope);
+  --font-manrope: var(--font-manrope);
+
   --color-app-bg: var(--color-app-bg);
   --color-app-fg: var(--color-app-fg);
   --color-app-surface: var(--color-app-surface);
+  --color-app-surface-variant: var(--color-app-surface-variant);
   --color-app-border: var(--color-app-border);
   --color-app-card-border: var(--color-app-card-border);
   --color-app-muted: var(--color-app-muted);
@@ -39,6 +55,8 @@
   --color-app-brand-hover: var(--color-app-brand-hover);
   --color-app-brand-bg: var(--color-app-brand-bg);
   --color-app-brand-bg-hover: var(--color-app-brand-bg-hover);
+  --color-app-error: var(--color-app-error);
+  --color-app-error-bg: var(--color-app-error-bg);
 
   --animate-spin-slow: spin 12s linear infinite;
   --animate-fade-in: fadeIn 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards;
@@ -62,7 +80,7 @@
 body {
   color: var(--color-app-fg);
   background-color: var(--color-app-bg);
-  font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+  font-family: var(--font-manrope), system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
   -webkit-font-smoothing: antialiased;
   transition: background-color 0.4s cubic-bezier(0.16, 1, 0.3, 1), color 0.4s cubic-bezier(0.16, 1, 0.3, 1);
 }
