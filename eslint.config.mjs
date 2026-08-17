@@ -1,21 +1,19 @@
 import { defineConfig } from "eslint/config";
 import nextVitals from "eslint-config-next/core-web-vitals";
 import nextTs from "eslint-config-next/typescript";
-import tseslint from "typescript-eslint";
-import react from "eslint-plugin-react";
-import reactHooks from "eslint-plugin-react-hooks";
-
-import importPlugin from "eslint-plugin-import";
-import unusedImports from "eslint-plugin-unused-imports";
-import jsxA11y from "eslint-plugin-jsx-a11y";
+import eslintConfigPrettier from "eslint-config-prettier";
 import perfectionist from "eslint-plugin-perfectionist";
+import prettierPlugin from "eslint-plugin-prettier";
+import unusedImports from "eslint-plugin-unused-imports";
 import globals from "globals";
+import tseslint from "typescript-eslint";
 
 const eslintConfig = defineConfig([
   ...nextVitals,
   ...nextTs,
   ...tseslint.configs.strictTypeChecked,
   ...tseslint.configs.stylisticTypeChecked,
+  eslintConfigPrettier,
   {
     ignores: [
       ".next/**",
@@ -25,7 +23,7 @@ const eslintConfig = defineConfig([
       "node_modules/**",
       "postcss.config.mjs",
       "eslint.config.mjs",
-      "next.config.ts"
+      "next.config.ts",
     ],
   },
   {
@@ -41,7 +39,7 @@ const eslintConfig = defineConfig([
       },
     },
     plugins: {
-
+      prettier: prettierPlugin,
       "unused-imports": unusedImports,
       perfectionist,
     },
@@ -53,6 +51,35 @@ const eslintConfig = defineConfig([
     rules: {
       /*
       =========================
+      Prettier Integration
+      =========================
+      */
+      "prettier/prettier": "error",
+
+      /*
+      =========================
+      Next.js Strict Rules
+      =========================
+      */
+      "@next/next/no-html-link-for-pages": "error",
+      "@next/next/no-img-element": "error",
+      "@next/next/no-head-element": "error",
+      "@next/next/no-sync-scripts": "error",
+      "@next/next/no-page-custom-font": "error",
+      "@next/next/no-title-in-document-head": "error",
+      "@next/next/no-styled-jsx-in-document": "error",
+      "@next/next/no-duplicate-head": "error",
+      "@next/next/no-async-client-component": "error",
+      "@next/next/no-before-interactive-script-outside-document": "error",
+      "@next/next/no-css-tags": "error",
+      "@next/next/no-head-import-in-document": "error",
+      "@next/next/inline-script-id": "error",
+      "@next/next/next-script-for-ga": "error",
+      "@next/next/google-font-display": "error",
+      "@next/next/google-font-preconnect": "error",
+
+      /*
+      =========================
       Typescript Strictness
       =========================
       */
@@ -60,10 +87,7 @@ const eslintConfig = defineConfig([
       "@typescript-eslint/no-floating-promises": "error",
       "@typescript-eslint/no-misused-promises": "error",
       "@typescript-eslint/no-unused-vars": "off",
-      "@typescript-eslint/consistent-type-imports": [
-        "error",
-        { prefer: "type-imports" },
-      ],
+      "@typescript-eslint/consistent-type-imports": ["error", { prefer: "type-imports" }],
       "@typescript-eslint/explicit-function-return-type": [
         "error",
         { allowExpressions: true },
@@ -98,7 +122,6 @@ const eslintConfig = defineConfig([
       "react-hooks/rules-of-hooks": "error",
       "react-hooks/exhaustive-deps": "error",
 
-
       /*
       =========================
       Imports
@@ -129,10 +152,7 @@ const eslintConfig = defineConfig([
       "no-var": "error",
       "prefer-const": "error",
       "no-duplicate-imports": "error",
-      "max-lines": [
-        "error",
-        { max: 300, skipBlankLines: true, skipComments: true },
-      ],
+      "max-lines": ["error", { max: 300, skipBlankLines: true, skipComments: true }],
 
       /*
       =========================

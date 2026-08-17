@@ -1,23 +1,21 @@
 import * as React from "react";
-import { Geist, Geist_Mono } from "next/font/google";
+import { Manrope } from "next/font/google";
 
 import "./globals.css";
 
+import RootLayoutClient from "@/components/layout/RootLayoutClient";
+
 import type { Metadata } from "next";
 
-const geistSans = Geist({
-  variable: "--font-geist-sans",
-  subsets: ["latin"],
-});
-
-const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
+const manrope = Manrope({
+  variable: "--font-manrope",
   subsets: ["latin"],
 });
 
 export const metadata: Metadata = {
   title: "AuraTours - Premium Travel Planning",
-  description: "Discover curated travel plans and seamless tour bookings with our high-fidelity, interactive platform.",
+  description:
+    "Discover curated travel plans and seamless tour bookings with our high-fidelity, interactive platform.",
 };
 
 interface RootLayoutProps {
@@ -26,9 +24,9 @@ interface RootLayoutProps {
 
 export default function RootLayout({ children }: RootLayoutProps): React.JSX.Element {
   return (
-    <html lang="en" className={`${geistSans.variable} ${geistMono.variable} h-full`}>
+    <html lang="en" className={`${manrope.variable} h-full`}>
       <body className="h-full antialiased">
-        {children}
+        <RootLayoutClient>{children}</RootLayoutClient>
       </body>
     </html>
   );

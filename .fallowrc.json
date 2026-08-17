@@ -1,0 +1,41 @@
+{
+  "$schema": "./node_modules/fallow/schema.json",
+  "entry": [
+    "src/app/**/page.{ts,tsx,js,jsx}",
+    "src/app/**/layout.{ts,tsx,js,jsx}",
+    "src/app/**/route.{ts,tsx,js,jsx}",
+    "src/app/**/error.{ts,tsx,js,jsx}",
+    "src/app/**/not-found.{ts,tsx,js,jsx}",
+    "src/components/**/*.{ts,tsx,js,jsx}",
+    "next.config.ts",
+    "postcss.config.mjs",
+    "eslint.config.mjs"
+  ],
+  "ignoreFindings": ["next.config.ts", "postcss.config.mjs"],
+  "duplicates": {
+    "enabled": true,
+    "mode": "strict",
+    "minOccurrences": 2,
+    "near": true
+  },
+  "includeEntryExports": true,
+  "rules": {
+    "unused-files": "error",
+    "unused-exports": "error",
+    "unused-types": "error",
+    "unused-dependencies": "error",
+    "unused-dev-dependencies": "error",
+    "unresolved-imports": "error",
+    "unlisted-dependencies": "error",
+    "duplicate-exports": "error",
+    "circular-dependencies": "error",
+    "re-export-cycle": "error",
+    "boundary-violation": "error",
+    "route-collision": "error",
+    "dynamic-segment-name-conflict": "error",
+    "unrendered-components": "error",
+    "unused-component-props": "error",
+    "stale-suppressions": "error",
+    "require-suppression-reason": "error"
+  }
+}
