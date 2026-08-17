@@ -14,7 +14,8 @@ const manrope = Manrope({
 
 export const metadata: Metadata = {
   title: "AuraTours - Premium Travel Planning",
-  description: "Discover curated travel plans and seamless tour bookings with our high-fidelity, interactive platform.",
+  description:
+    "Discover curated travel plans and seamless tour bookings with our high-fidelity, interactive platform.",
 };
 
 interface RootLayoutProps {

@@ -10,6 +10,32 @@ import Badge from "@/components/ui/badge";
 import Button from "@/components/ui/button";
 import Heading from "@/components/ui/heading";
 
+interface CurationRequest {
+  id: string;
+  name: string;
+  avatar: string;
+  details: string;
+}
+
+const RECENT_REQUESTS: CurationRequest[] = [
+  {
+    id: "1",
+    name: "Eleanor V.",
+    avatar:
+      "https://lh3.googleusercontent.com/aida-public/AB6AXuDdirazj5ohkZfGjtfP2a4LA-HuasGV-prPeKGyFqpJzhFz7em43OXg4BJ2WTSIqdvScvuNIpYylgdMicNI7oVVZNQrwap630CYLMxHCj5OKOJ5x97M6tv3TQKRreA5hHyIb_fvGnho_iz4MC97p500-k16W1Y9Ftpj0iJW0tFSKeR1WV0lsdBaQ9a4UyFcm7IjPUnTKKBIDExckQElCLNTQLkuocPPuhSPfKBsxBvKeuOpnL1n1bpQSQ",
+    details:
+      "Requesting a bespoke 10-day itinerary focusing on contemporary art galleries in Kyoto.",
+  },
+  {
+    id: "2",
+    name: "Marcus T.",
+    avatar:
+      "https://lh3.googleusercontent.com/aida-public/AB6AXuDB8ZcgbTaKs8j7XxCHNxdJgfz9YXxxJenYfst8WAPRYF0aYEDhItnCF02eDT5QP3EzLDOBtVh5iFZ0_Jw33V3aDC-b06nOz9kjMjfX8kExT_3iV_dR2uoOQqyGMDI87mr_38LETjE8I793ZYEjNXU2HSyaSu6grVYs21rHp9zCjXOgACstZM-9z80K1wkK2xkQQrEe0mrE4blRmsY4Ywcf8uLq0l5-2eQpAyDQNXKBPZO4PRjE64i8VA",
+    details:
+      "Seeking private helicopter transfers and exclusive access to remote Patagonian lodges.",
+  },
+];
+
 export default function Home(): React.JSX.Element {
   return (
     <div className="animate-slide-up flex flex-col gap-10">
@@ -61,7 +87,8 @@ export default function Home(): React.JSX.Element {
                 The Nordic Nocturne
               </h3>
               <p className="text-sm text-app-muted max-w-md font-body-md">
-                An exclusive private yacht journey through the fjords beneath the aurora borealis.
+                An exclusive private yacht journey through the fjords beneath the aurora
+                borealis.
               </p>
             </div>
           </div>
@@ -84,7 +111,11 @@ export default function Home(): React.JSX.Element {
 
           <div className="mt-8 h-24 relative w-full">
             {/* Sparkline Graph */}
-            <svg className="w-full h-full" preserveAspectRatio="none" viewBox="0 0 100 30">
+            <svg
+              className="w-full h-full"
+              preserveAspectRatio="none"
+              viewBox="0 0 100 30"
+            >
               <path
                 d="M0 30 L10 25 L20 28 L30 15 L40 18 L50 5 L60 12 L70 8 L80 2 L90 5 L100 0 L100 30 Z"
                 fill="var(--color-app-brand-bg)"
@@ -107,79 +138,46 @@ export default function Home(): React.JSX.Element {
           Recent Curation Requests
         </h3>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          {/* Card 1 */}
-          <Card className="flex flex-col justify-between p-6">
-            <div className="flex flex-col gap-4">
-              <div className="flex justify-between items-start">
-                <div className="w-12 h-12 rounded-full overflow-hidden border border-app-border relative bg-app-bg">
-                  <Image
-                    src="https://lh3.googleusercontent.com/aida-public/AB6AXuDdirazj5ohkZfGjtfP2a4LA-HuasGV-prPeKGyFqpJzhFz7em43OXg4BJ2WTSIqdvScvuNIpYylgdMicNI7oVVZNQrwap630CYLMxHCj5OKOJ5x97M6tv3TQKRreA5hHyIb_fvGnho_iz4MC97p500-k16W1Y9Ftpj0iJW0tFSKeR1WV0lsdBaQ9a4UyFcm7IjPUnTKKBIDExckQElCLNTQLkuocPPuhSPfKBsxBvKeuOpnL1n1bpQSQ"
-                    alt="Eleanor V."
-                    fill
-                    className="object-cover"
-                    sizes="48px"
-                  />
+          {RECENT_REQUESTS.map((item) => (
+            <Card key={item.id} className="flex flex-col justify-between p-6">
+              <div className="flex flex-col gap-4">
+                <div className="flex justify-between items-start">
+                  <div className="w-12 h-12 rounded-full overflow-hidden border border-app-border relative bg-app-bg">
+                    <Image
+                      src={item.avatar}
+                      alt={item.name}
+                      fill
+                      className="object-cover"
+                      sizes="48px"
+                    />
+                  </div>
+                  <button
+                    aria-label="More Options"
+                    className="p-1 hover:bg-app-border/30 rounded-lg text-app-muted cursor-pointer transition-colors"
+                  >
+                    <MoreHorizontal className="w-4 h-4" />
+                  </button>
                 </div>
-                <button aria-label="More Options" className="p-1 hover:bg-app-border/30 rounded-lg text-app-muted cursor-pointer transition-colors">
-                  <MoreHorizontal className="w-4 h-4" />
-                </button>
-              </div>
-              <div>
-                <h4 className="text-base font-bold text-app-fg font-body-lg mb-1">
-                  Eleanor V.
-                </h4>
-                <p className="text-sm text-app-muted font-body-md line-clamp-2 leading-relaxed">
-                  Requesting a bespoke 10-day itinerary focusing on contemporary art galleries in Kyoto.
-                </p>
-              </div>
-            </div>
-            <Button
-              variant="secondary"
-              className="w-full mt-6 text-xs font-semibold py-2.5 cursor-pointer"
-              onClick={(): void => {
-                toast.info("Opening curation review panel for Eleanor V...");
-              }}
-            >
-              Review Request
-            </Button>
-          </Card>
-
-          {/* Card 2 */}
-          <Card className="flex flex-col justify-between p-6">
-            <div className="flex flex-col gap-4">
-              <div className="flex justify-between items-start">
-                <div className="w-12 h-12 rounded-full overflow-hidden border border-app-border relative bg-app-bg">
-                  <Image
-                    src="https://lh3.googleusercontent.com/aida-public/AB6AXuDB8ZcgbTaKs8j7XxCHNxdJgfz9YXxxJenYfst8WAPRYF0aYEDhItnCF02eDT5QP3EzLDOBtVh5iFZ0_Jw33V3aDC-b06nOz9kjMjfX8kExT_3iV_dR2uoOQqyGMDI87mr_38LETjE8I793ZYEjNXU2HSyaSu6grVYs21rHp9zCjXOgACstZM-9z80K1wkK2xkQQrEe0mrE4blRmsY4Ywcf8uLq0l5-2eQpAyDQNXKBPZO4PRjE64i8VA"
-                    alt="Marcus T."
-                    fill
-                    className="object-cover"
-                    sizes="48px"
-                  />
+                <div>
+                  <h4 className="text-base font-bold text-app-fg font-body-lg mb-1">
+                    {item.name}
+                  </h4>
+                  <p className="text-sm text-app-muted font-body-md line-clamp-2 leading-relaxed">
+                    {item.details}
+                  </p>
                 </div>
-                <button aria-label="More Options" className="p-1 hover:bg-app-border/30 rounded-lg text-app-muted cursor-pointer transition-colors">
-                  <MoreHorizontal className="w-4 h-4" />
-                </button>
               </div>
-              <div>
-                <h4 className="text-base font-bold text-app-fg font-body-lg mb-1">
-                  Marcus T.
-                </h4>
-                <p className="text-sm text-app-muted font-body-md line-clamp-2 leading-relaxed">
-                  Seeking private helicopter transfers and exclusive access to remote Patagonian lodges.
-                </p>
-              </div>
-            </div>
-            <Button
-              variant="secondary"
-              className="w-full mt-6 text-xs font-semibold py-2.5 cursor-pointer"
-              onClick={(): void => {
-                toast.info("Opening curation review panel for Marcus T...");
-              }}
-            >
-              Review Request
-            </Button>
-          </Card>
+              <Button
+                variant="secondary"
+                className="w-full mt-6 text-xs font-semibold py-2.5 cursor-pointer"
+                onClick={(): void => {
+                  toast.info(`Opening curation review panel for ${item.name}...`);
+                }}
+              >
+                Review Request
+              </Button>
+            </Card>
+          ))}
 
           {/* Card 3 (Dashed add button) */}
           <button

@@ -1,55 +1,61 @@
+"use client";
+
 import * as React from "react";
+import { Loader2 } from "lucide-react";
 
 import Card from "@/components/ui/card";
 import Badge from "@/components/ui/badge";
-import { Table, TableBody, TableCell, TableHeadCell, TableHeader, TableRow } from "@/components/ui/table";
+import { useAppDispatch, useAppSelector, useAppStore } from "@/redux/hooks";
+import {
+  useGetBookingsQuery,
+  useCreateBookingMutation,
+} from "@/redux/services/bookingsApiSlice";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHeadCell,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
 
 import type { Booking } from "../types/booking";
 
-const BOOKINGS_DATA: Booking[] = [
-  {
-    id: "B-2901",
-    excursion: "The Nordic Nocturne",
-    client: "Alex Robinson",
-    date: "Aug 12, 2026",
-    amount: "$142,500",
-    status: "confirmed",
-  },
-  {
-    id: "B-2902",
-    excursion: "Kyoto Art Private Tour",
-    client: "Eleanor V.",
-    date: "Sep 02, 2026",
-    amount: "$48,250",
-    status: "confirmed",
-  },
-  {
-    id: "B-2903",
-    excursion: "Patagonia helicopter Lodge",
-    client: "Marcus T.",
-    date: "Oct 18, 2026",
-    amount: "$18,990",
-    status: "pending",
-  },
-  {
-    id: "B-2904",
-    excursion: "Balinese Luxury Villa Escape",
-    client: "Sarah Jenkins",
-    date: "Nov 05, 2026",
-    amount: "$22,400",
-    status: "confirmed",
-  },
-  {
-    id: "B-2905",
-    excursion: "Swiss Alps Private Helicopter",
-    client: "David Miller",
-    date: "Dec 10, 2026",
-    amount: "$75,000",
-    status: "cancelled",
-  },
-];
-
 export default function BookingsTable(): React.JSX.Element {
+  const dispatch = useAppDispatch();
+  const store = useAppStore();
+  const { data: bookings = [], isLoading, isError } = useGetBookingsQuery(undefined);
+  const [createBooking] = useCreateBookingMutation();
+  const apiState = useAppSelector((state) => state.api);
+
+  React.useEffect(() => {
+    if (process.env.NODE_ENV === "development") {
+      void dispatch({ type: "DEBUG_INIT" });
+      void store.getState();
+      void createBooking;
+    }
+  }, [dispatch, store, createBooking]);
+
+  if (isLoading) {
+    return (
+      <Card className="p-8 border border-app-border bg-app-surface shadow-sm flex flex-col items-center justify-center gap-3">
+        <Loader2 className="w-6 h-6 text-app-brand animate-spin" />
+        <span className="text-xs font-medium text-app-muted">
+          Fetching live bookings via RTK Query (queries:{" "}
+          {Object.keys(apiState.queries).length})...
+        </span>
+      </Card>
+    );
+  }
+
+  if (isError) {
+    return (
+      <Card className="p-6 border border-app-border bg-app-surface text-app-error text-center">
+        <span className="text-sm font-semibold">Error loading bookings.</span>
+      </Card>
+    );
+  }
+
   return (
     <Card className="p-0 overflow-hidden border border-app-border bg-app-surface shadow-sm">
       <Table>
@@ -64,21 +70,27 @@ export default function BookingsTable(): React.JSX.Element {
           </TableRow>
         </TableHeader>
         <TableBody>
-          {BOOKINGS_DATA.map((booking: Booking): React.JSX.Element => (
+          {bookings.map((booking: Booking): React.JSX.Element => (
             <TableRow key={booking.id}>
-              <TableCell className="font-mono text-xs font-semibold text-app-brand">{booking.id}</TableCell>
-              <TableCell className="font-semibold text-app-fg text-sm">{booking.excursion}</TableCell>
+              <TableCell className="font-mono text-xs font-semibold text-app-brand">
+                {booking.id}
+              </TableCell>
+              <TableCell className="font-semibold text-app-fg text-sm">
+                {booking.excursion}
+              </TableCell>
               <TableCell className="text-app-muted text-sm">{booking.client}</TableCell>
               <TableCell className="text-app-muted text-xs">{booking.date}</TableCell>
-              <TableCell className="font-extrabold text-app-fg text-sm">{booking.amount}</TableCell>
+              <TableCell className="font-extrabold text-app-fg text-sm">
+                {booking.amount}
+              </TableCell>
               <TableCell className="text-right">
                 <Badge
                   variant={
                     booking.status === "confirmed"
                       ? "brand"
                       : booking.status === "pending"
-                      ? "muted"
-                      : "error"
+                        ? "muted"
+                        : "error"
                   }
                 >
                   {booking.status}

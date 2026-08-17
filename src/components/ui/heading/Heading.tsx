@@ -20,10 +20,13 @@ export default function Heading({
   const Tag = `h${String(level)}` as "h1" | "h2" | "h3" | "h4" | "h5" | "h6";
 
   const variants = {
-    "display-lg": "font-display-lg text-3xl sm:text-5xl font-extrabold tracking-tight text-app-fg mb-1",
-    "headline-md": "font-headline-md text-xl sm:text-2xl font-bold tracking-tight text-app-fg mb-1",
+    "display-lg":
+      "font-display-lg text-3xl sm:text-5xl font-extrabold tracking-tight text-app-fg mb-1",
+    "headline-md":
+      "font-headline-md text-xl sm:text-2xl font-bold tracking-tight text-app-fg mb-1",
     "body-lg": "font-body-lg text-base sm:text-lg text-app-fg mb-0.5",
-    "label-caps": "font-label-caps text-[10px] font-bold text-app-fg uppercase tracking-wider mb-0.5",
+    "label-caps":
+      "font-label-caps text-[10px] font-bold text-app-fg uppercase tracking-wider mb-0.5",
   };
 
   if (subheading !== undefined && subheading !== null && subheading !== "") {

@@ -29,9 +29,7 @@ const Input = React.forwardRef<HTMLInputElement, InputProps>(
           {...props}
         />
         {hasError && (
-          <span className="text-xs font-semibold text-app-error">
-            {error}
-          </span>
+          <span className="text-xs font-semibold text-app-error">{error}</span>
         )}
       </div>
     );

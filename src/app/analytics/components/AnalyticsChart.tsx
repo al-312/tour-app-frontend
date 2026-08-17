@@ -10,7 +10,9 @@ export default function AnalyticsChart(): React.JSX.Element {
           <h3 className="text-sm font-bold text-app-muted uppercase tracking-wider font-label-caps mb-1">
             Excursion Revenue Distribution
           </h3>
-          <p className="text-xs text-app-muted">Sales values across active premium itineraries</p>
+          <p className="text-xs text-app-muted">
+            Sales values across active premium itineraries
+          </p>
         </div>
 
         <div className="h-64 flex items-end gap-3 pt-6 border-b border-l border-app-border/40 pl-4 pb-2">
@@ -43,15 +45,20 @@ export default function AnalyticsChart(): React.JSX.Element {
           <h3 className="text-sm font-bold text-app-muted uppercase tracking-wider font-label-caps mb-1">
             Itinerary Interest Growth
           </h3>
-          <p className="text-xs text-app-muted">Monthly unique request volume indicators</p>
+          <p className="text-xs text-app-muted">
+            Monthly unique request volume indicators
+          </p>
         </div>
 
         <div className="h-64 flex items-center justify-center border border-dashed border-app-border rounded-xl">
           <div className="flex flex-col items-center gap-2 p-6 text-center">
             <div className="w-2.5 h-2.5 rounded-full bg-app-brand animate-ping" />
-            <span className="text-xs font-bold text-app-fg mt-2">Real-time Metrics Connecting</span>
+            <span className="text-xs font-bold text-app-fg mt-2">
+              Real-time Metrics Connecting
+            </span>
             <span className="text-[10px] text-app-muted max-w-xs">
-              Synchronizing with Global GDS database streams for accurate trend indicators.
+              Synchronizing with Global GDS database streams for accurate trend
+              indicators.
             </span>
           </div>
         </div>

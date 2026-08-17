@@ -15,12 +15,16 @@ export default function Button({
   children,
   ...props
 }: ButtonProps): React.JSX.Element {
-  const baseStyle = "inline-flex items-center justify-center font-medium tracking-tight rounded-xl transition-all duration-300 ease-out focus:outline-none cursor-pointer disabled:opacity-50 disabled:pointer-events-none";
-  
+  const baseStyle =
+    "inline-flex items-center justify-center font-medium tracking-tight rounded-xl transition-all duration-300 ease-out focus:outline-none cursor-pointer disabled:opacity-50 disabled:pointer-events-none";
+
   const variants = {
-    primary: "bg-app-brand text-white border-0 hover:bg-app-brand-hover active:scale-98 shadow-sm relative before:absolute before:inset-x-0 before:top-0 before:h-[1px] before:bg-white/15 before:rounded-xl",
-    secondary: "bg-app-surface-variant text-app-fg border border-app-border hover:bg-app-border/40 hover:text-app-fg active:scale-98 shadow-sm",
-    outline: "bg-transparent text-app-fg border border-app-border hover:bg-app-border/20 active:scale-98",
+    primary:
+      "bg-app-brand text-white border-0 hover:bg-app-brand-hover active:scale-98 shadow-sm relative before:absolute before:inset-x-0 before:top-0 before:h-[1px] before:bg-white/15 before:rounded-xl",
+    secondary:
+      "bg-app-surface-variant text-app-fg border border-app-border hover:bg-app-border/40 hover:text-app-fg active:scale-98 shadow-sm",
+    outline:
+      "bg-transparent text-app-fg border border-app-border hover:bg-app-border/20 active:scale-98",
     ghost: "bg-transparent text-app-fg hover:bg-app-border/10 hover:text-app-fg",
   };
 

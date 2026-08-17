@@ -3,7 +3,16 @@
 import Link from "next/link";
 import * as React from "react";
 import { usePathname } from "next/navigation";
-import { Grid, Palette, BarChart3, Ticket, Settings, HelpCircle, LogOut, Sun, Moon } from "lucide-react";
+import {
+  Grid,
+  BarChart3,
+  Ticket,
+  Settings,
+  HelpCircle,
+  LogOut,
+  Sun,
+  Moon,
+} from "lucide-react";
 
 import Button from "@/components/ui/button";
 
@@ -20,16 +29,12 @@ interface NavigationItem {
 
 const NAVIGATION_ITEMS: NavigationItem[] = [
   { href: "/", label: "Dashboard", icon: Grid },
-  { href: "/curation", label: "Curation", icon: Palette },
   { href: "/analytics", label: "Analytics", icon: BarChart3 },
   { href: "/bookings", label: "Bookings", icon: Ticket },
   { href: "/settings", label: "Settings", icon: Settings },
 ];
 
-export default function Sidebar({
-  theme,
-  toggleTheme,
-}: SidebarProps): React.JSX.Element {
+export default function Sidebar({ theme, toggleTheme }: SidebarProps): React.JSX.Element {
   const pathname = usePathname();
 
   const isActive = (href: string): boolean => {
@@ -46,7 +51,9 @@ export default function Sidebar({
           T
         </div>
         <div>
-          <h1 className="text-base font-bold tracking-tight text-app-fg font-display-lg">Artisan Admin</h1>
+          <h1 className="text-base font-bold tracking-tight text-app-fg font-display-lg">
+            Artisan Admin
+          </h1>
           <p className="text-app-muted text-xs">Premium Tier</p>
         </div>
       </div>
@@ -72,16 +79,25 @@ export default function Sidebar({
         })}
       </div>
 
-      <Button variant="primary" className="w-full py-3 mb-4 text-xs font-bold font-label-caps uppercase tracking-wider">
+      <Button
+        variant="primary"
+        className="w-full py-3 mb-4 text-xs font-bold font-label-caps uppercase tracking-wider"
+      >
         Create New Tour
       </Button>
 
       <div className="flex flex-col gap-1 border-t border-app-border/40 pt-4 pb-2">
-        <a className="group flex items-center gap-3 px-4 py-2 text-app-muted hover:bg-app-surface-variant rounded-xl text-sm transition-all duration-300 hover:translate-x-1" href="/support">
+        <a
+          className="group flex items-center gap-3 px-4 py-2 text-app-muted hover:bg-app-surface-variant rounded-xl text-sm transition-all duration-300 hover:translate-x-1"
+          href="/support"
+        >
           <HelpCircle className="w-4 h-4 group-hover:scale-110 transition-transform" />
           <span>Support</span>
         </a>
-        <a className="group flex items-center gap-3 px-4 py-2 text-app-muted hover:bg-app-surface-variant rounded-xl text-sm transition-all duration-300 hover:translate-x-1" href="/signout">
+        <a
+          className="group flex items-center gap-3 px-4 py-2 text-app-muted hover:bg-app-surface-variant rounded-xl text-sm transition-all duration-300 hover:translate-x-1"
+          href="/signout"
+        >
           <LogOut className="w-4 h-4 group-hover:scale-110 transition-transform" />
           <span>Sign Out</span>
         </a>
@@ -94,11 +110,13 @@ export default function Sidebar({
             JD
           </div>
           <div className="flex flex-col">
-            <span className="text-xs font-bold text-app-fg leading-none">Alex Robinson</span>
+            <span className="text-xs font-bold text-app-fg leading-none">
+              Alex Robinson
+            </span>
             <span className="text-[10px] text-app-muted mt-0.5">Chief Curator</span>
           </div>
         </div>
-        
+
         <Button
           variant="outline"
           size="sm"
