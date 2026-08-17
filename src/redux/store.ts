@@ -1,9 +1,12 @@
 import { combineReducers, configureStore, type EnhancedStore } from "@reduxjs/toolkit";
 
+import authReducer from "./slices/authSlice";
 import { apiSlice } from "./services/apiSlice";
+import "./services/authApiSlice";
 import "./services/bookingsApiSlice";
 
 const rootReducer = combineReducers({
+  auth: authReducer,
   api: apiSlice.reducer,
 });
 

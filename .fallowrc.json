@@ -15,7 +15,8 @@
   "duplicates": {
     "enabled": true,
     "mode": "strict",
-    "minOccurrences": 2,
+    "minLines": 15,
+    "minOccurrences": 3,
     "near": true
   },
   "includeEntryExports": true,
