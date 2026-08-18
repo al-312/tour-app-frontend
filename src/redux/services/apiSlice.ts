@@ -18,31 +18,27 @@ import type { AuthResponse } from "@/types/auth";
 
 const mutex = new Mutex();
 
+const getAuthToken = (state: RootState): string | null => {
+  if (state.auth.token) return state.auth.token;
+  return isClient()
+    ? (storage.getItemDecoded(STORAGE_KEYS.TOKEN) as string | null)
+    : null;
+};
+
 const rawBaseQuery = fetchBaseQuery({
-  baseUrl: `${API_URL}/api`,
+  baseUrl: API_URL,
   prepareHeaders: (headers, { getState }) => {
-    const state = getState() as RootState;
-    const token = state.auth.token;
-
-    if (token) {
-      headers.set("Authorization", `Bearer ${token}`);
-    } else if (isClient()) {
-      const storedToken = storage.getItemDecoded(STORAGE_KEYS.TOKEN);
-      if (typeof storedToken === "string" && storedToken !== "") {
-        headers.set("Authorization", `Bearer ${storedToken}`);
-      }
-    }
-
+    const token = getAuthToken(getState() as RootState);
+    if (token) headers.set("Authorization", `Bearer ${token}`);
     return headers;
   },
 });
 
 const getStoredRefreshToken = (state: RootState): string | null => {
   if (state.auth.refreshToken) return state.auth.refreshToken;
-  if (isClient()) {
-    return storage.getItemDecoded(STORAGE_KEYS.REFRESH_TOKEN) as string | null;
-  }
-  return null;
+  return isClient()
+    ? (storage.getItemDecoded(STORAGE_KEYS.REFRESH_TOKEN) as string | null)
+    : null;
 };
 
 const handleRefreshAttempt = async (
@@ -51,11 +47,7 @@ const handleRefreshAttempt = async (
   refreshToken: string
 ): Promise<boolean> => {
   const refreshResult = await rawBaseQuery(
-    {
-      url: "/auth/refresh",
-      method: "POST",
-      body: { refreshToken },
-    },
+    { url: "/auth/refresh", method: "POST", body: { refreshToken } },
     api,
     extraOptions
   );
@@ -67,8 +59,7 @@ const handleRefreshAttempt = async (
     refreshToken?: string;
     user?: AuthResponse["user"];
   };
-  const state = api.getState() as RootState;
-  const currentUser = state.auth.user;
+  const currentUser = (api.getState() as RootState).auth.user;
 
   if (currentUser) {
     api.dispatch(
@@ -83,43 +74,51 @@ const handleRefreshAttempt = async (
   return true;
 };
 
+const performTokenRefresh = async (
+  api: BaseQueryApi,
+  extraOptions: object
+): Promise<boolean> => {
+  const release = await mutex.acquire();
+  try {
+    const refreshToken = getStoredRefreshToken(api.getState() as RootState);
+    if (!refreshToken) {
+      api.dispatch(logout());
+      return false;
+    }
+    const success = await handleRefreshAttempt(api, extraOptions, refreshToken);
+    if (!success) api.dispatch(logout());
+    return success;
+  } finally {
+    release();
+  }
+};
+
+const handle401Error = async (
+  args: string | FetchArgs,
+  api: BaseQueryApi,
+  extraOptions: object
+): Promise<Awaited<ReturnType<typeof rawBaseQuery>>> => {
+  if (mutex.isLocked()) {
+    await mutex.waitForUnlock();
+    return rawBaseQuery(args, api, extraOptions);
+  }
+  const success = await performTokenRefresh(api, extraOptions);
+  if (success) {
+    return rawBaseQuery(args, api, extraOptions);
+  }
+  return { error: { status: 401, data: "Unauthorized" } };
+};
+
 const baseQueryWithReauth: BaseQueryFn<
   string | FetchArgs,
   unknown,
   FetchBaseQueryError
 > = async (args, api, extraOptions) => {
   await mutex.waitForUnlock();
-  let result = await rawBaseQuery(args, api, extraOptions);
+  const result = await rawBaseQuery(args, api, extraOptions);
+  if (result.error?.status !== 401) return result;
 
-  if (result.error?.status !== 401) {
-    return result;
-  }
-
-  if (mutex.isLocked()) {
-    await mutex.waitForUnlock();
-    return rawBaseQuery(args, api, extraOptions);
-  }
-
-  const release = await mutex.acquire();
-  try {
-    const state = api.getState() as RootState;
-    const refreshToken = getStoredRefreshToken(state);
-
-    if (refreshToken) {
-      const success = await handleRefreshAttempt(api, extraOptions, refreshToken);
-      if (success) {
-        result = await rawBaseQuery(args, api, extraOptions);
-      } else {
-        api.dispatch(logout());
-      }
-    } else {
-      api.dispatch(logout());
-    }
-  } finally {
-    release();
-  }
-
-  return result;
+  return handle401Error(args, api, extraOptions);
 };
 
 export const apiSlice = createApi({

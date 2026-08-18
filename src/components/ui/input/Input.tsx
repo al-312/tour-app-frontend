@@ -2,18 +2,18 @@ import * as React from "react";
 
 import { cn } from "@/utils/cn";
 
-export interface InputProps extends React.InputHTMLAttributes<HTMLInputElement> {
+interface InputProps extends React.InputHTMLAttributes<HTMLInputElement> {
   label?: string;
   error?: string | undefined;
 }
 
 const Input = React.forwardRef<HTMLInputElement, InputProps>(
   ({ label, error, className = "", type = "text", ...props }, ref): React.JSX.Element => {
-    const hasError = error !== undefined && error !== "";
+    const hasError = Boolean(error);
 
     return (
       <div className="flex flex-col gap-1.5 w-full">
-        {label !== undefined && label !== "" && (
+        {label && (
           <label className="text-xs font-semibold tracking-wider text-app-muted uppercase">
             {label}
           </label>

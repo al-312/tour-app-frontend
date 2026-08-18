@@ -2,14 +2,13 @@ import type { BackendResponse } from "@/types/auth";
 
 interface CustomApiError {
   message: string;
-  statusCode?: number;
-  error?: string;
+  statusCode?: number | undefined;
+  error?: string | undefined;
 }
 
 const getErrorMessageStr = (msg: unknown, err?: string): string => {
   if (Array.isArray(msg)) return msg.join(", ");
-  if (typeof msg === "string") return msg;
-  return err ?? "An error occurred";
+  return typeof msg === "string" ? msg : (err ?? "An error occurred");
 };
 
 const parseNestedErrorData = (dataObj: unknown): CustomApiError | null => {
@@ -19,11 +18,10 @@ const parseNestedErrorData = (dataObj: unknown): CustomApiError | null => {
     statusCode?: number;
     error?: string;
   };
-
   return {
     message: getErrorMessageStr(obj.message, obj.error),
-    ...(obj.statusCode ? { statusCode: obj.statusCode } : {}),
-    ...(obj.error ? { error: obj.error } : {}),
+    statusCode: obj.statusCode,
+    error: obj.error,
   };
 };
 
@@ -34,8 +32,7 @@ const parseDirectErrorMessage = (response: unknown): CustomApiError | null => {
 
 const extractObjectMessage = (error: Record<string, unknown>): string | null => {
   if (typeof error.message === "string") return error.message;
-  if ("data" in error) return apiTransformer.transformErrorResponse(error).message;
-  return null;
+  return "data" in error ? apiTransformer.transformErrorResponse(error).message : null;
 };
 
 export const apiTransformer = {
@@ -45,13 +42,12 @@ export const apiTransformer = {
   },
 
   transformErrorResponse: (response: unknown): CustomApiError => {
-    const nested = parseNestedErrorData((response as { data?: unknown } | null)?.data);
-    if (nested) return nested;
-
-    const direct = parseDirectErrorMessage(response);
-    if (direct) return direct;
-
-    return { message: "An unexpected error occurred. Please try again." };
+    return (
+      parseNestedErrorData((response as { data?: unknown } | null)?.data) ??
+      parseDirectErrorMessage(response) ?? {
+        message: "An unexpected error occurred. Please try again.",
+      }
+    );
   },
 
   transformError: (
@@ -60,9 +56,6 @@ export const apiTransformer = {
   ): string => {
     if (!error) return fallback;
     if (typeof error === "string") return error;
-    if (typeof error === "object") {
-      return extractObjectMessage(error as Record<string, unknown>) ?? fallback;
-    }
-    return fallback;
+    return extractObjectMessage(error as Record<string, unknown>) ?? fallback;
   },
 };

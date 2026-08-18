@@ -19,14 +19,44 @@ import {
   TableRow,
 } from "@/components/ui/table";
 
-import type { Booking } from "../types/booking";
+import type { Booking } from "@/types/booking";
+
+function BookingRow({ booking }: { booking: Booking }): React.JSX.Element {
+  const badgeVariant =
+    booking.status === "confirmed"
+      ? "brand"
+      : booking.status === "pending"
+        ? "muted"
+        : "error";
+
+  return (
+    <TableRow>
+      <TableCell className="font-mono text-xs font-semibold text-app-brand">
+        {booking.id}
+      </TableCell>
+      <TableCell className="font-semibold text-app-fg text-sm">
+        {booking.excursion}
+      </TableCell>
+      <TableCell className="text-app-muted text-sm">{booking.client}</TableCell>
+      <TableCell className="text-app-muted text-xs">{booking.date}</TableCell>
+      <TableCell className="font-extrabold text-app-fg text-sm">
+        {booking.amount}
+      </TableCell>
+      <TableCell className="text-right">
+        <Badge variant={badgeVariant}>{booking.status}</Badge>
+      </TableCell>
+    </TableRow>
+  );
+}
 
 export default function BookingsTable(): React.JSX.Element {
   const dispatch = useAppDispatch();
   const store = useAppStore();
   const { data: bookings = [], isLoading, isError } = useGetBookingsQuery(undefined);
   const [createBooking] = useCreateBookingMutation();
-  const apiState = useAppSelector((state) => state.api);
+  const apiQueriesCount = useAppSelector(
+    (state) => Object.keys(state.api.queries).length
+  );
 
   React.useEffect(() => {
     if (process.env.NODE_ENV === "development") {
@@ -41,8 +71,7 @@ export default function BookingsTable(): React.JSX.Element {
       <Card className="p-8 border border-app-border bg-app-surface shadow-sm flex flex-col items-center justify-center gap-3">
         <Loader2 className="w-6 h-6 text-app-brand animate-spin" />
         <span className="text-xs font-medium text-app-muted">
-          Fetching live bookings via RTK Query (queries:{" "}
-          {Object.keys(apiState.queries).length})...
+          Fetching live bookings via RTK Query (queries: {apiQueriesCount})...
         </span>
       </Card>
     );
@@ -70,33 +99,8 @@ export default function BookingsTable(): React.JSX.Element {
           </TableRow>
         </TableHeader>
         <TableBody>
-          {bookings.map((booking: Booking): React.JSX.Element => (
-            <TableRow key={booking.id}>
-              <TableCell className="font-mono text-xs font-semibold text-app-brand">
-                {booking.id}
-              </TableCell>
-              <TableCell className="font-semibold text-app-fg text-sm">
-                {booking.excursion}
-              </TableCell>
-              <TableCell className="text-app-muted text-sm">{booking.client}</TableCell>
-              <TableCell className="text-app-muted text-xs">{booking.date}</TableCell>
-              <TableCell className="font-extrabold text-app-fg text-sm">
-                {booking.amount}
-              </TableCell>
-              <TableCell className="text-right">
-                <Badge
-                  variant={
-                    booking.status === "confirmed"
-                      ? "brand"
-                      : booking.status === "pending"
-                        ? "muted"
-                        : "error"
-                  }
-                >
-                  {booking.status}
-                </Badge>
-              </TableCell>
-            </TableRow>
+          {bookings.map((booking: Booking) => (
+            <BookingRow key={booking.id} booking={booking} />
           ))}
         </TableBody>
       </Table>
