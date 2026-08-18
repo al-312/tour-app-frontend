@@ -3,17 +3,9 @@ import { UserCheck } from "lucide-react";
 
 import Badge from "@/components/ui/badge";
 
-export interface DemoAccount {
-  role: "ADMIN" | "CONSULTANT" | "CLIENT";
-  email: string;
-  label: string;
-}
+import { DEMO_ACCOUNTS } from "../constants/auth.constants";
 
-const DEMO_ACCOUNTS: DemoAccount[] = [
-  { role: "ADMIN", email: "admin@example.com", label: "Admin" },
-  { role: "CONSULTANT", email: "consultant@example.com", label: "Consultant" },
-  { role: "CLIENT", email: "client@example.com", label: "Client" },
-];
+import type { DemoAccount } from "../types/auth.types";
 
 function DemoAccountsSelector({
   onSelect,

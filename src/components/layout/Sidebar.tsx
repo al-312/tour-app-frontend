@@ -2,55 +2,16 @@
 
 import Link from "next/link";
 import * as React from "react";
-import { toast } from "sonner";
-import { usePathname, useRouter } from "next/navigation";
-import {
-  Grid,
-  BarChart3,
-  Ticket,
-  Settings,
-  LogOut,
-  ChevronLeft,
-  ChevronRight,
-} from "lucide-react";
+import { usePathname } from "next/navigation";
+import { ChevronLeft, ChevronRight } from "lucide-react";
 
-import { logout } from "@/store/auth.store";
+import { cn } from "@/lib/utils/cn";
+import Badge from "@/components/ui/badge";
 import { isClient } from "@/lib/utils/is-client";
-import { useAppDispatch, useAppSelector } from "@/store/hooks";
 
-interface NavigationItem {
-  href: string;
-  label: string;
-  icon: React.ComponentType<{ className?: string }>;
-}
+import { NAVIGATION_ITEMS } from "./constants/layout.constants";
 
-export interface SidebarContextType {
-  isCollapsed: boolean;
-  toggleCollapse: () => void;
-}
-
-const NAVIGATION_ITEMS: NavigationItem[] = [
-  { href: "/dashboard", label: "Dashboard", icon: Grid },
-  { href: "/analytics", label: "Analytics", icon: BarChart3 },
-  { href: "/bookings", label: "Bookings", icon: Ticket },
-  { href: "/settings", label: "Settings", icon: Settings },
-];
-
-const isNavActive = (href: string, pathname: string): boolean => {
-  if (href === "/dashboard") return pathname === "/dashboard";
-  return pathname.startsWith(href);
-};
-
-const getNavLinkClassName = (isCollapsed: boolean, active: boolean): string => {
-  const layoutStyle = isCollapsed
-    ? "justify-center py-3 px-0"
-    : "px-4 py-3 hover:translate-x-1";
-  const activeStyle = active
-    ? "bg-app-brand text-white font-semibold shadow-sm"
-    : "text-app-muted hover:bg-app-surface-variant hover:text-app-fg";
-
-  return `group w-full flex items-center gap-3 rounded-xl text-sm font-medium transition-all duration-300 ease-out ${layoutStyle} ${activeStyle}`;
-};
+import type { SidebarContextType } from "./types/layout.types";
 
 const SidebarContext = React.createContext<SidebarContextType | undefined>(undefined);
 
@@ -61,35 +22,56 @@ export function SidebarProvider({
 }): React.JSX.Element {
   const [isCollapsed, setIsCollapsed] = React.useState<boolean>(() => {
     if (isClient()) {
-      return localStorage.getItem("sidebar_collapsed") === "true";
+      const saved = localStorage.getItem("sidebar_collapsed");
+      return saved ? JSON.parse(saved) === true : false;
     }
     return false;
   });
 
-  const toggleCollapse = React.useCallback((): void => {
+  const toggleSidebar = React.useCallback((): void => {
     setIsCollapsed((prev) => {
       const next = !prev;
       if (isClient()) {
-        localStorage.setItem("sidebar_collapsed", String(next));
+        localStorage.setItem("sidebar_collapsed", JSON.stringify(next));
       }
       return next;
     });
   }, []);
 
-  const value = React.useMemo<SidebarContextType>(
-    () => ({ isCollapsed, toggleCollapse }),
-    [isCollapsed, toggleCollapse]
+  const value = React.useMemo(
+    () => ({ isCollapsed, toggleSidebar }),
+    [isCollapsed, toggleSidebar]
   );
 
   return <SidebarContext.Provider value={value}>{children}</SidebarContext.Provider>;
 }
 
-export function useSidebar(): SidebarContextType {
+function useSidebar(): SidebarContextType {
   const context = React.useContext(SidebarContext);
   if (!context) {
     throw new Error("useSidebar must be used within a SidebarProvider");
   }
   return context;
+}
+
+function SidebarBrandLogo({ isCollapsed }: { isCollapsed: boolean }): React.JSX.Element {
+  return (
+    <div className="flex items-center gap-3 px-1">
+      <div className="w-10 h-10 rounded-2xl bg-linear-to-tr from-app-brand via-brand-500 to-emerald-400 flex items-center justify-center font-bold text-white text-lg shadow-lg shadow-app-brand/25 flex-shrink-0 transition-transform hover:scale-105">
+        A
+      </div>
+      {!isCollapsed && (
+        <div className="flex flex-col">
+          <span className="font-extrabold text-app-fg tracking-tight text-base font-display-lg">
+            AuraTours
+          </span>
+          <span className="text-[10px] font-semibold tracking-wider text-app-muted uppercase font-label-caps">
+            Executive Portal
+          </span>
+        </div>
+      )}
+    </div>
+  );
 }
 
 function SidebarFloatingToggle({
@@ -103,147 +85,158 @@ function SidebarFloatingToggle({
     <button
       type="button"
       onClick={onToggle}
-      className="absolute -right-3.5 top-6 w-7 h-7 rounded-full bg-app-surface border border-app-border/80 text-app-muted hover:text-app-fg hover:border-app-brand hover:bg-app-surface-variant shadow-md flex items-center justify-center transition-all duration-300 cursor-pointer z-50 hover:scale-110"
       aria-label={isCollapsed ? "Expand Sidebar" : "Collapse Sidebar"}
-      title={isCollapsed ? "Expand Sidebar" : "Collapse Sidebar"}
+      className="absolute -right-3 top-7 z-50 p-1.5 rounded-full bg-app-surface border border-app-border text-app-muted hover:text-app-fg hover:bg-app-surface-variant transition-all duration-300 shadow-md cursor-pointer"
     >
       {isCollapsed ? (
-        <ChevronRight className="w-4 h-4 text-app-brand" />
+        <ChevronRight className="w-3.5 h-3.5 text-app-brand" />
       ) : (
-        <ChevronLeft className="w-4 h-4" />
+        <ChevronLeft className="w-3.5 h-3.5" />
       )}
     </button>
   );
 }
 
-function SidebarBrand({
-  userRole,
-  isCollapsed,
+function SidebarBadge({
+  badge,
+  isActive,
 }: {
-  userRole?: string | undefined;
-  isCollapsed: boolean;
-}): React.JSX.Element {
-  const roleText = userRole ? `${userRole} Tier` : "Authenticated Tier";
-
-  if (isCollapsed) {
-    return (
-      <div className="flex flex-col items-center gap-3 mb-6">
-        <Link href="/dashboard" className="group" title="Artisan Admin">
-          <div className="w-9 h-9 rounded-xl bg-linear-to-tr from-app-brand to-emerald-600 flex items-center justify-center shadow-lg shadow-app-brand/20 text-white font-black text-lg group-hover:scale-105 transition-transform duration-300">
-            T
-          </div>
-        </Link>
-      </div>
-    );
-  }
-
+  badge?: string | undefined;
+  isActive: boolean;
+}): React.JSX.Element | null {
+  if (!badge) return null;
   return (
-    <div className="flex items-center justify-between mb-6 px-1 gap-2">
-      <Link href="/dashboard" className="flex items-center gap-3 group min-w-0">
-        <div className="w-9 h-9 rounded-xl bg-linear-to-tr from-app-brand to-emerald-600 flex items-center justify-center shadow-lg shadow-app-brand/20 text-white font-black text-lg group-hover:scale-105 transition-transform duration-300 shrink-0">
-          T
-        </div>
-        <div className="min-w-0 truncate">
-          <h1 className="text-base font-bold tracking-tight text-app-fg font-display-lg group-hover:text-app-brand transition-colors truncate">
-            Artisan Admin
-          </h1>
-          <p className="text-app-muted text-[11px] font-medium truncate">{roleText}</p>
-        </div>
-      </Link>
-    </div>
+    <Badge
+      variant={isActive ? "muted" : "brand"}
+      className={cn(
+        "text-[10px] px-1.5 py-0",
+        isActive && "bg-white/20 text-white border-transparent"
+      )}
+    >
+      {badge}
+    </Badge>
   );
 }
 
-function SidebarNavLink({
+function SidebarItemDetails({
+  name,
+  badge,
+  isActive,
+}: {
+  name: string;
+  badge?: string | undefined;
+  isActive: boolean;
+}): React.JSX.Element {
+  return (
+    <>
+      <span className="flex-1 truncate">{name}</span>
+      <SidebarBadge badge={badge} isActive={isActive} />
+      <ChevronRight
+        className={cn(
+          "w-3.5 h-3.5 opacity-0 -translate-x-1 group-hover:opacity-100 group-hover:translate-x-0 transition-all duration-200",
+          isActive && "opacity-100 translate-x-0"
+        )}
+      />
+    </>
+  );
+}
+
+function getSidebarLinkClasses(isActive: boolean, isCollapsed: boolean): string {
+  const base =
+    "flex items-center gap-3 px-3.5 py-3 rounded-2xl text-xs font-semibold transition-all duration-200 group relative";
+  const activeClass = isActive
+    ? "bg-app-brand text-white shadow-md shadow-app-brand/25"
+    : "text-app-muted hover:text-app-fg hover:bg-app-surface-variant/80";
+  const collapseClass = isCollapsed ? "justify-center px-0 py-3" : "";
+  return `${base} ${activeClass} ${collapseClass}`;
+}
+
+function SidebarNavLinkItem({
   item,
   pathname,
   isCollapsed,
 }: {
-  item: NavigationItem;
+  item: (typeof NAVIGATION_ITEMS)[number];
   pathname: string;
   isCollapsed: boolean;
 }): React.JSX.Element {
+  const isActive = pathname === item.href;
   const Icon = item.icon;
-  const active = isNavActive(item.href, pathname);
-  const linkClass = getNavLinkClassName(isCollapsed, active);
+  const className = getSidebarLinkClasses(isActive, isCollapsed);
+  const iconClass = isActive
+    ? "w-4 h-4 flex-shrink-0 transition-transform duration-200 group-hover:scale-110 text-white"
+    : "w-4 h-4 flex-shrink-0 transition-transform duration-200 group-hover:scale-110 text-app-muted group-hover:text-app-fg";
 
   return (
     <Link
       href={item.href}
-      title={isCollapsed ? item.label : undefined}
-      className={linkClass}
+      title={isCollapsed ? item.name : undefined}
+      className={className}
     >
-      <Icon className="w-5 h-5 group-hover:scale-110 transition-transform duration-300 shrink-0" />
-      {!isCollapsed && <span className="truncate">{item.label}</span>}
+      <Icon className={iconClass} />
+      {!isCollapsed && (
+        <SidebarItemDetails name={item.name} badge={item.badge} isActive={isActive} />
+      )}
     </Link>
   );
 }
 
-function SidebarAuxLinks({
-  isCollapsed,
-  onSignOut,
-}: {
-  isCollapsed: boolean;
-  onSignOut: (e: React.MouseEvent) => void;
-}): React.JSX.Element {
+function SidebarFooterCard({ isCollapsed }: { isCollapsed: boolean }): React.JSX.Element {
   return (
-    <div className="flex flex-col gap-1 border-t border-app-border/40 pt-3 pb-2">
-      <button
-        type="button"
-        onClick={onSignOut}
-        title={isCollapsed ? "Sign Out" : undefined}
-        className={`group flex items-center gap-3 text-app-muted hover:bg-app-surface-variant hover:text-app-error rounded-xl text-sm transition-all duration-300 w-full cursor-pointer ${
-          isCollapsed
-            ? "justify-center py-2.5 px-0"
-            : "px-4 py-2 hover:translate-x-1 text-left"
-        }`}
-      >
-        <LogOut className="w-4 h-4 group-hover:scale-110 transition-transform shrink-0" />
-        {!isCollapsed && <span>Sign Out</span>}
-      </button>
+    <div
+      className={cn(
+        "p-4 rounded-2xl border border-app-border/60 bg-linear-to-b from-app-surface-variant/50 to-app-surface-variant/20 transition-all duration-300",
+        isCollapsed && "p-2 text-center"
+      )}
+    >
+      {!isCollapsed ? (
+        <div className="flex flex-col gap-2">
+          <div className="flex items-center justify-between">
+            <span className="text-[11px] font-bold text-app-fg font-display-lg">
+              Concierge Desk 24/7
+            </span>
+            <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+          </div>
+          <p className="text-[11px] text-app-muted leading-relaxed">
+            Direct priority hotline active for VIP client clearances.
+          </p>
+        </div>
+      ) : (
+        <div className="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse mx-auto" />
+      )}
     </div>
   );
 }
 
 export function Sidebar(): React.JSX.Element {
   const pathname = usePathname();
-  const router = useRouter();
-  const dispatch = useAppDispatch();
-  const { user } = useAppSelector((state) => state.auth);
-  const { isCollapsed, toggleCollapse } = useSidebar();
-
-  const handleSignOut = (e: React.MouseEvent): void => {
-    e.preventDefault();
-    if (isClient()) {
-      sessionStorage.setItem("is_signing_out", "true");
-    }
-    dispatch(logout());
-    toast.success("Signed out successfully");
-    router.push("/login");
-  };
+  const { isCollapsed, toggleSidebar } = useSidebar();
 
   return (
     <aside
-      className={`bg-app-surface border-r border-app-border/40 hidden lg:flex flex-col fixed left-0 top-0 h-full z-50 shadow-[20px_0_40px_rgba(0,0,0,0.01)] transition-all duration-300 ease-in-out ${
-        isCollapsed ? "w-20 p-3 gap-2" : "w-64 p-6 gap-3"
-      }`}
+      className={cn(
+        "sticky top-0 h-screen flex flex-col justify-between bg-app-surface/95 backdrop-blur-md border-r border-app-border/40 p-4 transition-all duration-300 z-30 flex-shrink-0 relative",
+        isCollapsed ? "w-20" : "w-64"
+      )}
     >
-      <SidebarFloatingToggle isCollapsed={isCollapsed} onToggle={toggleCollapse} />
+      <SidebarFloatingToggle isCollapsed={isCollapsed} onToggle={toggleSidebar} />
 
-      <SidebarBrand userRole={user?.role} isCollapsed={isCollapsed} />
+      <div className="flex flex-col gap-6">
+        <SidebarBrandLogo isCollapsed={isCollapsed} />
 
-      <div className="flex flex-col gap-1 flex-grow">
-        {NAVIGATION_ITEMS.map((item) => (
-          <SidebarNavLink
-            key={item.href}
-            item={item}
-            pathname={pathname}
-            isCollapsed={isCollapsed}
-          />
-        ))}
+        <nav className="flex flex-col gap-1.5 pt-2">
+          {NAVIGATION_ITEMS.map((item) => (
+            <SidebarNavLinkItem
+              key={item.href}
+              item={item}
+              pathname={pathname}
+              isCollapsed={isCollapsed}
+            />
+          ))}
+        </nav>
       </div>
 
-      <SidebarAuxLinks isCollapsed={isCollapsed} onSignOut={handleSignOut} />
+      <SidebarFooterCard isCollapsed={isCollapsed} />
     </aside>
   );
 }

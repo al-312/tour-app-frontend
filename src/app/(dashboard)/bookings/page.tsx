@@ -5,42 +5,8 @@ import * as React from "react";
 import List from "@/components/ui/list";
 import Heading from "@/components/ui/heading";
 import BookingsTable from "@/features/bookings/components/bookings-table";
+import { MOCK_BOOKINGS } from "@/features/bookings/constants/bookings.constants";
 import { useGetBookingsQuery } from "@/features/bookings/services/bookings-api.slice";
-
-import type { Booking } from "@/features/bookings/types/booking.types";
-
-const MOCK_BOOKINGS: Booking[] = [
-  {
-    id: "BKG-101",
-    destination: "Northern Fjords Private Super-Yacht Voyage",
-    clientName: "Lord Harrison",
-    clientEmail: "harrison@luxuryvoyages.co.uk",
-    startDate: "Oct 12, 2026",
-    endDate: "Oct 20, 2026",
-    amount: 68500,
-    status: "CONFIRMED",
-  },
-  {
-    id: "BKG-102",
-    destination: "Kyoto Heritage Villa & Tea Ceremony Masterclass",
-    clientName: "Dr. Evelyn Vance",
-    clientEmail: "vance@vanceresearch.org",
-    startDate: "Nov 02, 2026",
-    endDate: "Nov 08, 2026",
-    amount: 32000,
-    status: "CONFIRMED",
-  },
-  {
-    id: "BKG-103",
-    destination: "Patagonia Heli-Skiing & Eco-Lodge Sanctuary",
-    clientName: "Marcus Sterling",
-    clientEmail: "m.sterling@sterlingcap.com",
-    startDate: "Dec 15, 2026",
-    endDate: "Dec 22, 2026",
-    amount: 42000,
-    status: "PENDING",
-  },
-];
 
 export default function BookingsPage(): React.JSX.Element {
   const { data: apiBookings } = useGetBookingsQuery(undefined);

@@ -5,8 +5,9 @@ export interface User {
   email: string;
   name: string;
   role: UserRole;
-  createdAt?: string | undefined;
-  updatedAt?: string | undefined;
+  avatarUrl?: string;
+  createdAt: string;
+  updatedAt: string;
 }
 
 export interface AuthResponse {
@@ -21,8 +22,14 @@ export interface LoginCredentials {
 }
 
 export interface RegisterCredentials {
+  name: string;
   email: string;
   password: string;
-  name: string;
-  role?: UserRole | undefined;
+  role?: UserRole;
+}
+
+export interface DemoAccount {
+  role: UserRole;
+  email: string;
+  label: string;
 }

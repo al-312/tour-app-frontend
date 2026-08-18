@@ -12,7 +12,8 @@ import { apiTransformer } from "@/lib/api/api-transformer";
 import LoginForm from "@/features/auth/components/login-form";
 import { type LoginFormData } from "@/features/auth/schemas/login.schema";
 import { useLoginMutation } from "@/features/auth/services/auth-api.slice";
-import { type DemoAccount } from "@/features/auth/components/demo-accounts-selector";
+
+import type { DemoAccount } from "@/features/auth/types/auth.types";
 
 export default function LoginPage(): React.JSX.Element {
   const router = useRouter();

@@ -6,8 +6,10 @@ import { useForm, type UseFormRegister, type FieldErrors } from "react-hook-form
 import Button from "@/components/ui/button";
 import Input, { PasswordInput } from "@/components/ui/input";
 
+import DemoAccountsSelector from "./demo-accounts-selector";
 import { type LoginFormData, loginSchema } from "../schemas/login.schema";
-import DemoAccountsSelector, { type DemoAccount } from "./demo-accounts-selector";
+
+import type { DemoAccount } from "../types/auth.types";
 
 function EmailInputField({
   register,
@@ -17,18 +19,15 @@ function EmailInputField({
   errors: FieldErrors<LoginFormData>;
 }): React.JSX.Element {
   return (
-    <div className="relative">
-      <Input
-        label="Email Address"
-        type="email"
-        placeholder="Enter your email address"
-        error={errors.email?.message}
-        autoComplete="email"
-        className="pl-10"
-        {...register("email")}
-      />
-      <Mail className="w-4 h-4 text-app-muted absolute left-3.5 top-9.5 pointer-events-none" />
-    </div>
+    <Input
+      label="Email Address"
+      type="email"
+      placeholder="Enter your email address"
+      icon={Mail}
+      error={errors.email?.message}
+      autoComplete="email"
+      {...register("email")}
+    />
   );
 }
 

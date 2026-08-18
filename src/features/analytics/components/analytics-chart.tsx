@@ -5,14 +5,7 @@ import Card from "@/components/ui/card";
 import Badge from "@/components/ui/badge";
 import Heading from "@/components/ui/heading";
 
-const MONTHLY_DATA = [
-  { month: "Jan", revenue: 45000, bookings: 12 },
-  { month: "Feb", revenue: 52000, bookings: 15 },
-  { month: "Mar", revenue: 48000, bookings: 13 },
-  { month: "Apr", revenue: 61000, bookings: 18 },
-  { month: "May", revenue: 75000, bookings: 22 },
-  { month: "Jun", revenue: 89000, bookings: 27 },
-];
+import { MONTHLY_DATA } from "../constants/analytics.constants";
 
 function AnalyticsChart(): React.JSX.Element {
   const maxRevenue = Math.max(...MONTHLY_DATA.map((d) => d.revenue));

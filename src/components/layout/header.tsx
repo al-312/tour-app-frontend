@@ -10,25 +10,7 @@ import { isClient } from "@/lib/utils/is-client";
 import { useAppDispatch, useAppSelector } from "@/store/hooks";
 
 import { useTheme } from "../shared/theme-context";
-
-const PAGE_TITLES: Record<string, { title: string; subtitle: string }> = {
-  "/dashboard": {
-    title: "Dashboard Overview",
-    subtitle: "AuraTours Portal",
-  },
-  "/analytics": {
-    title: "Analytics & Performance",
-    subtitle: "AuraTours Intelligence",
-  },
-  "/bookings": {
-    title: "Itinerary Bookings",
-    subtitle: "Portfolio Management",
-  },
-  "/settings": {
-    title: "Workspace Settings",
-    subtitle: "Configuration & Safety",
-  },
-};
+import { PAGE_TITLES } from "./constants/layout.constants";
 
 function HeaderPageTitle({ pathname }: { pathname: string }): React.JSX.Element {
   const pageInfo = PAGE_TITLES[pathname] ?? {

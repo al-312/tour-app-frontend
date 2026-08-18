@@ -4,18 +4,13 @@ import { MoreHorizontal } from "lucide-react";
 import Badge from "@/components/ui/badge";
 import Table from "@/components/ui/table";
 
-import type { Booking, BookingStatus } from "../types/booking.types";
+import { STATUS_VARIANT_MAP } from "../constants/bookings.constants";
 
-const statusVariantMap: Record<BookingStatus, "emerald" | "amber" | "rose" | "muted"> = {
-  CONFIRMED: "emerald",
-  COMPLETED: "emerald",
-  PENDING: "amber",
-  CANCELLED: "rose",
-};
+import type { Booking, BookingStatus } from "../types/booking.types";
 
 const getStatusBadgeVariant = (
   status: BookingStatus
-): "emerald" | "amber" | "rose" | "muted" => statusVariantMap[status];
+): "emerald" | "amber" | "rose" | "muted" => STATUS_VARIANT_MAP[status];
 
 function BookingRow({ booking }: { booking: Booking }): React.JSX.Element {
   const variant = getStatusBadgeVariant(booking.status);
