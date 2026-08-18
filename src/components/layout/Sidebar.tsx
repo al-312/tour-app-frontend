@@ -14,9 +14,9 @@ import {
   ChevronRight,
 } from "lucide-react";
 
-import { isClient } from "@/utils/isClient";
-import { logout } from "@/redux/slices/authSlice";
-import { useAppDispatch, useAppSelector } from "@/redux/hooks";
+import { logout } from "@/store/auth.store";
+import { isClient } from "@/lib/utils/is-client";
+import { useAppDispatch, useAppSelector } from "@/store/hooks";
 
 interface NavigationItem {
   href: string;
@@ -24,7 +24,7 @@ interface NavigationItem {
   icon: React.ComponentType<{ className?: string }>;
 }
 
-interface SidebarContextType {
+export interface SidebarContextType {
   isCollapsed: boolean;
   toggleCollapse: () => void;
 }
@@ -76,7 +76,7 @@ export function SidebarProvider({
     });
   }, []);
 
-  const value = React.useMemo(
+  const value = React.useMemo<SidebarContextType>(
     () => ({ isCollapsed, toggleCollapse }),
     [isCollapsed, toggleCollapse]
   );
@@ -205,7 +205,7 @@ function SidebarAuxLinks({
   );
 }
 
-export default function Sidebar(): React.JSX.Element {
+export function Sidebar(): React.JSX.Element {
   const pathname = usePathname();
   const router = useRouter();
   const dispatch = useAppDispatch();

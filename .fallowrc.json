@@ -6,7 +6,6 @@
     "src/app/**/route.{ts,tsx,js,jsx}",
     "src/app/**/error.{ts,tsx,js,jsx}",
     "src/app/**/not-found.{ts,tsx,js,jsx}",
-    "src/components/**/*.{ts,tsx,js,jsx}",
     "next.config.ts",
     "postcss.config.mjs",
     "eslint.config.mjs"
