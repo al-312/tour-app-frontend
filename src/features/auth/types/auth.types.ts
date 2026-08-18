@@ -27,9 +27,3 @@ export interface RegisterCredentials {
   password: string;
   role?: UserRole;
 }
-
-export interface DemoAccount {
-  role: UserRole;
-  email: string;
-  label: string;
-}

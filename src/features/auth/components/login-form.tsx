@@ -1,52 +1,52 @@
+"use client";
+
+import Link from "next/link";
 import * as React from "react";
+import { useForm } from "react-hook-form";
 import { Mail, ArrowRight } from "lucide-react";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useForm, type UseFormRegister, type FieldErrors } from "react-hook-form";
 
 import Button from "@/components/ui/button";
 import Input, { PasswordInput } from "@/components/ui/input";
 
-import DemoAccountsSelector from "./demo-accounts-selector";
 import { type LoginFormData, loginSchema } from "../schemas/login.schema";
 
-import type { DemoAccount } from "../types/auth.types";
+interface LoginFormProps {
+  onSubmit: (data: LoginFormData) => Promise<void>;
+  isLoading: boolean;
+}
 
-function EmailInputField({
-  register,
-  errors,
-}: {
-  register: UseFormRegister<LoginFormData>;
-  errors: FieldErrors<LoginFormData>;
-}): React.JSX.Element {
+function FormAdditionalOptions(): React.JSX.Element {
   return (
-    <Input
-      label="Email Address"
-      type="email"
-      placeholder="Enter your email address"
-      icon={Mail}
-      error={errors.email?.message}
-      autoComplete="email"
-      {...register("email")}
-    />
+    <div className="flex items-center justify-between text-xs my-1">
+      <label className="flex items-center gap-2 text-app-muted hover:text-app-fg cursor-pointer select-none transition-colors">
+        <input
+          type="checkbox"
+          defaultChecked
+          className="rounded border-app-border bg-app-surface-variant text-app-brand focus:ring-app-brand/20 w-3.5 h-3.5 cursor-pointer accent-emerald-500"
+        />
+        <span>Remember me</span>
+      </label>
+      <Link
+        href="#"
+        onClick={(e): void => {
+          e.preventDefault();
+        }}
+        className="text-app-brand hover:underline font-medium transition-colors"
+      >
+        Forgot password?
+      </Link>
+    </div>
   );
 }
 
-function LoginForm({
+const LoginForm: React.FC<LoginFormProps> = ({
   onSubmit,
   isLoading,
-  onFillDemo,
-}: {
-  onSubmit: (data: LoginFormData) => Promise<void>;
-  isLoading: boolean;
-  onFillDemo: (
-    acc: DemoAccount,
-    setVal: (field: "email" | "password", val: string) => void
-  ) => void;
-}): React.JSX.Element {
+}): React.JSX.Element => {
   const {
     register,
     handleSubmit,
-    setValue,
     formState: { errors },
   } = useForm<LoginFormData>({
     resolver: zodResolver(loginSchema),
@@ -54,36 +54,37 @@ function LoginForm({
   });
 
   return (
-    <>
-      <form
-        onSubmit={(e): void => {
-          void handleSubmit(onSubmit)(e);
-        }}
-        className="flex flex-col gap-4"
-      >
-        <EmailInputField register={register} errors={errors} />
-
-        <PasswordInput error={errors.password?.message} {...register("password")} />
-        <Button
-          type="submit"
-          isLoading={isLoading}
-          variant="primary"
-          className="w-full py-3.5 mt-2 flex items-center justify-center gap-2 text-sm font-semibold shadow-lg shadow-app-brand/20"
-        >
-          <span>Sign In to Dashboard</span>
-          <ArrowRight className="w-4 h-4" />
-        </Button>
-      </form>
-
-      <DemoAccountsSelector
-        onSelect={(acc: DemoAccount): void => {
-          onFillDemo(acc, (field, val) => {
-            setValue(field, val, { shouldValidate: true });
-          });
-        }}
+    <form
+      onSubmit={(e): void => {
+        void handleSubmit(onSubmit)(e);
+      }}
+      className="flex flex-col gap-4"
+    >
+      <Input
+        label="Email Address"
+        type="email"
+        placeholder="Enter your email address"
+        icon={Mail}
+        error={errors.email?.message}
+        autoComplete="email"
+        {...register("email")}
       />
-    </>
+
+      <PasswordInput error={errors.password?.message} {...register("password")} />
+
+      <FormAdditionalOptions />
+
+      <Button
+        type="submit"
+        isLoading={isLoading}
+        variant="primary"
+        className="w-full py-3.5 mt-2 flex items-center justify-center gap-2 text-sm font-semibold shadow-lg shadow-app-brand/25 transition-transform active:scale-[0.99]"
+      >
+        <span>Sign In to Dashboard</span>
+        <ArrowRight className="w-4 h-4" />
+      </Button>
+    </form>
   );
-}
+};
 
 export default LoginForm;

@@ -26,7 +26,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }): React.JSX.Element {
   return (
-    <html lang="en" className={plusJakartaSans.variable} suppressHydrationWarning>
+    <html lang="en" className={plusJakartaSans.variable}>
       <body className="font-sans bg-app-bg text-app-fg antialiased min-h-screen selection:bg-app-brand/20">
         <Providers>
           <RootLayoutClient>{children}</RootLayoutClient>

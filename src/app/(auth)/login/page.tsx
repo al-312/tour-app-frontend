@@ -1,6 +1,5 @@
 "use client";
 
-import Link from "next/link";
 import * as React from "react";
 import { toast } from "sonner";
 import { useRouter } from "next/navigation";
@@ -12,8 +11,6 @@ import { apiTransformer } from "@/lib/api/api-transformer";
 import LoginForm from "@/features/auth/components/login-form";
 import { type LoginFormData } from "@/features/auth/schemas/login.schema";
 import { useLoginMutation } from "@/features/auth/services/auth-api.slice";
-
-import type { DemoAccount } from "@/features/auth/types/auth.types";
 
 export default function LoginPage(): React.JSX.Element {
   const router = useRouter();
@@ -31,33 +28,12 @@ export default function LoginPage(): React.JSX.Element {
     }
   };
 
-  const handleFillDemo = (
-    acc: DemoAccount,
-    setValue: (field: "email" | "password", val: string) => void
-  ): void => {
-    setValue("email", acc.email);
-    setValue("password", "password123");
-    toast.info(`Filled ${acc.label} credentials`);
-  };
-
   return (
     <AuthCard
-      title="Sign In"
-      subtitle="Access your AuraTours executive dashboard"
-      footer={
-        <p>
-          Don&apos;t have an account?{" "}
-          <Link href="/register" className="font-semibold text-app-brand hover:underline">
-            Create Account
-          </Link>
-        </p>
-      }
+      title="Welcome Back"
+      subtitle="Sign in to your AuraTours executive dashboard"
     >
-      <LoginForm
-        onSubmit={handleFormSubmit}
-        isLoading={isLoading}
-        onFillDemo={handleFillDemo}
-      />
+      <LoginForm onSubmit={handleFormSubmit} isLoading={isLoading} />
     </AuthCard>
   );
 }

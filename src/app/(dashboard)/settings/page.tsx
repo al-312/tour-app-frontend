@@ -1,7 +1,7 @@
 "use client";
 
 import * as React from "react";
-import { Shield, Key, Bell, User } from "lucide-react";
+import { Shield, Key, Bell, User, Mail } from "lucide-react";
 
 import Card from "@/components/ui/card";
 import Badge from "@/components/ui/badge";
@@ -29,8 +29,8 @@ function ProfileConfigCard({
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <Input label="Full Name" defaultValue={name} />
-        <Input label="Email Address" defaultValue={email} />
+        <Input label="Full Name" defaultValue={name} icon={User} />
+        <Input label="Email Address" defaultValue={email} icon={Mail} />
       </div>
 
       <div className="flex items-center justify-between border-t border-app-border/40 pt-4">

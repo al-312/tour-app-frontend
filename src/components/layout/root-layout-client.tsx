@@ -13,7 +13,7 @@ export function RootLayoutClient({
   return (
     <>
       <AuthSync />
-      <Toaster position="top-right" theme="system" richColors />
+      <Toaster position="top-right" theme="system" closeButton />
       {children}
     </>
   );
