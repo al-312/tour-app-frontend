@@ -1,22 +1,26 @@
 import * as React from "react";
+import { Loader2 } from "lucide-react";
 
 import { cn } from "@/utils/cn";
 
 export interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
-  variant?: "primary" | "secondary" | "outline" | "ghost";
-  size?: "sm" | "md" | "lg";
+  variant?: "primary" | "secondary" | "outline" | "ghost" | undefined;
+  size?: "sm" | "md" | "lg" | undefined;
+  isLoading?: boolean | undefined;
   children: React.ReactNode;
 }
 
 export default function Button({
   variant = "primary",
   size = "md",
+  isLoading = false,
+  disabled = false,
   className = "",
   children,
   ...props
 }: ButtonProps): React.JSX.Element {
   const baseStyle =
-    "inline-flex items-center justify-center font-medium tracking-tight rounded-xl transition-all duration-300 ease-out focus:outline-none cursor-pointer disabled:opacity-50 disabled:pointer-events-none";
+    "inline-flex items-center justify-center font-medium tracking-tight rounded-xl transition-all duration-300 ease-out focus:outline-none cursor-pointer disabled:opacity-50 disabled:pointer-events-none gap-2";
 
   const variants = {
     primary:
@@ -34,11 +38,21 @@ export default function Button({
     lg: "px-6 py-3.5 text-base",
   };
 
+  const iconSizes = {
+    sm: "w-3.5 h-3.5",
+    md: "w-4 h-4",
+    lg: "w-5 h-5",
+  };
+
+  const isButtonDisabled = disabled || isLoading;
+
   return (
     <button
+      disabled={isButtonDisabled}
       className={cn(baseStyle, variants[variant], sizes[size], className)}
       {...props}
     >
+      {isLoading && <Loader2 className={cn("animate-spin shrink-0", iconSizes[size])} />}
       {children}
     </button>
   );

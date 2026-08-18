@@ -19,7 +19,7 @@ export default function Error({ error, reset }: ErrorProps): React.JSX.Element {
   }, [error]);
 
   return (
-    <div className="grow flex items-center justify-center py-12 animate-slide-up">
+    <div className="grow w-full h-screen flex items-center justify-center py-12 animate-slide-up">
       <Card className="max-w-md w-full text-center flex flex-col items-center gap-6 p-10 border-app-error/20 bg-app-error-bg/5">
         <div className="w-16 h-16 rounded-2xl bg-app-error-bg flex items-center justify-center text-app-error shadow-sm">
           <AlertTriangle className="w-8 h-8" />

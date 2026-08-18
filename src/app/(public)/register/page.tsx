@@ -5,23 +5,15 @@ import Link from "next/link";
 import * as React from "react";
 import { toast } from "sonner";
 import { useRouter } from "next/navigation";
+import { useForm, useWatch } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useForm, useWatch, type UseFormRegister } from "react-hook-form";
-import {
-  ArrowRight,
-  Eye,
-  EyeOff,
-  Lock,
-  Mail,
-  ShieldCheck,
-  User as UserIcon,
-} from "lucide-react";
+import { ArrowRight, Mail, ShieldCheck, User as UserIcon } from "lucide-react";
 
 import { apiTransformer } from "@/utils";
-import Input from "@/components/ui/input";
 import Button from "@/components/ui/button";
 import AuthCard from "@/components/auth/AuthCard";
 import { setCredentials } from "@/redux/slices/authSlice";
+import Input, { PasswordInput } from "@/components/ui/input";
 import { useAppDispatch, useAppSelector } from "@/redux/hooks";
 import { useRegisterMutation } from "@/redux/services/authApiSlice";
 
@@ -81,57 +73,16 @@ function RoleSelector({
   );
 }
 
-function RegisterPasswordInput({
-  register,
-  errorMsg,
-}: {
-  register: UseFormRegister<RegisterFormData>;
-  errorMsg?: string | undefined;
-}): React.JSX.Element {
-  const [showPassword, setShowPassword] = React.useState(false);
-
-  return (
-    <div className="relative">
-      <Input
-        label="Password"
-        type={showPassword ? "text" : "password"}
-        placeholder="Enter your password"
-        error={errorMsg}
-        autoComplete="new-password"
-        className="pl-10 pr-10"
-        {...register("password")}
-      />
-      <Lock className="w-4 h-4 text-app-muted absolute left-3.5 top-9.5 pointer-events-none" />
-      <button
-        type="button"
-        onClick={(): void => {
-          setShowPassword(!showPassword);
-        }}
-        className="absolute right-3.5 top-9.5 text-app-muted hover:text-app-fg transition-colors"
-        aria-label={showPassword ? "Hide password" : "Show password"}
-      >
-        {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
-      </button>
-    </div>
-  );
-}
-
 function RegisterSubmitButton({ isLoading }: { isLoading: boolean }): React.JSX.Element {
   return (
     <Button
       type="submit"
-      disabled={isLoading}
+      isLoading={isLoading}
       variant="primary"
       className="w-full py-3.5 mt-2 flex items-center justify-center gap-2 text-sm font-semibold shadow-lg shadow-app-brand/20"
     >
-      {isLoading ? (
-        <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-      ) : (
-        <>
-          <span>Complete Registration</span>
-          <ArrowRight className="w-4 h-4" />
-        </>
-      )}
+      <span>Complete Registration</span>
+      <ArrowRight className="w-4 h-4" />
     </Button>
   );
 }
@@ -188,7 +139,11 @@ function RegisterFormFields({
         <Mail className="w-4 h-4 text-app-muted absolute left-3.5 top-9.5 pointer-events-none" />
       </div>
 
-      <RegisterPasswordInput register={register} errorMsg={errors.password?.message} />
+      <PasswordInput
+        autoComplete="new-password"
+        error={errors.password?.message}
+        {...register("password")}
+      />
 
       <RoleSelector
         selectedRole={selectedRole}

@@ -4,6 +4,7 @@ import * as React from "react";
 import { toast } from "sonner";
 import { usePathname, useRouter } from "next/navigation";
 
+import { isClient } from "@/utils/isClient";
 import { useAppSelector } from "@/redux/hooks";
 
 interface AuthGuardProps {
@@ -14,6 +15,22 @@ const emptySubscribe = (): (() => void) => {
   return (): void => {
     // noop
   };
+};
+
+const handleAuthRedirect = (
+  pathname: string,
+  router: ReturnType<typeof useRouter>
+): void => {
+  const isSigningOut = isClient() && sessionStorage.getItem("is_signing_out") === "true";
+  if (isSigningOut) {
+    sessionStorage.removeItem("is_signing_out");
+  } else {
+    toast.error("Access restricted. Please sign in to view your dashboard.", {
+      id: "auth-guard-toast",
+    });
+  }
+  const redirectUrl = `/login?redirect=${encodeURIComponent(pathname)}`;
+  router.replace(redirectUrl);
 };
 
 export default function AuthGuard({ children }: AuthGuardProps): React.JSX.Element {
@@ -29,11 +46,7 @@ export default function AuthGuard({ children }: AuthGuardProps): React.JSX.Eleme
 
   React.useEffect((): void => {
     if (isMounted && (!isAuthenticated || !token)) {
-      toast.error("Access restricted. Please sign in to view your dashboard.", {
-        id: "auth-guard-toast",
-      });
-      const redirectUrl = `/login?redirect=${encodeURIComponent(pathname)}`;
-      router.replace(redirectUrl);
+      handleAuthRedirect(pathname, router);
     }
   }, [isMounted, isAuthenticated, token, router, pathname]);
 

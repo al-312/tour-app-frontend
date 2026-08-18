@@ -20,7 +20,7 @@ const getStoredAuth = (): {
   if (!isClient()) {
     return { token: null, refreshToken: null, user: null };
   }
-  const token = storage.getItemDecoded(STORAGE_KEYS.TOKEN) as string | null;
+  const token = storage.getItemDecoded(STORAGE_KEYS.AUTH_TOKEN) as string | null;
   const refreshToken = storage.getItemDecoded(STORAGE_KEYS.REFRESH_TOKEN) as
     string | null;
   const user = storage.getItemDecoded(STORAGE_KEYS.USER) as User | null;
@@ -47,7 +47,7 @@ const authSlice = createSlice({
       state.refreshToken = refreshToken;
       state.isAuthenticated = true;
 
-      storage.setItemEncoded(STORAGE_KEYS.TOKEN, accessToken);
+      storage.setItemEncoded(STORAGE_KEYS.AUTH_TOKEN, accessToken);
       storage.setItemEncoded(STORAGE_KEYS.REFRESH_TOKEN, refreshToken);
       storage.setItemEncoded(STORAGE_KEYS.USER, user);
     },
@@ -61,7 +61,7 @@ const authSlice = createSlice({
       state.refreshToken = null;
       state.isAuthenticated = false;
 
-      storage.removeItem(STORAGE_KEYS.TOKEN);
+      storage.removeItem(STORAGE_KEYS.AUTH_TOKEN);
       storage.removeItem(STORAGE_KEYS.REFRESH_TOKEN);
       storage.removeItem(STORAGE_KEYS.USER);
       storage.clearStorage();

@@ -3,6 +3,9 @@
 import * as React from "react";
 import { ShieldCheck, UserCheck, Users } from "lucide-react";
 
+import Badge from "@/components/ui/badge";
+import Button from "@/components/ui/button";
+
 export interface DemoAccount {
   name: string;
   email: string;
@@ -43,32 +46,31 @@ export function DemoAccountsSelector({
           <Users className="w-3.5 h-3.5 text-app-brand" />
           <span>Default Test Credentials</span>
         </span>
-        <span className="text-[10px] text-app-muted font-mono">
+        <Badge variant="muted" className="font-mono text-[10px]">
           Password: Password123!
-        </span>
+        </Badge>
       </div>
 
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
         {DEMO_ACCOUNTS.map((acc) => (
-          <button
+          <Button
             key={acc.userId}
             type="button"
+            variant="outline"
             onClick={(): void => {
               onSelect(acc);
             }}
-            className="px-2.5 py-2 rounded-xl border border-app-border/60 bg-app-surface-variant/80 hover:bg-app-brand-bg hover:border-app-brand/40 transition-all duration-200 text-left flex flex-col gap-1 cursor-pointer group"
+            className="px-3 py-2 rounded-xl border-app-border/60 hover:bg-app-brand-bg hover:border-app-brand/40 transition-all duration-200 text-left flex items-center justify-between cursor-pointer group"
           >
-            <div className="flex items-center justify-between">
-              <span className="text-xs font-bold text-app-fg group-hover:text-app-brand transition-colors">
-                {acc.role}
-              </span>
-              {acc.role === "ADMIN" ? (
-                <ShieldCheck className="w-3.5 h-3.5 text-emerald-500 shrink-0" />
-              ) : (
-                <UserCheck className="w-3.5 h-3.5 text-sky-500 shrink-0" />
-              )}
-            </div>
-          </button>
+            <span className="text-xs font-bold text-app-fg group-hover:text-app-brand transition-colors">
+              {acc.role}
+            </span>
+            {acc.role === "ADMIN" ? (
+              <ShieldCheck className="w-3.5 h-3.5 text-emerald-500 shrink-0" />
+            ) : (
+              <UserCheck className="w-3.5 h-3.5 text-sky-500 shrink-0" />
+            )}
+          </Button>
         ))}
       </div>
     </div>

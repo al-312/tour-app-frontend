@@ -19,6 +19,7 @@ import {
   LogOut,
 } from "lucide-react";
 
+import { isClient } from "@/utils/isClient";
 import Button from "@/components/ui/button";
 import { logout } from "@/redux/slices/authSlice";
 import { useTheme } from "@/components/theme/ThemeContext";
@@ -195,6 +196,9 @@ export default function AuthHeader(): React.JSX.Element {
   };
 
   const handleSignOut = (): void => {
+    if (isClient()) {
+      sessionStorage.setItem("is_signing_out", "true");
+    }
     dispatch(logout());
     toast.success("Signed out successfully");
   };

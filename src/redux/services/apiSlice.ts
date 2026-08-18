@@ -2,14 +2,15 @@ import { Mutex } from "async-mutex";
 import {
   createApi,
   fetchBaseQuery,
-  type BaseQueryApi,
   type BaseQueryFn,
+  type BaseQueryApi,
   type FetchArgs,
   type FetchBaseQueryError,
 } from "@reduxjs/toolkit/query/react";
 
-import { isClient, storage } from "@/utils";
-import { API_URL, STORAGE_KEYS } from "@/constants";
+import { storage } from "@/utils/storage";
+import { isClient } from "@/utils/isClient";
+import { API_BASE_URL, STORAGE_KEYS } from "@/constants";
 
 import { logout, setCredentials } from "../slices/authSlice";
 
@@ -21,12 +22,12 @@ const mutex = new Mutex();
 const getAuthToken = (state: RootState): string | null => {
   if (state.auth.token) return state.auth.token;
   return isClient()
-    ? (storage.getItemDecoded(STORAGE_KEYS.TOKEN) as string | null)
+    ? (storage.getItemDecoded(STORAGE_KEYS.AUTH_TOKEN) as string | null)
     : null;
 };
 
 const rawBaseQuery = fetchBaseQuery({
-  baseUrl: API_URL,
+  baseUrl: API_BASE_URL,
   prepareHeaders: (headers, { getState }) => {
     const token = getAuthToken(getState() as RootState);
     if (token) headers.set("Authorization", `Bearer ${token}`);
@@ -74,6 +75,11 @@ const handleRefreshAttempt = async (
   return true;
 };
 
+const handleUnauthenticatedSignOut = (api: BaseQueryApi): void => {
+  if (isClient()) sessionStorage.setItem("is_signing_out", "true");
+  api.dispatch(logout());
+};
+
 const performTokenRefresh = async (
   api: BaseQueryApi,
   extraOptions: object
@@ -82,11 +88,11 @@ const performTokenRefresh = async (
   try {
     const refreshToken = getStoredRefreshToken(api.getState() as RootState);
     if (!refreshToken) {
-      api.dispatch(logout());
+      handleUnauthenticatedSignOut(api);
       return false;
     }
     const success = await handleRefreshAttempt(api, extraOptions, refreshToken);
-    if (!success) api.dispatch(logout());
+    if (!success) handleUnauthenticatedSignOut(api);
     return success;
   } finally {
     release();
@@ -114,16 +120,16 @@ const baseQueryWithReauth: BaseQueryFn<
   unknown,
   FetchBaseQueryError
 > = async (args, api, extraOptions) => {
-  await mutex.waitForUnlock();
   const result = await rawBaseQuery(args, api, extraOptions);
-  if (result.error?.status !== 401) return result;
-
-  return handle401Error(args, api, extraOptions);
+  if (result.error?.status === 401) {
+    return handle401Error(args, api, extraOptions);
+  }
+  return result;
 };
 
 export const apiSlice = createApi({
   reducerPath: "api",
   baseQuery: baseQueryWithReauth,
-  tagTypes: ["Auth", "User", "Bookings", "Analytics", "Tours"],
+  tagTypes: ["User", "Bookings", "Analytics", "Auth"],
   endpoints: () => ({}),
 });
