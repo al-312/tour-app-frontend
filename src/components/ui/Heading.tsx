@@ -8,11 +8,11 @@ interface HeadingProps extends React.HTMLAttributes<HTMLHeadingElement> {
 }
 
 const sizeClasses: Record<NonNullable<HeadingProps["size"]>, string> = {
-  sm: "text-base font-semibold tracking-tight",
-  md: "text-lg font-bold tracking-tight",
-  lg: "text-2xl font-bold tracking-tight font-display-lg",
-  xl: "text-3xl font-extrabold tracking-tight font-display-lg",
-  "2xl": "text-4xl sm:text-5xl font-black tracking-tight font-display-lg",
+  sm: "text-xs sm:text-sm font-semibold tracking-tight",
+  md: "text-sm sm:text-base font-bold tracking-tight",
+  lg: "text-base sm:text-lg font-bold tracking-tight",
+  xl: "text-lg sm:text-xl font-bold tracking-tight",
+  "2xl": "text-xl sm:text-2xl font-bold tracking-tight",
 };
 
 const tagMap: Record<number, "h1" | "h2" | "h3" | "h4" | "h5" | "h6"> = {

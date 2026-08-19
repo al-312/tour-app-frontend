@@ -10,6 +10,7 @@ import {
 
 import { storage } from "@/lib/utils/storage";
 import { isClient } from "@/lib/utils/is-client";
+import { apiTransformer } from "@/lib/api/api-transformer";
 import { logout, setCredentials } from "@/store/auth.store";
 import { API_BASE_URL, STORAGE_KEYS } from "@/lib/constants/app.constants";
 
@@ -41,6 +42,11 @@ const getStoredRefreshToken = (state: RootState): string | null => {
     : null;
 };
 
+interface RefreshResponse {
+  accessToken: string;
+  refreshToken?: string;
+}
+
 const handleRefreshAttempt = async (
   api: BaseQueryApi,
   extraOptions: object,
@@ -54,22 +60,34 @@ const handleRefreshAttempt = async (
 
   if (!refreshResult.data) return false;
 
-  const data = refreshResult.data as {
-    accessToken: string;
-    refreshToken?: string;
-    user?: AuthResponse["user"];
-  };
-  const currentUser = (api.getState() as RootState).auth.user;
+  const rawPayload = apiTransformer.unwrapData<unknown>(refreshResult.data);
 
-  if (currentUser) {
-    api.dispatch(
-      setCredentials({
-        user: currentUser,
-        accessToken: data.accessToken,
-        refreshToken: data.refreshToken ?? refreshToken,
-      })
-    );
+  if (!rawPayload || typeof rawPayload !== "object") {
+    return false;
   }
+
+  const payload = rawPayload as RefreshResponse;
+
+  if (!payload.accessToken) {
+    return false;
+  }
+
+  const currentUser = (api.getState() as RootState).auth.user;
+  const user =
+    currentUser ??
+    (isClient()
+      ? (storage.getItemDecoded(STORAGE_KEYS.USER) as AuthResponse["user"])
+      : null);
+
+  if (!user) return false;
+
+  api.dispatch(
+    setCredentials({
+      user,
+      accessToken: payload.accessToken,
+      refreshToken: payload.refreshToken ?? refreshToken,
+    })
+  );
 
   return true;
 };
@@ -114,13 +132,27 @@ const handle401Error = async (
   return { error: { status: 401, data: "Unauthorized" } };
 };
 
+const getRequestUrl = (args: string | FetchArgs): string => {
+  return typeof args === "string" ? args : args.url;
+};
+
+const isAuthEndpoint = (url: string): boolean => {
+  return (
+    url.includes("/auth/login") ||
+    url.includes("/auth/register") ||
+    url.includes("/auth/refresh")
+  );
+};
+
 const baseQueryWithReauth: BaseQueryFn<
   string | FetchArgs,
   unknown,
   FetchBaseQueryError
 > = async (args, api, extraOptions) => {
   const result = await rawBaseQuery(args, api, extraOptions);
-  if (result.error?.status === 401) {
+  const url = getRequestUrl(args);
+
+  if (result.error?.status === 401 && !isAuthEndpoint(url)) {
     return handle401Error(args, api, extraOptions);
   }
   return result;

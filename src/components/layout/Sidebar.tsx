@@ -86,7 +86,7 @@ function SidebarFloatingToggle({
       type="button"
       onClick={onToggle}
       aria-label={isCollapsed ? "Expand Sidebar" : "Collapse Sidebar"}
-      className="absolute -right-3 top-7 z-50 p-1.5 rounded-full bg-app-surface border border-app-border text-app-muted hover:text-app-fg hover:bg-app-surface-variant transition-all duration-300 shadow-md cursor-pointer"
+      className="absolute right-0 translate-x-1/2 top-7 z-50 p-2 rounded-full bg-app-surface border border-app-border/80 text-app-muted hover:text-app-fg hover:bg-app-surface-variant transition-all duration-300 shadow-lg hover:scale-110 cursor-pointer flex items-center justify-center"
     >
       {isCollapsed ? (
         <ChevronRight className="w-3.5 h-3.5 text-app-brand" />
@@ -181,33 +181,6 @@ function SidebarNavLinkItem({
   );
 }
 
-function SidebarFooterCard({ isCollapsed }: { isCollapsed: boolean }): React.JSX.Element {
-  return (
-    <div
-      className={cn(
-        "p-4 rounded-2xl border border-app-border/60 bg-linear-to-b from-app-surface-variant/50 to-app-surface-variant/20 transition-all duration-300",
-        isCollapsed && "p-2 text-center"
-      )}
-    >
-      {!isCollapsed ? (
-        <div className="flex flex-col gap-2">
-          <div className="flex items-center justify-between">
-            <span className="text-[11px] font-bold text-app-fg font-display-lg">
-              Concierge Desk 24/7
-            </span>
-            <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
-          </div>
-          <p className="text-[11px] text-app-muted leading-relaxed">
-            Direct priority hotline active for VIP client clearances.
-          </p>
-        </div>
-      ) : (
-        <div className="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse mx-auto" />
-      )}
-    </div>
-  );
-}
-
 export function Sidebar(): React.JSX.Element {
   const pathname = usePathname();
   const { isCollapsed, toggleSidebar } = useSidebar();
@@ -215,8 +188,8 @@ export function Sidebar(): React.JSX.Element {
   return (
     <aside
       className={cn(
-        "sticky top-0 h-screen flex flex-col justify-between bg-app-surface/95 backdrop-blur-md border-r border-app-border/40 p-4 transition-all duration-300 z-30 flex-shrink-0 relative",
-        isCollapsed ? "w-20" : "w-64"
+        "sticky top-0 h-screen flex flex-col justify-between bg-app-surface/95 backdrop-blur-md border-r border-app-border/40 p-4 xl:p-6 transition-all duration-300 z-50 flex-shrink-0 relative",
+        isCollapsed ? "w-20 xl:w-24" : "w-64 xl:w-72 2xl:w-80"
       )}
     >
       <SidebarFloatingToggle isCollapsed={isCollapsed} onToggle={toggleSidebar} />
@@ -235,8 +208,6 @@ export function Sidebar(): React.JSX.Element {
           ))}
         </nav>
       </div>
-
-      <SidebarFooterCard isCollapsed={isCollapsed} />
     </aside>
   );
 }

@@ -8,7 +8,7 @@ import Heading from "@/components/ui/heading";
 
 export default function NotFound(): React.JSX.Element {
   return (
-    <div className="grow flex items-center justify-center py-12 animate-slide-up">
+    <div className="grow flex w-full h-screen items-center justify-center py-12 animate-slide-up">
       <Card className="max-w-md w-full text-center flex flex-col items-center gap-6 p-10">
         <div className="w-16 h-16 rounded-2xl bg-app-brand-bg flex items-center justify-center text-app-brand shadow-sm">
           <Compass className="w-8 h-8 animate-spin-slow" />

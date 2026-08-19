@@ -14,7 +14,7 @@ function DashboardContent({
   return (
     <div className="flex flex-col flex-1 min-w-0 min-h-screen transition-all duration-300 ease-in-out">
       <AuthHeader />
-      <main className="grow p-6 sm:p-8 max-w-7xl w-full mx-auto animate-fade-in">
+      <main className="grow p-6 sm:p-8 xl:p-10 2xl:p-12  w-full  animate-fade-in">
         {children}
       </main>
     </div>

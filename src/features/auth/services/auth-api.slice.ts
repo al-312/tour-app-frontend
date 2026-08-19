@@ -27,7 +27,15 @@ const authApiSlice = apiSlice.injectEndpoints({
       transformResponse: apiTransformer.unwrapData<AuthResponse>,
       invalidatesTags: ["Auth", "User"],
     }),
+    getMe: builder.query<AuthResponse["user"], undefined>({
+      query: () => ({
+        url: "/auth/me",
+        method: "GET",
+      }),
+      transformResponse: apiTransformer.unwrapData<AuthResponse["user"]>,
+      providesTags: ["User"],
+    }),
   }),
 });
 
-export const { useLoginMutation, useRegisterMutation } = authApiSlice;
+export const { useLoginMutation, useRegisterMutation, useGetMeQuery } = authApiSlice;
