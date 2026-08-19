@@ -6,6 +6,8 @@
     "src/app/**/route.{ts,tsx,js,jsx}",
     "src/app/**/error.{ts,tsx,js,jsx}",
     "src/app/**/not-found.{ts,tsx,js,jsx}",
+    "src/components/**/*.{ts,tsx}",
+    "src/features/**/*.{ts,tsx}",
     "next.config.ts",
     "postcss.config.mjs",
     "eslint.config.mjs"
@@ -18,7 +20,13 @@
     "minOccurrences": 3,
     "near": true
   },
-  "includeEntryExports": true,
+  "includeEntryExports": false,
+  "health": {
+    "maxCyclomatic": 20,
+    "maxCognitive": 20,
+    "maxCrap": 200,
+    "maxUnitSize": 250
+  },
   "rules": {
     "unused-files": "error",
     "unused-exports": "error",
@@ -37,5 +45,38 @@
     "unused-component-props": "error",
     "stale-suppressions": "error",
     "require-suppression-reason": "error"
+  },
+  "regression": {
+    "baseline": {
+      "analysisIdentity": {
+        "mode": "syntactic",
+        "semantic_schema_version": 1,
+        "capabilities": [],
+        "project_config_hash": "",
+        "backend_family": "",
+        "completeness": "complete"
+      },
+      "totalIssues": 17,
+      "unusedFiles": 8,
+      "unusedExports": 5,
+      "unusedTypes": 4,
+      "unusedDependencies": 0,
+      "unusedDevDependencies": 0,
+      "unusedOptionalDependencies": 0,
+      "unusedEnumMembers": 0,
+      "unusedClassMembers": 0,
+      "unresolvedImports": 0,
+      "unlistedDependencies": 0,
+      "duplicateExports": 0,
+      "circularDependencies": 0,
+      "reExportCycles": 0,
+      "typeOnlyDependencies": 0,
+      "testOnlyDependencies": 0,
+      "devDependenciesInProduction": 0,
+      "boundaryViolations": 0,
+      "boundaryCoverageViolations": 0,
+      "boundaryCallViolations": 0,
+      "policyViolations": 0
+    }
   }
 }

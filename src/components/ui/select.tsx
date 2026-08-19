@@ -12,7 +12,7 @@ interface SelectProps extends React.SelectHTMLAttributes<HTMLSelectElement> {
   label?: string | undefined;
   error?: string | undefined;
   icon?: React.ComponentType<{ className?: string }> | undefined;
-  options: SelectOption[];
+  options?: SelectOption[] | undefined;
 }
 
 function SelectLabel({
@@ -63,7 +63,7 @@ const Select = React.forwardRef<HTMLSelectElement, SelectProps>(
         <div className="relative w-full">
           <SelectStartIcon icon={Icon} />
           <select ref={ref} className={selectClass} {...props}>
-            {options.map((opt) => (
+            {options?.map((opt) => (
               <option
                 key={opt.value}
                 value={opt.value}
