@@ -5,24 +5,34 @@ import * as React from "react";
 import { storage } from "@/lib/utils/storage";
 import { useAppDispatch } from "@/store/hooks";
 import { setCredentials, logout } from "@/store/auth.store";
+import { STORAGE_KEYS } from "@/lib/constants/app.constants";
 
 import type { User } from "@/features/auth/types/auth.types";
+
+function getValidStoredAuth(): {
+  user: User;
+  accessToken: string;
+  refreshToken: string;
+} | null {
+  const token = storage.getItemDecoded(STORAGE_KEYS.AUTH_TOKEN) as string | null;
+  const user = storage.getItemDecoded(STORAGE_KEYS.USER) as User | null;
+
+  if (!token || !user) {
+    return null;
+  }
+
+  const refreshToken =
+    (storage.getItemDecoded(STORAGE_KEYS.REFRESH_TOKEN) as string | null) ?? "";
+  return { accessToken: token, refreshToken, user };
+}
 
 export default function AuthSync(): null {
   const dispatch = useAppDispatch();
 
   React.useEffect((): void => {
-    const rawToken = storage.getItemDecoded("auth_token");
-    const rawUser = storage.getItemDecoded("auth_user");
-
-    if (typeof rawToken === "string" && rawUser && typeof rawUser === "object") {
-      dispatch(
-        setCredentials({
-          accessToken: rawToken,
-          refreshToken: "",
-          user: rawUser as User,
-        })
-      );
+    const validStored = getValidStoredAuth();
+    if (validStored) {
+      dispatch(setCredentials(validStored));
     } else {
       dispatch(logout());
     }

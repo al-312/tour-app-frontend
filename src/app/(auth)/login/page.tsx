@@ -4,18 +4,25 @@ import * as React from "react";
 import { toast } from "sonner";
 import { useRouter } from "next/navigation";
 
-import { useAppDispatch } from "@/store/hooks";
 import { setCredentials } from "@/store/auth.store";
 import AuthCard from "@/components/shared/auth-card";
 import { apiTransformer } from "@/lib/api/api-transformer";
 import LoginForm from "@/features/auth/components/login-form";
+import { useAppDispatch, useAppSelector } from "@/store/hooks";
 import { type LoginFormData } from "@/features/auth/schemas/login.schema";
 import { useLoginMutation } from "@/features/auth/services/auth-api.slice";
 
 export default function LoginPage(): React.JSX.Element {
   const router = useRouter();
   const dispatch = useAppDispatch();
+  const { isAuthenticated } = useAppSelector((state) => state.auth);
   const [loginUser, { isLoading }] = useLoginMutation();
+
+  React.useEffect((): void => {
+    if (isAuthenticated) {
+      router.replace("/dashboard");
+    }
+  }, [isAuthenticated, router]);
 
   const handleFormSubmit = async (data: LoginFormData): Promise<void> => {
     try {

@@ -45,7 +45,7 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
         ref={ref}
         disabled={disabled ?? isLoading}
         className={cn(
-          "inline-flex items-center justify-center transition-all duration-200 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed disabled:pointer-events-none select-none",
+          "inline-flex items-center justify-center transition-all duration-200 cursor-pointer disabled:opacity-75 disabled:cursor-not-allowed disabled:pointer-events-none select-none whitespace-nowrap",
           variantStyles[variant],
           sizeStyles[size],
           className
@@ -53,10 +53,12 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
         {...props}
       >
         {isLoading ? (
-          <>
+          <span className="inline-flex items-center justify-center gap-2 w-full">
             <Loader2 className="w-4 h-4 animate-spin shrink-0" />
-            <span>{children}</span>
-          </>
+            <span className="inline-flex items-center justify-center gap-1.5">
+              {children}
+            </span>
+          </span>
         ) : (
           children
         )}

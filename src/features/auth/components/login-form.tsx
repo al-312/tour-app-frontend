@@ -40,6 +40,20 @@ function FormAdditionalOptions(): React.JSX.Element {
   );
 }
 
+function LoginSubmitButton({ isLoading }: { isLoading: boolean }): React.JSX.Element {
+  return (
+    <Button
+      type="submit"
+      isLoading={isLoading}
+      variant="primary"
+      className="w-full py-3.5 mt-2 flex items-center justify-center gap-2 text-sm font-semibold shadow-lg shadow-app-brand/25 transition-transform active:scale-[0.99]"
+    >
+      <span>{isLoading ? "Signing In..." : "Sign In to Dashboard"}</span>
+      {!isLoading && <ArrowRight className="w-4 h-4 shrink-0" />}
+    </Button>
+  );
+}
+
 const LoginForm: React.FC<LoginFormProps> = ({
   onSubmit,
   isLoading,
@@ -74,15 +88,7 @@ const LoginForm: React.FC<LoginFormProps> = ({
 
       <FormAdditionalOptions />
 
-      <Button
-        type="submit"
-        isLoading={isLoading}
-        variant="primary"
-        className="w-full py-3.5 mt-2 flex items-center justify-center gap-2 text-sm font-semibold shadow-lg shadow-app-brand/25 transition-transform active:scale-[0.99]"
-      >
-        <span>Sign In to Dashboard</span>
-        <ArrowRight className="w-4 h-4" />
-      </Button>
+      <LoginSubmitButton isLoading={isLoading} />
     </form>
   );
 };

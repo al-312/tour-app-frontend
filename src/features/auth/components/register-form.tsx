@@ -25,8 +25,8 @@ function RegisterSubmitButton({ isLoading }: { isLoading: boolean }): React.JSX.
       variant="primary"
       className="w-full py-3.5 mt-2 flex items-center justify-center gap-2 text-sm font-semibold shadow-lg shadow-app-brand/20"
     >
-      <span>Complete Registration</span>
-      <ArrowRight className="w-4 h-4" />
+      <span>{isLoading ? "Creating Account..." : "Complete Registration"}</span>
+      {!isLoading && <ArrowRight className="w-4 h-4 shrink-0" />}
     </Button>
   );
 }
