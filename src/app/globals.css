@@ -8,40 +8,40 @@
     "Manrope", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen,
     Ubuntu, Cantarell, "Open Sans", "Helvetica Neue", sans-serif;
 
-  --color-app-bg: #f9f9ff;
-  --color-app-fg: #151c27;
+  --color-app-bg: #f8fafc;
+  --color-app-fg: #0f172a;
   --color-app-surface: #ffffff;
-  --color-app-surface-variant: #f0f3ff;
-  --color-app-border: rgba(21, 28, 39, 0.08);
-  --color-app-card-border: rgba(21, 28, 39, 0.05);
-  --color-app-muted: #3f4944;
+  --color-app-surface-variant: #f1f5f9;
+  --color-app-border: rgba(15, 23, 42, 0.08);
+  --color-app-card-border: rgba(15, 23, 42, 0.06);
+  --color-app-muted: #475569;
 
-  --color-app-brand: #004532;
-  --color-app-brand-hover: #002c20;
-  --color-app-brand-bg: rgba(0, 69, 50, 0.08);
-  --color-app-brand-bg-hover: rgba(0, 69, 50, 0.15);
+  --color-app-brand: #0f766e;
+  --color-app-brand-hover: #0d9488;
+  --color-app-brand-bg: rgba(15, 118, 110, 0.08);
+  --color-app-brand-bg-hover: rgba(15, 118, 110, 0.15);
 
-  --color-app-error: #ba1a1a;
-  --color-app-error-bg: #ffdad6;
+  --color-app-error: #dc2626;
+  --color-app-error-bg: #fef2f2;
 }
 
 .dark {
   color-scheme: dark;
-  --color-app-bg: #151c27;
-  --color-app-fg: #ffffff;
-  --color-app-surface: #2a313d;
+  --color-app-bg: #0f172a;
+  --color-app-fg: #f8fafc;
+  --color-app-surface: #1e293b;
   --color-app-surface-variant: rgba(255, 255, 255, 0.05);
-  --color-app-border: rgba(255, 255, 255, 0.05);
-  --color-app-card-border: rgba(255, 255, 255, 0.05);
-  --color-app-muted: #c5c7c8;
+  --color-app-border: rgba(255, 255, 255, 0.08);
+  --color-app-card-border: rgba(255, 255, 255, 0.06);
+  --color-app-muted: #94a3b8;
 
-  --color-app-brand: #8bd6b6;
-  --color-app-brand-hover: #a6f2d1;
-  --color-app-brand-bg: #00513b;
-  --color-app-brand-bg-hover: rgba(139, 214, 182, 0.2);
+  --color-app-brand: #14b8a6;
+  --color-app-brand-hover: #2dd4bf;
+  --color-app-brand-bg: rgba(20, 184, 166, 0.15);
+  --color-app-brand-bg-hover: rgba(20, 184, 166, 0.25);
 
-  --color-app-error: #ffb4ab;
-  --color-app-error-bg: #93000a;
+  --color-app-error: #f87171;
+  --color-app-error-bg: #450a0a;
 }
 
 select {
@@ -52,6 +52,18 @@ select {
 select option {
   background-color: var(--color-app-surface);
   color: var(--color-app-fg);
+}
+
+/* Hide number input spin buttons */
+input[type="number"]::-webkit-outer-spin-button,
+input[type="number"]::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+input[type="number"] {
+  -moz-appearance: textfield;
+  appearance: textfield;
 }
 
 @theme {
@@ -71,6 +83,25 @@ select option {
   --color-app-brand-bg-hover: var(--color-app-brand-bg-hover);
   --color-app-error: var(--color-app-error);
   --color-app-error-bg: var(--color-app-error-bg);
+
+  --color-primary: var(--color-app-brand);
+  --color-primary-foreground: #ffffff;
+  --color-primary-hover: var(--color-app-brand-hover);
+
+  --color-background: var(--color-app-bg);
+  --color-foreground: var(--color-app-fg);
+
+  --color-card: var(--color-app-surface);
+  --color-card-foreground: var(--color-app-fg);
+
+  --color-muted: var(--color-app-surface-variant);
+  --color-muted-foreground: var(--color-app-muted);
+
+  --color-border: var(--color-app-border);
+  --color-input: var(--color-app-border);
+
+  --color-destructive: var(--color-app-error);
+  --color-destructive-foreground: #ffffff;
 
   --animate-spin-slow: spin 12s linear infinite;
   --animate-fade-in: fadeIn 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards;
@@ -92,7 +123,6 @@ select option {
     }
     to {
       transform: translateY(0);
-      opacity: 1;
     }
   }
   @keyframes slideIn {

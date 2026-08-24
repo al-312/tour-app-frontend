@@ -7,7 +7,6 @@ import { ChevronLeft, ChevronRight } from "lucide-react";
 
 import { cn } from "@/lib/utils/cn";
 import Badge from "@/components/ui/badge";
-import { isClient } from "@/lib/utils/is-client";
 
 import { NAVIGATION_ITEMS } from "./constants/layout.constants";
 
@@ -15,27 +14,52 @@ import type { SidebarContextType } from "./types/layout.types";
 
 const SidebarContext = React.createContext<SidebarContextType | undefined>(undefined);
 
+const sidebarListeners = new Set<() => void>();
+
+const subscribeSidebar = (callback: () => void): (() => void) => {
+  sidebarListeners.add(callback);
+  if (typeof window !== "undefined") {
+    window.addEventListener("storage", callback);
+  }
+  return () => {
+    sidebarListeners.delete(callback);
+    if (typeof window !== "undefined") {
+      window.removeEventListener("storage", callback);
+    }
+  };
+};
+
+const getSidebarSnapshot = (): boolean => {
+  if (typeof window === "undefined") return false;
+  try {
+    const saved = localStorage.getItem("sidebar_collapsed");
+    return saved ? Boolean(JSON.parse(saved)) : false;
+  } catch {
+    return false;
+  }
+};
+
+const getSidebarServerSnapshot = (): boolean => false;
+
 export function SidebarProvider({
   children,
 }: {
   children: React.ReactNode;
 }): React.JSX.Element {
-  const [isCollapsed, setIsCollapsed] = React.useState<boolean>(() => {
-    if (isClient()) {
-      const saved = localStorage.getItem("sidebar_collapsed");
-      return saved ? JSON.parse(saved) === true : false;
-    }
-    return false;
-  });
+  const isCollapsed = React.useSyncExternalStore(
+    subscribeSidebar,
+    getSidebarSnapshot,
+    getSidebarServerSnapshot
+  );
 
   const toggleSidebar = React.useCallback((): void => {
-    setIsCollapsed((prev) => {
-      const next = !prev;
-      if (isClient()) {
-        localStorage.setItem("sidebar_collapsed", JSON.stringify(next));
-      }
-      return next;
-    });
+    if (typeof window !== "undefined") {
+      const next = !getSidebarSnapshot();
+      localStorage.setItem("sidebar_collapsed", JSON.stringify(next));
+      sidebarListeners.forEach((listener) => {
+        listener();
+      });
+    }
   }, []);
 
   const value = React.useMemo(

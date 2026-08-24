@@ -1,7 +1,6 @@
 import { createSlice, type PayloadAction } from "@reduxjs/toolkit";
 
 import { storage } from "@/lib/utils/storage";
-import { isClient } from "@/lib/utils/is-client";
 import { STORAGE_KEYS } from "@/lib/constants/app.constants";
 
 import type { AuthResponse, User } from "@/features/auth/types/auth.types";
@@ -11,30 +10,15 @@ interface AuthState {
   token: string | null;
   refreshToken: string | null;
   isAuthenticated: boolean;
+  isHydrated: boolean;
 }
 
-const getStoredAuth = (): {
-  token: string | null;
-  refreshToken: string | null;
-  user: User | null;
-} => {
-  if (!isClient()) {
-    return { token: null, refreshToken: null, user: null };
-  }
-  const token = storage.getItemDecoded(STORAGE_KEYS.AUTH_TOKEN) as string | null;
-  const refreshToken = storage.getItemDecoded(STORAGE_KEYS.REFRESH_TOKEN) as
-    string | null;
-  const user = storage.getItemDecoded(STORAGE_KEYS.USER) as User | null;
-  return { token, refreshToken, user };
-};
-
-const initialStored = getStoredAuth();
-
 const initialState: AuthState = {
-  user: initialStored.user,
-  token: initialStored.token,
-  refreshToken: initialStored.refreshToken,
-  isAuthenticated: Boolean(initialStored.token),
+  user: null,
+  token: null,
+  refreshToken: null,
+  isAuthenticated: false,
+  isHydrated: false,
 };
 
 const authSlice = createSlice({
@@ -47,10 +31,14 @@ const authSlice = createSlice({
       state.token = accessToken;
       state.refreshToken = refreshToken;
       state.isAuthenticated = true;
+      state.isHydrated = true;
 
       storage.setItemEncoded(STORAGE_KEYS.AUTH_TOKEN, accessToken);
       storage.setItemEncoded(STORAGE_KEYS.REFRESH_TOKEN, refreshToken);
       storage.setItemEncoded(STORAGE_KEYS.USER, user);
+    },
+    setHydrated: (state) => {
+      state.isHydrated = true;
     },
     updateCurrentUser: (state, action: PayloadAction<User>) => {
       state.user = action.payload;
@@ -61,6 +49,7 @@ const authSlice = createSlice({
       state.token = null;
       state.refreshToken = null;
       state.isAuthenticated = false;
+      state.isHydrated = true;
 
       storage.removeItem(STORAGE_KEYS.AUTH_TOKEN);
       storage.removeItem(STORAGE_KEYS.REFRESH_TOKEN);
@@ -70,6 +59,7 @@ const authSlice = createSlice({
   },
 });
 
-export const { setCredentials, updateCurrentUser, logout } = authSlice.actions;
+export const { setCredentials, setHydrated, updateCurrentUser, logout } =
+  authSlice.actions;
 
 export default authSlice.reducer;

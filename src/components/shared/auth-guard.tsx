@@ -6,16 +6,26 @@ import { useRouter } from "next/navigation";
 import { useAppSelector } from "@/store/hooks";
 import { isClient } from "@/lib/utils/is-client";
 
+const noop = (): void => undefined;
+const emptySubscribe = (): (() => void) => noop;
+const getSnapshot = (): boolean => true;
+const getServerSnapshot = (): boolean => false;
+
 export default function AuthGuard({
   children,
 }: {
   children: React.ReactNode;
 }): React.JSX.Element | null {
   const router = useRouter();
-  const { isAuthenticated } = useAppSelector((state) => state.auth);
+  const { isAuthenticated, isHydrated } = useAppSelector((state) => state.auth);
+  const isMounted = React.useSyncExternalStore(
+    emptySubscribe,
+    getSnapshot,
+    getServerSnapshot
+  );
 
   React.useEffect((): void => {
-    if (!isAuthenticated) {
+    if (isMounted && isHydrated && !isAuthenticated) {
       if (isClient()) {
         sessionStorage.setItem(
           "auth_restricted_message",
@@ -24,9 +34,9 @@ export default function AuthGuard({
       }
       router.replace("/login");
     }
-  }, [isAuthenticated, router]);
+  }, [isMounted, isHydrated, isAuthenticated, router]);
 
-  if (!isAuthenticated) {
+  if (!isMounted || !isHydrated || !isAuthenticated) {
     return (
       <div className="min-h-screen bg-app-bg flex items-center justify-center">
         <div className="w-8 h-8 border-4 border-app-brand/20 border-t-app-brand rounded-full animate-spin" />

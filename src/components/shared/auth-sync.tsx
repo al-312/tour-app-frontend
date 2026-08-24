@@ -4,8 +4,8 @@ import * as React from "react";
 
 import { storage } from "@/lib/utils/storage";
 import { useAppDispatch } from "@/store/hooks";
-import { setCredentials, logout } from "@/store/auth.store";
 import { STORAGE_KEYS } from "@/lib/constants/app.constants";
+import { setCredentials, setHydrated } from "@/store/auth.store";
 
 import type { User } from "@/features/auth/types/auth.types";
 
@@ -34,7 +34,7 @@ export default function AuthSync(): null {
     if (validStored) {
       dispatch(setCredentials(validStored));
     } else {
-      dispatch(logout());
+      dispatch(setHydrated());
     }
   }, [dispatch]);
 

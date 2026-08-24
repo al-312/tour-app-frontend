@@ -2,8 +2,6 @@
 
 import * as React from "react";
 
-import { isClient } from "@/lib/utils/is-client";
-
 type Theme = "dark" | "light";
 
 interface ThemeContextType {
@@ -13,31 +11,56 @@ interface ThemeContextType {
 
 const ThemeContext = React.createContext<ThemeContextType | undefined>(undefined);
 
-const getInitialTheme = (): Theme => {
-  if (!isClient()) return "dark";
-  const saved = localStorage.getItem("theme");
-  if (saved === "light") return "light";
-  if (saved === "dark") return "dark";
-  return "dark";
+const themeListeners = new Set<() => void>();
+
+const subscribeTheme = (callback: () => void): (() => void) => {
+  themeListeners.add(callback);
+  if (typeof window !== "undefined") {
+    window.addEventListener("storage", callback);
+  }
+  return () => {
+    themeListeners.delete(callback);
+    if (typeof window !== "undefined") {
+      window.removeEventListener("storage", callback);
+    }
+  };
 };
+
+const getThemeSnapshot = (): Theme => {
+  if (typeof window === "undefined") return "dark";
+  const saved = localStorage.getItem("theme");
+  return saved === "light" ? "light" : "dark";
+};
+
+const getThemeServerSnapshot = (): Theme => "dark";
 
 export function ThemeProvider({
   children,
 }: {
   children: React.ReactNode;
 }): React.JSX.Element {
-  const [theme, setTheme] = React.useState<Theme>(getInitialTheme);
+  const theme = React.useSyncExternalStore(
+    subscribeTheme,
+    getThemeSnapshot,
+    getThemeServerSnapshot
+  );
 
   React.useEffect(() => {
-    if (!isClient()) return;
+    if (typeof window === "undefined") return;
     const root = document.documentElement;
     root.classList.remove("light", "dark");
     root.classList.add(theme);
-    localStorage.setItem("theme", theme);
   }, [theme]);
 
   const toggleTheme = React.useCallback((): void => {
-    setTheme((prev) => (prev === "dark" ? "light" : "dark"));
+    if (typeof window !== "undefined") {
+      const current = getThemeSnapshot();
+      const next: Theme = current === "dark" ? "light" : "dark";
+      localStorage.setItem("theme", next);
+      themeListeners.forEach((listener) => {
+        listener();
+      });
+    }
   }, []);
 
   const value = React.useMemo(() => ({ theme, toggleTheme }), [theme, toggleTheme]);

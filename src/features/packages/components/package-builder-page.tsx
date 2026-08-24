@@ -1,0 +1,137 @@
+"use client";
+
+import * as React from "react";
+import { ChevronLeft } from "lucide-react";
+
+import Button from "@/components/ui/button";
+import Heading from "@/components/ui/heading";
+
+import { PackageBuilderBody } from "./package-builder-body";
+import { StepIndicator } from "./builder-steps/step-indicator";
+import { usePackageBuilderState } from "../hooks/use-package-builder-state";
+
+interface PackageBuilderPageProps {
+  mode: "create" | "edit";
+  pkgId?: string | undefined;
+}
+
+export function PackageBuilderPage({
+  mode,
+  pkgId,
+}: PackageBuilderPageProps): React.JSX.Element {
+  const {
+    router,
+    step,
+    isPkgLoading,
+    packageName,
+    setPackageName,
+    clientId,
+    setClientId,
+    destinationId,
+    setDestinationId,
+    startDate,
+    setStartDate,
+    numberOfDays,
+    handleNumberOfDaysChange,
+    adults,
+    setAdults,
+    childrenCount,
+    setChildrenCount,
+    status,
+    setStatus,
+    activeDay,
+    setActiveDay,
+    daysData,
+    setDaysData,
+    consultantId,
+    setConsultantId,
+    clients,
+    destinations,
+    consultants,
+    hotels,
+    isSubmitting,
+    handleStepClick,
+    handleSubmitPackage,
+  } = usePackageBuilderState({ mode, pkgId });
+
+  if (mode === "edit" && isPkgLoading) {
+    return (
+      <div className="flex items-center justify-center p-16 text-sm font-semibold text-app-muted">
+        Loading package details...
+      </div>
+    );
+  }
+
+  return (
+    <div className="flex flex-col gap-6 max-w-5xl mx-auto pb-12">
+      {/* Top Bar Navigation */}
+      <div className="flex items-center justify-between">
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={() => {
+            router.push("/packages");
+          }}
+          className="gap-2"
+        >
+          <ChevronLeft className="w-4 h-4" />
+          Back to Packages
+        </Button>
+        <span className="text-xs font-semibold text-muted-foreground">
+          {mode === "create" ? "New Package Mode" : `Editing Package #${pkgId ?? ""}`}
+        </span>
+      </div>
+
+      {/* Page Title */}
+      <div>
+        <Heading level={1} size="2xl">
+          {mode === "create" ? "Create Tour Package" : "Edit Tour Package"}
+        </Heading>
+        <p className="text-muted-foreground text-xs sm:text-sm mt-1">
+          Follow the 4-step wizard to define details, daily hotel stay, consultant, and
+          preview.
+        </p>
+      </div>
+
+      {/* Stepper Header */}
+      <StepIndicator currentStep={step} onStepClick={handleStepClick} />
+
+      {/* Active Step Content */}
+      <PackageBuilderBody
+        step={step}
+        setStep={(s) => {
+          handleStepClick(s);
+        }}
+        mode={mode}
+        packageName={packageName}
+        setPackageName={setPackageName}
+        clientId={clientId}
+        setClientId={setClientId}
+        destinationId={destinationId}
+        setDestinationId={setDestinationId}
+        startDate={startDate}
+        setStartDate={setStartDate}
+        numberOfDays={numberOfDays}
+        handleNumberOfDaysChange={handleNumberOfDaysChange}
+        adults={adults}
+        setAdults={setAdults}
+        childrenCount={childrenCount}
+        setChildrenCount={setChildrenCount}
+        status={status}
+        setStatus={setStatus}
+        activeDay={activeDay}
+        setActiveDay={setActiveDay}
+        daysData={daysData}
+        setDaysData={setDaysData}
+        consultantId={consultantId}
+        setConsultantId={setConsultantId}
+        clients={clients}
+        destinations={destinations}
+        consultants={consultants}
+        hotels={hotels}
+        isSubmitting={isSubmitting}
+        onSubmit={handleSubmitPackage}
+      />
+    </div>
+  );
+}
