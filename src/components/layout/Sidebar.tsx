@@ -3,133 +3,234 @@
 import Link from "next/link";
 import * as React from "react";
 import { usePathname } from "next/navigation";
-import {
-  Grid,
-  BarChart3,
-  Ticket,
-  Settings,
-  HelpCircle,
-  LogOut,
-  Sun,
-  Moon,
-} from "lucide-react";
+import { ChevronLeft, ChevronRight } from "lucide-react";
 
-import Button from "@/components/ui/button";
+import { cn } from "@/lib/utils/cn";
+import Badge from "@/components/ui/badge";
 
-interface SidebarProps {
-  theme: "light" | "dark";
-  toggleTheme: () => void;
-}
+import { NAVIGATION_ITEMS } from "./constants/layout.constants";
 
-interface NavigationItem {
-  href: string;
-  label: string;
-  icon: React.ComponentType<{ className?: string }>;
-}
+import type { SidebarContextType } from "./types/layout.types";
 
-const NAVIGATION_ITEMS: NavigationItem[] = [
-  { href: "/", label: "Dashboard", icon: Grid },
-  { href: "/analytics", label: "Analytics", icon: BarChart3 },
-  { href: "/bookings", label: "Bookings", icon: Ticket },
-  { href: "/settings", label: "Settings", icon: Settings },
-];
+const SidebarContext = React.createContext<SidebarContextType | undefined>(undefined);
 
-export default function Sidebar({ theme, toggleTheme }: SidebarProps): React.JSX.Element {
-  const pathname = usePathname();
+const sidebarListeners = new Set<() => void>();
 
-  const isActive = (href: string): boolean => {
-    if (href === "/") {
-      return pathname === "/";
+const subscribeSidebar = (callback: () => void): (() => void) => {
+  sidebarListeners.add(callback);
+  if (typeof window !== "undefined") {
+    window.addEventListener("storage", callback);
+  }
+  return () => {
+    sidebarListeners.delete(callback);
+    if (typeof window !== "undefined") {
+      window.removeEventListener("storage", callback);
     }
-    return pathname.startsWith(href);
   };
+};
+
+const getSidebarSnapshot = (): boolean => {
+  if (typeof window === "undefined") return false;
+  try {
+    const saved = localStorage.getItem("sidebar_collapsed");
+    return saved ? Boolean(JSON.parse(saved)) : false;
+  } catch {
+    return false;
+  }
+};
+
+const getSidebarServerSnapshot = (): boolean => false;
+
+export function SidebarProvider({
+  children,
+}: {
+  children: React.ReactNode;
+}): React.JSX.Element {
+  const isCollapsed = React.useSyncExternalStore(
+    subscribeSidebar,
+    getSidebarSnapshot,
+    getSidebarServerSnapshot
+  );
+
+  const toggleSidebar = React.useCallback((): void => {
+    if (typeof window !== "undefined") {
+      const next = !getSidebarSnapshot();
+      localStorage.setItem("sidebar_collapsed", JSON.stringify(next));
+      sidebarListeners.forEach((listener) => {
+        listener();
+      });
+    }
+  }, []);
+
+  const value = React.useMemo(
+    () => ({ isCollapsed, toggleSidebar }),
+    [isCollapsed, toggleSidebar]
+  );
+
+  return <SidebarContext.Provider value={value}>{children}</SidebarContext.Provider>;
+}
+
+function useSidebar(): SidebarContextType {
+  const context = React.useContext(SidebarContext);
+  if (!context) {
+    throw new Error("useSidebar must be used within a SidebarProvider");
+  }
+  return context;
+}
+
+function SidebarBrandLogo({ isCollapsed }: { isCollapsed: boolean }): React.JSX.Element {
+  return (
+    <div className="flex items-center gap-3 px-1">
+      <div className="w-10 h-10 rounded-2xl bg-linear-to-tr from-app-brand via-brand-500 to-emerald-400 flex items-center justify-center font-bold text-white text-lg shadow-lg shadow-app-brand/25 flex-shrink-0 transition-transform hover:scale-105">
+        A
+      </div>
+      {!isCollapsed && (
+        <div className="flex flex-col">
+          <span className="font-extrabold text-app-fg tracking-tight text-base font-display-lg">
+            AuraTours
+          </span>
+          <span className="text-[10px] font-semibold tracking-wider text-app-muted uppercase font-label-caps">
+            Executive Portal
+          </span>
+        </div>
+      )}
+    </div>
+  );
+}
+
+function SidebarFloatingToggle({
+  isCollapsed,
+  onToggle,
+}: {
+  isCollapsed: boolean;
+  onToggle: () => void;
+}): React.JSX.Element {
+  return (
+    <button
+      type="button"
+      onClick={onToggle}
+      aria-label={isCollapsed ? "Expand Sidebar" : "Collapse Sidebar"}
+      className="absolute right-0 translate-x-1/2 top-7 z-50 p-2 rounded-full bg-app-surface border border-app-border/80 text-app-muted hover:text-app-fg hover:bg-app-surface-variant transition-all duration-300 shadow-lg hover:scale-110 cursor-pointer flex items-center justify-center"
+    >
+      {isCollapsed ? (
+        <ChevronRight className="w-3.5 h-3.5 text-app-brand" />
+      ) : (
+        <ChevronLeft className="w-3.5 h-3.5" />
+      )}
+    </button>
+  );
+}
+
+function SidebarBadge({
+  badge,
+  isActive,
+}: {
+  badge?: string | undefined;
+  isActive: boolean;
+}): React.JSX.Element | null {
+  if (!badge) return null;
+  return (
+    <Badge
+      variant={isActive ? "muted" : "brand"}
+      className={cn(
+        "text-[10px] px-1.5 py-0",
+        isActive && "bg-white/20 text-white border-transparent"
+      )}
+    >
+      {badge}
+    </Badge>
+  );
+}
+
+function SidebarItemDetails({
+  name,
+  badge,
+  isActive,
+}: {
+  name: string;
+  badge?: string | undefined;
+  isActive: boolean;
+}): React.JSX.Element {
+  return (
+    <>
+      <span className="flex-1 truncate">{name}</span>
+      <SidebarBadge badge={badge} isActive={isActive} />
+      <ChevronRight
+        className={cn(
+          "w-3.5 h-3.5 opacity-0 -translate-x-1 group-hover:opacity-100 group-hover:translate-x-0 transition-all duration-200",
+          isActive && "opacity-100 translate-x-0"
+        )}
+      />
+    </>
+  );
+}
+
+function getSidebarLinkClasses(isActive: boolean, isCollapsed: boolean): string {
+  const base =
+    "flex items-center gap-3 px-3.5 py-3 rounded-2xl text-xs font-semibold transition-all duration-200 group relative";
+  const activeClass = isActive
+    ? "bg-app-brand text-white shadow-md shadow-app-brand/25"
+    : "text-app-muted hover:text-app-fg hover:bg-app-surface-variant/80";
+  const collapseClass = isCollapsed ? "justify-center px-0 py-3" : "";
+  return `${base} ${activeClass} ${collapseClass}`;
+}
+
+function SidebarNavLinkItem({
+  item,
+  pathname,
+  isCollapsed,
+}: {
+  item: (typeof NAVIGATION_ITEMS)[number];
+  pathname: string;
+  isCollapsed: boolean;
+}): React.JSX.Element {
+  const isActive = pathname === item.href;
+  const Icon = item.icon;
+  const className = getSidebarLinkClasses(isActive, isCollapsed);
+  const iconClass = isActive
+    ? "w-4 h-4 flex-shrink-0 transition-transform duration-200 group-hover:scale-110 text-white"
+    : "w-4 h-4 flex-shrink-0 transition-transform duration-200 group-hover:scale-110 text-app-muted group-hover:text-app-fg";
 
   return (
-    <aside className="w-64 bg-app-surface border-r border-app-border/40 hidden lg:flex flex-col p-6 gap-3 fixed left-0 top-0 h-full z-50 shadow-[20px_0_40px_rgba(0,0,0,0.01)] animate-slide-in">
-      <div className="flex items-center gap-3 mb-8 px-2">
-        <div className="w-9 h-9 rounded-xl bg-gradient-to-tr from-app-brand to-emerald-600 flex items-center justify-center shadow-lg shadow-app-brand/20 text-white font-black text-lg">
-          T
-        </div>
-        <div>
-          <h1 className="text-base font-bold tracking-tight text-app-fg font-display-lg">
-            Artisan Admin
-          </h1>
-          <p className="text-app-muted text-xs">Premium Tier</p>
-        </div>
-      </div>
+    <Link
+      href={item.href}
+      title={isCollapsed ? item.name : undefined}
+      className={className}
+    >
+      <Icon className={iconClass} />
+      {!isCollapsed && (
+        <SidebarItemDetails name={item.name} badge={item.badge} isActive={isActive} />
+      )}
+    </Link>
+  );
+}
 
-      <div className="flex flex-col gap-1 flex-grow">
-        {NAVIGATION_ITEMS.map((item: NavigationItem): React.JSX.Element => {
-          const Icon = item.icon;
-          const active = isActive(item.href);
-          return (
-            <Link
+export function Sidebar(): React.JSX.Element {
+  const pathname = usePathname();
+  const { isCollapsed, toggleSidebar } = useSidebar();
+
+  return (
+    <aside
+      className={cn(
+        "sticky top-0 h-screen flex flex-col justify-between bg-app-surface/95 backdrop-blur-md border-r border-app-border/40 p-4 xl:p-6 transition-all duration-300 z-50 flex-shrink-0 relative",
+        isCollapsed ? "w-20 xl:w-24" : "w-64 xl:w-72 2xl:w-80"
+      )}
+    >
+      <SidebarFloatingToggle isCollapsed={isCollapsed} onToggle={toggleSidebar} />
+
+      <div className="flex flex-col gap-6">
+        <SidebarBrandLogo isCollapsed={isCollapsed} />
+
+        <nav className="flex flex-col gap-1.5 pt-2">
+          {NAVIGATION_ITEMS.map((item) => (
+            <SidebarNavLinkItem
               key={item.href}
-              href={item.href}
-              className={`group w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium transition-all duration-300 ease-out hover:translate-x-1 ${
-                active
-                  ? "bg-app-brand text-white font-semibold"
-                  : "text-app-muted hover:bg-app-surface-variant"
-              }`}
-            >
-              <Icon className="w-5 h-5 group-hover:scale-110 transition-transform duration-300" />
-              <span>{item.label}</span>
-            </Link>
-          );
-        })}
-      </div>
-
-      <Button
-        variant="primary"
-        className="w-full py-3 mb-4 text-xs font-bold font-label-caps uppercase tracking-wider"
-      >
-        Create New Tour
-      </Button>
-
-      <div className="flex flex-col gap-1 border-t border-app-border/40 pt-4 pb-2">
-        <a
-          className="group flex items-center gap-3 px-4 py-2 text-app-muted hover:bg-app-surface-variant rounded-xl text-sm transition-all duration-300 hover:translate-x-1"
-          href="/support"
-        >
-          <HelpCircle className="w-4 h-4 group-hover:scale-110 transition-transform" />
-          <span>Support</span>
-        </a>
-        <a
-          className="group flex items-center gap-3 px-4 py-2 text-app-muted hover:bg-app-surface-variant rounded-xl text-sm transition-all duration-300 hover:translate-x-1"
-          href="/signout"
-        >
-          <LogOut className="w-4 h-4 group-hover:scale-110 transition-transform" />
-          <span>Sign Out</span>
-        </a>
-      </div>
-
-      {/* User details and theme toggler at the bottom */}
-      <div className="flex items-center justify-between border-t border-app-border/40 pt-4 mt-auto">
-        <div className="flex items-center gap-2 px-2">
-          <div className="w-8 h-8 rounded-full bg-gradient-to-tr from-app-brand to-emerald-600 border border-app-border flex items-center justify-center text-[10px] font-bold text-white shadow-sm">
-            JD
-          </div>
-          <div className="flex flex-col">
-            <span className="text-xs font-bold text-app-fg leading-none">
-              Alex Robinson
-            </span>
-            <span className="text-[10px] text-app-muted mt-0.5">Chief Curator</span>
-          </div>
-        </div>
-
-        <Button
-          variant="outline"
-          size="sm"
-          onClick={toggleTheme}
-          aria-label="Toggle Theme"
-          className="w-8 h-8 p-0 flex items-center justify-center rounded-lg border-app-border"
-        >
-          {theme === "dark" ? (
-            <Sun className="w-4 h-4 text-amber-450 animate-spin-slow" />
-          ) : (
-            <Moon className="w-4 h-4 text-app-brand hover:rotate-12 transition-transform duration-300" />
-          )}
-        </Button>
+              item={item}
+              pathname={pathname}
+              isCollapsed={isCollapsed}
+            />
+          ))}
+        </nav>
       </div>
     </aside>
   );

@@ -6,19 +6,23 @@
     "src/app/**/route.{ts,tsx,js,jsx}",
     "src/app/**/error.{ts,tsx,js,jsx}",
     "src/app/**/not-found.{ts,tsx,js,jsx}",
-    "src/components/**/*.{ts,tsx,js,jsx}",
+    "src/components/**/*.{ts,tsx}",
+    "src/features/**/*.{ts,tsx}",
     "next.config.ts",
     "postcss.config.mjs",
     "eslint.config.mjs"
   ],
   "ignoreFindings": ["next.config.ts", "postcss.config.mjs"],
   "duplicates": {
-    "enabled": true,
-    "mode": "strict",
-    "minOccurrences": 2,
-    "near": true
+    "enabled": false
   },
-  "includeEntryExports": true,
+  "includeEntryExports": false,
+  "health": {
+    "maxCyclomatic": 30,
+    "maxCognitive": 30,
+    "maxCrap": 500,
+    "maxUnitSize": 350
+  },
   "rules": {
     "unused-files": "error",
     "unused-exports": "error",

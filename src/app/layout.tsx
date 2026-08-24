@@ -1,32 +1,36 @@
 import * as React from "react";
-import { Manrope } from "next/font/google";
+import { Plus_Jakarta_Sans } from "next/font/google";
 
-import "./globals.css";
+import { RootLayoutClient } from "@/components/layout/root-layout-client";
 
-import RootLayoutClient from "@/components/layout/RootLayoutClient";
+import { Providers } from "./providers";
 
 import type { Metadata } from "next";
 
-const manrope = Manrope({
-  variable: "--font-manrope",
+import "./globals.css";
+
+const plusJakartaSans = Plus_Jakarta_Sans({
   subsets: ["latin"],
+  variable: "--font-sans",
+  display: "swap",
 });
 
 export const metadata: Metadata = {
-  title: "AuraTours - Premium Travel Planning",
-  description:
-    "Discover curated travel plans and seamless tour bookings with our high-fidelity, interactive platform.",
+  title: "AuraTours — Curated Private Itineraries",
+  description: "Bespoke luxury tour & expedition curation platform.",
 };
 
-interface RootLayoutProps {
+export default function RootLayout({
+  children,
+}: {
   children: React.ReactNode;
-}
-
-export default function RootLayout({ children }: RootLayoutProps): React.JSX.Element {
+}): React.JSX.Element {
   return (
-    <html lang="en" className={`${manrope.variable} h-full`}>
-      <body className="h-full antialiased">
-        <RootLayoutClient>{children}</RootLayoutClient>
+    <html lang="en" className={plusJakartaSans.variable}>
+      <body className="font-sans bg-app-bg text-app-fg antialiased min-h-screen selection:bg-app-brand/20">
+        <Providers>
+          <RootLayoutClient>{children}</RootLayoutClient>
+        </Providers>
       </body>
     </html>
   );
