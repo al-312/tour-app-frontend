@@ -5,7 +5,6 @@ import * as React from "react";
 import { toast } from "sonner";
 import { usePathname, useRouter } from "next/navigation";
 import {
-  Search,
   Bell,
   Sun,
   Moon,
@@ -26,30 +25,13 @@ import { PAGE_TITLES } from "./constants/layout.constants";
 function HeaderPageTitle({ pathname }: { pathname: string }): React.JSX.Element {
   const pageInfo = PAGE_TITLES[pathname] ?? {
     title: "Workspace",
-    subtitle: "AuraTours Portal",
   };
 
   return (
     <div className="flex flex-col min-w-0">
-      <span className="text-[11px] font-semibold tracking-wider text-app-muted uppercase font-label-caps">
-        {pageInfo.subtitle}
-      </span>
       <h2 className="text-base font-bold text-app-fg tracking-tight truncate font-display-lg">
         {pageInfo.title}
       </h2>
-    </div>
-  );
-}
-
-function HeaderSearchBar(): React.JSX.Element {
-  return (
-    <div className="relative hidden md:block w-72 lg:w-96 xl:w-[420px] 2xl:w-[480px] transition-all">
-      <input
-        type="text"
-        placeholder="Search bookings, clients, or destinations... (Ctrl+K)"
-        className="w-full pl-9 pr-4 py-2 xl:py-2.5 bg-app-surface-variant/80 border border-app-border/60 rounded-xl text-xs xl:text-sm text-app-fg placeholder:text-app-muted/60 transition-all duration-200 outline-none focus:border-app-brand focus:ring-2 focus:ring-app-brand/20"
-      />
-      <Search className="w-3.5 h-3.5 xl:w-4 xl:h-4 text-app-muted absolute left-3 top-3 xl:top-3.5 pointer-events-none" />
     </div>
   );
 }
@@ -226,8 +208,6 @@ export function AuthHeader(): React.JSX.Element {
         <HeaderPageTitle pathname={pathname} />
 
         <div className="flex items-center gap-3">
-          <HeaderSearchBar />
-
           <button
             type="button"
             aria-label="Notifications"
