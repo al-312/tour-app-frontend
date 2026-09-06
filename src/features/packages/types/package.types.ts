@@ -12,6 +12,7 @@ export interface PackageDay {
   destination?: Destination | null;
   hotelId: string | null;
   hotel?: Hotel | null;
+  roomTypeId?: string | null;
   sortOrder?: number;
   notes?: string;
 }
@@ -45,6 +46,7 @@ export interface CreatePackageDayInput {
   dayNumber: number;
   destinationId?: string;
   hotelId?: string;
+  roomTypeId?: string;
   notes?: string;
 }
 

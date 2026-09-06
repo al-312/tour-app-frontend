@@ -28,10 +28,16 @@ export function buildPackagePayload({
     status,
     packageDays: daysData.map((day) => {
       const hotelId = day.hotelId ? day.hotelId : firstHotelId;
-      const item: { dayNumber: number; hotelId?: string; notes?: string } = {
+      const item: {
+        dayNumber: number;
+        hotelId?: string;
+        roomTypeId?: string;
+        notes?: string;
+      } = {
         dayNumber: day.dayNumber,
       };
       if (hotelId) item.hotelId = hotelId;
+      if (day.roomTypeId) item.roomTypeId = day.roomTypeId;
       if (day.notes) item.notes = day.notes;
       return item;
     }),
@@ -75,6 +81,7 @@ function resolveEditDaysData(
     return existingPkg.packageDays.map((d) => ({
       dayNumber: d.dayNumber,
       hotelId: d.hotelId ?? firstHotelId,
+      roomTypeId: d.roomTypeId ?? undefined,
       notes: d.notes ?? "",
     }));
   }

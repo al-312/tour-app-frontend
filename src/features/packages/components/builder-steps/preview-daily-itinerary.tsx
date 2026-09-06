@@ -1,7 +1,7 @@
 "use client";
 
 import * as React from "react";
-import { Building2 } from "lucide-react";
+import { Building2, BedDouble } from "lucide-react";
 
 import type { DayItineraryItem } from "./step-2-itinerary";
 import type { Hotel } from "@/features/hotels/types/hotel.types";
@@ -24,6 +24,10 @@ export function PreviewDailyItinerary({
       <div className="space-y-3">
         {daysData.map((d) => {
           const hotelObj = hotels.find((h) => h.id === d.hotelId) ?? hotels[0];
+          const roomTypeObj =
+            hotelObj?.roomTypes?.find((rt) => rt.id === d.roomTypeId) ??
+            hotelObj?.roomTypes?.[0];
+
           return (
             <div
               key={d.dayNumber}
@@ -34,15 +38,24 @@ export function PreviewDailyItinerary({
                   Day {String(d.dayNumber)}
                 </span>
                 {hotelObj ? (
-                  <span className="text-xs font-semibold text-emerald-700 bg-emerald-50 dark:bg-emerald-950/40 dark:text-emerald-300 dark:border-emerald-800 px-3 py-1 rounded-lg border border-emerald-200 flex items-center gap-2">
-                    <Building2 className="w-3.5 h-3.5" />
-                    <span>{hotelObj.name}</span>
-                    {hotelObj.starRating ? (
-                      <span className="text-amber-600 dark:text-amber-400 font-bold">
-                        ({"★".repeat(hotelObj.starRating)})
+                  <div className="flex flex-wrap items-center gap-2">
+                    <span className="text-xs font-semibold text-emerald-700 bg-emerald-50 dark:bg-emerald-950/40 dark:text-emerald-300 dark:border-emerald-800 px-3 py-1 rounded-lg border border-emerald-200 flex items-center gap-2">
+                      <Building2 className="w-3.5 h-3.5" />
+                      <span>{hotelObj.name}</span>
+                      {hotelObj.starRating ? (
+                        <span className="text-amber-600 dark:text-amber-400 font-bold">
+                          ({"★".repeat(hotelObj.starRating)})
+                        </span>
+                      ) : null}
+                    </span>
+
+                    {roomTypeObj ? (
+                      <span className="text-xs font-medium text-app-brand bg-app-brand/10 border border-app-brand/20 px-2.5 py-1 rounded-lg flex items-center gap-1.5">
+                        <BedDouble className="w-3.5 h-3.5" />
+                        <span>{roomTypeObj.name}</span>
                       </span>
                     ) : null}
-                  </span>
+                  </div>
                 ) : null}
               </div>
 
