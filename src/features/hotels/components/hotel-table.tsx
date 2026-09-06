@@ -1,15 +1,17 @@
 "use client";
 
+import Link from "next/link";
 import * as React from "react";
+import { useRouter } from "next/navigation";
 import {
-  Search,
-  Edit3,
-  Trash2,
-  Plus,
-  Filter,
   Building2,
-  Star,
+  Edit3,
+  Filter,
   MapPin,
+  Plus,
+  Search,
+  Star,
+  Trash2,
 } from "lucide-react";
 
 import Table from "@/components/ui/table";
@@ -21,10 +23,7 @@ import type { Destination } from "@/features/destinations/types/destination.type
 interface HotelTableProps {
   hotels: Hotel[];
   destinations?: Destination[] | undefined;
-  onOpenCreate: () => void;
-  onOpenEdit: (hotel: Hotel) => void;
   onOpenDelete: (hotel: Hotel) => void;
-  onManageRoomTypes?: (hotel: Hotel) => void;
 }
 
 function StarRatingDisplay({ rating }: { rating: number }): React.JSX.Element {
@@ -48,11 +47,9 @@ function StarRatingDisplay({ rating }: { rating: number }): React.JSX.Element {
 export function HotelTable({
   hotels,
   destinations = [],
-  onOpenCreate,
-  onOpenEdit,
   onOpenDelete,
-  onManageRoomTypes,
 }: HotelTableProps): React.JSX.Element {
+  const router = useRouter();
   const [search, setSearch] = React.useState("");
   const [destinationFilter, setDestinationFilter] = React.useState<string>("ALL");
   const [ratingFilter, setRatingFilter] = React.useState<string>("ALL");
@@ -86,7 +83,7 @@ export function HotelTable({
             <input
               type="text"
               value={search}
-              onChange={(e) => {
+              onChange={(e): void => {
                 setSearch(e.target.value);
               }}
               placeholder="Search hotel name or destination..."
@@ -99,7 +96,7 @@ export function HotelTable({
           <div className="relative shrink-0">
             <select
               value={destinationFilter}
-              onChange={(e) => {
+              onChange={(e): void => {
                 setDestinationFilter(e.target.value);
               }}
               className="w-full sm:w-44 pl-9 pr-8 py-2.5 bg-app-surface-variant/80 border border-app-border/80 rounded-xl text-xs sm:text-sm font-semibold text-app-fg outline-none focus:border-app-brand focus:ring-2 focus:ring-app-brand/20 cursor-pointer appearance-none"
@@ -120,7 +117,7 @@ export function HotelTable({
           <div className="relative shrink-0">
             <select
               value={ratingFilter}
-              onChange={(e) => {
+              onChange={(e): void => {
                 setRatingFilter(e.target.value);
               }}
               className="w-full sm:w-36 pl-9 pr-8 py-2.5 bg-app-surface-variant/80 border border-app-border/80 rounded-xl text-xs sm:text-sm font-semibold text-app-fg outline-none focus:border-app-brand focus:ring-2 focus:ring-app-brand/20 cursor-pointer appearance-none"
@@ -148,11 +145,13 @@ export function HotelTable({
           </div>
         </div>
 
-        {/* Create button */}
-        <Button onClick={onOpenCreate} className="shrink-0">
-          <Plus className="w-4 h-4 mr-1" />
-          <span>Add New Hotel</span>
-        </Button>
+        {/* Create Hotel Page Link Button */}
+        <Link href="/hotels/create">
+          <Button className="shrink-0">
+            <Plus className="w-4 h-4 mr-1" />
+            <span>Add New Hotel</span>
+          </Button>
+        </Link>
       </div>
 
       {/* Hotels Table */}
@@ -177,75 +176,101 @@ export function HotelTable({
               <Table.Head>Hotel</Table.Head>
               <Table.Head>Destination</Table.Head>
               <Table.Head>Star Rating</Table.Head>
+              <Table.Head>Room Types & Pricing</Table.Head>
               <Table.Head className="text-right">Actions</Table.Head>
             </Table.Row>
           </Table.Header>
           <Table.Body>
-            {filteredHotels.map((hotel) => (
-              <Table.Row key={hotel.id}>
-                <Table.Cell>
-                  <div className="flex items-center gap-3">
-                    <div className="w-9 h-9 rounded-xl bg-app-brand/10 border border-app-brand/20 flex items-center justify-center text-app-brand shrink-0">
-                      <Building2 className="w-4 h-4" />
+            {filteredHotels.map((hotel) => {
+              const roomTypes = hotel.roomTypes ?? [];
+              return (
+                <Table.Row key={hotel.id}>
+                  <Table.Cell>
+                    <div className="flex items-center gap-3">
+                      <div className="w-9 h-9 rounded-xl bg-app-brand/10 border border-app-brand/20 flex items-center justify-center text-app-brand shrink-0">
+                        <Building2 className="w-4 h-4" />
+                      </div>
+                      <div className="flex flex-col">
+                        <Link
+                          href={`/hotels/${hotel.id}/edit`}
+                          className="font-bold text-app-fg text-xs hover:text-app-brand transition-colors"
+                        >
+                          {hotel.name}
+                        </Link>
+                      </div>
                     </div>
-                    <div className="flex flex-col">
-                      <span className="font-bold text-app-fg text-xs">{hotel.name}</span>
-                    </div>
-                  </div>
-                </Table.Cell>
-                <Table.Cell>
-                  {hotel.destination ? (
-                    <div className="flex items-center gap-1.5 text-xs text-app-fg font-medium">
-                      <MapPin className="w-3.5 h-3.5 text-app-brand" />
-                      <span>
-                        {hotel.destination.name}, {hotel.destination.country}
-                      </span>
-                    </div>
-                  ) : (
-                    <span className="text-xs text-app-muted italic">Unassigned</span>
-                  )}
-                </Table.Cell>
-                <Table.Cell>
-                  <StarRatingDisplay rating={hotel.starRating} />
-                </Table.Cell>
-                <Table.Cell className="text-right">
-                  <div className="flex items-center justify-end gap-1">
-                    {onManageRoomTypes && (
+                  </Table.Cell>
+                  <Table.Cell>
+                    {hotel.destination ? (
+                      <div className="flex items-center gap-1.5 text-xs text-app-fg font-medium">
+                        <MapPin className="w-3.5 h-3.5 text-app-brand" />
+                        <span>
+                          {hotel.destination.name}, {hotel.destination.country}
+                        </span>
+                      </div>
+                    ) : (
+                      <span className="text-xs text-app-muted italic">Unassigned</span>
+                    )}
+                  </Table.Cell>
+                  <Table.Cell>
+                    <StarRatingDisplay rating={hotel.starRating} />
+                  </Table.Cell>
+                  <Table.Cell>
+                    {roomTypes.length === 0 ? (
+                      <span className="text-xs text-app-muted italic">No room types</span>
+                    ) : (
+                      <div className="flex flex-wrap gap-1 max-w-xs">
+                        {roomTypes.map((rt) => (
+                          <span
+                            key={rt.id}
+                            className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-app-surface-variant border border-app-border/60 text-[11px] font-medium text-app-fg"
+                            title={`Room Price: $${String(rt.roomPrice)}/night${
+                              rt.extraBedAvailable
+                                ? ` | Extra Bed: $${String(rt.extraBedPrice)}/night`
+                                : ""
+                            }`}
+                          >
+                            <span>{rt.name}</span>
+                            <span className="font-bold text-app-brand">
+                              ${rt.roomPrice}
+                            </span>
+                            {rt.extraBedAvailable && (
+                              <span className="text-[10px] text-app-muted">
+                                (+${rt.extraBedPrice} ex)
+                              </span>
+                            )}
+                          </span>
+                        ))}
+                      </div>
+                    )}
+                  </Table.Cell>
+                  <Table.Cell className="text-right">
+                    <div className="flex items-center justify-end gap-1">
                       <button
                         type="button"
-                        onClick={() => {
-                          onManageRoomTypes(hotel);
+                        onClick={(): void => {
+                          router.push(`/hotels/${hotel.id}/edit`);
                         }}
-                        title="Manage Room Types"
-                        className="px-2 py-1 rounded-lg text-xs font-semibold bg-app-brand/10 text-app-brand hover:bg-app-brand/20 transition-colors cursor-pointer mr-1"
+                        title="Edit Hotel"
+                        className="p-1.5 rounded-lg text-app-muted hover:text-app-fg hover:bg-app-surface-variant transition-colors cursor-pointer"
                       >
-                        Room Types ({hotel.roomTypes?.length ?? 0})
+                        <Edit3 className="w-4 h-4" />
                       </button>
-                    )}
-                    <button
-                      type="button"
-                      onClick={() => {
-                        onOpenEdit(hotel);
-                      }}
-                      title="Edit Hotel"
-                      className="p-1.5 rounded-lg text-app-muted hover:text-app-fg hover:bg-app-surface-variant transition-colors cursor-pointer"
-                    >
-                      <Edit3 className="w-4 h-4" />
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => {
-                        onOpenDelete(hotel);
-                      }}
-                      title="Delete Hotel"
-                      className="p-1.5 rounded-lg text-app-muted hover:text-rose-500 hover:bg-rose-500/10 transition-colors cursor-pointer"
-                    >
-                      <Trash2 className="w-4 h-4" />
-                    </button>
-                  </div>
-                </Table.Cell>
-              </Table.Row>
-            ))}
+                      <button
+                        type="button"
+                        onClick={(): void => {
+                          onOpenDelete(hotel);
+                        }}
+                        title="Delete Hotel"
+                        className="p-1.5 rounded-lg text-app-muted hover:text-rose-500 hover:bg-rose-500/10 transition-colors cursor-pointer"
+                      >
+                        <Trash2 className="w-4 h-4" />
+                      </button>
+                    </div>
+                  </Table.Cell>
+                </Table.Row>
+              );
+            })}
           </Table.Body>
         </Table>
       )}
