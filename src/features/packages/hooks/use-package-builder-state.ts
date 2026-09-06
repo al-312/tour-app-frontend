@@ -11,6 +11,11 @@ import { useGetConsultantsQuery } from "@/features/consultants/services/consulta
 import { useGetDestinationsQuery } from "@/features/destinations/services/destinations-api.slice";
 
 import {
+  validateStep1Data,
+  validateStep2Data,
+  validateAllSteps,
+} from "../utils/package-builder-validation";
+import {
   buildPackagePayload,
   computeEditInitialState,
   resizeDaysData,
@@ -20,12 +25,6 @@ import {
   useUpdatePackageMutation,
   useGetPackageByIdQuery,
 } from "../services/packages-api.slice";
-import {
-  validateStep1Data,
-  validateStep2Data,
-  validateStep3Data,
-  validateAllSteps,
-} from "../utils/package-builder-validation";
 
 import type { PackageBuilderHookState } from "../types/package-builder-state.types";
 import type { DayItineraryItem } from "../components/builder-steps/step-2-itinerary";
@@ -63,7 +62,6 @@ export function usePackageBuilderState({
   );
 
   const [loadedPkgId, setLoadedPkgId] = React.useState<string | null>(null);
-  const [appliedHotelId, setAppliedHotelId] = React.useState<string>("");
 
   const [packageName, setPackageName] = React.useState("");
   const [clientId, setClientId] = React.useState("");
@@ -98,14 +96,31 @@ export function usePackageBuilderState({
 
   const firstHotelId = React.useMemo(() => hotels[0]?.id ?? "", [hotels]);
 
-  if (appliedHotelId !== destinationId) {
-    setAppliedHotelId(destinationId);
+  const [syncedHotelKey, setSyncedHotelKey] = React.useState("");
+  const currentHotelKey = `${destinationId}:${firstHotelId}:${String(hotels.length)}`;
+
+  if (syncedHotelKey !== currentHotelKey && hotels.length > 0 && firstHotelId) {
+    setSyncedHotelKey(currentHotelKey);
     setDaysData((prev) =>
-      prev.map((d) => ({
-        ...d,
-        hotelId: hotels.some((h) => h.id === d.hotelId) ? d.hotelId : "",
-        roomTypeId: hotels.some((h) => h.id === d.hotelId) ? d.roomTypeId : undefined,
-      }))
+      prev.map((d) => {
+        const validHotel = hotels.find((h) => h.id === d.hotelId);
+        if (!validHotel) {
+          const defaultHotel = hotels[0];
+          return {
+            ...d,
+            hotelId: defaultHotel ? defaultHotel.id : "",
+            roomTypeId: defaultHotel?.roomTypes?.[0]?.id,
+          };
+        }
+        const firstRoomTypeId = validHotel.roomTypes?.[0]?.id;
+        if (!d.roomTypeId && firstRoomTypeId) {
+          return {
+            ...d,
+            roomTypeId: firstRoomTypeId,
+          };
+        }
+        return d;
+      })
     );
   }
 
@@ -158,9 +173,7 @@ export function usePackageBuilderState({
     if (targetStep > 1) {
       const v1 = validateStep1Data({
         packageName,
-        clientId,
         destinationId,
-        startDate,
         numberOfDays,
       });
       if (!v1.isValid) {
@@ -175,24 +188,14 @@ export function usePackageBuilderState({
         return;
       }
     }
-    if (targetStep > 3) {
-      const v3 = validateStep3Data({ adults });
-      if (!v3.isValid) {
-        toast.error(v3.error ?? "Please specify valid traveler counts in Step 3 first");
-        return;
-      }
-    }
     setStep(targetStep as 1 | 2 | 3 | 4);
   };
 
   const handleSubmitPackage = async (): Promise<void> => {
     const check = validateAllSteps({
       packageName,
-      clientId,
       destinationId,
-      startDate,
       numberOfDays,
-      adults,
       daysData,
     });
     if (!check.isValid) {

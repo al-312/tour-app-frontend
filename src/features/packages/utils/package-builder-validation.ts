@@ -2,11 +2,8 @@ import type { DayItineraryItem } from "../components/builder-steps/step-2-itiner
 
 export interface Step1ValidationErrors {
   packageName?: string | undefined;
-  clientId?: string | undefined;
   destinationId?: string | undefined;
-  startDate?: string | undefined;
   numberOfDays?: string | undefined;
-  adults?: string | undefined;
 }
 
 export interface Step1ValidationResult {
@@ -17,9 +14,7 @@ export interface Step1ValidationResult {
 
 export function validateStep1Data(data: {
   packageName: string;
-  clientId?: string;
   destinationId: string;
-  startDate?: string;
   numberOfDays: number;
 }): Step1ValidationResult {
   const errors: Step1ValidationErrors = {};
@@ -103,15 +98,12 @@ export function validateStep3Data(data: {
 
 export function validateAllSteps(data: {
   packageName: string;
-  clientId: string;
   destinationId: string;
-  startDate: string;
   numberOfDays: number;
-  adults: number;
   daysData: DayItineraryItem[];
 }): {
   isValid: boolean;
-  targetStep?: 1 | 2 | 3 | 4 | undefined;
+  targetStep?: 1 | 2 | 3 | undefined;
   firstError?: string | undefined;
 } {
   const v1 = validateStep1Data(data);
@@ -129,17 +121,6 @@ export function validateAllSteps(data: {
       isValid: false,
       targetStep: 2,
       firstError: v2.firstError ?? "Please complete Step 2: Daily Itinerary first",
-    };
-  }
-
-  const v3 = validateStep3Data({
-    adults: data.adults,
-  });
-  if (!v3.isValid) {
-    return {
-      isValid: false,
-      targetStep: 3,
-      firstError: v3.error ?? "Please complete Step 3: Traveler Details first",
     };
   }
 

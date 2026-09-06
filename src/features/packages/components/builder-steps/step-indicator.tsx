@@ -10,10 +10,9 @@ export interface StepItem {
 }
 
 export const PACKAGE_BUILDER_STEPS: StepItem[] = [
-  { id: 1, title: "Basic Info", sub: "Package & Client" },
-  { id: 2, title: "Daily Itinerary", sub: "Hotel Stay" },
-  { id: 3, title: "Traveler Details", sub: "Adults & Children" },
-  { id: 4, title: "Preview & Save", sub: "Review & Publish" },
+  { id: 1, title: "Basic Info", sub: "Package & Destination" },
+  { id: 2, title: "Daily Itinerary", sub: "Hotels & Room Types" },
+  { id: 3, title: "Preview & Save", sub: "Review & Publish" },
 ];
 
 export const ADMIN_STEPS = PACKAGE_BUILDER_STEPS;

@@ -4,7 +4,6 @@ import * as React from "react";
 
 import { Step1Info } from "./builder-steps/step-1-info";
 import { Step4PreviewExport } from "./builder-steps/step-4-preview-export";
-import { Step3ConsultantSelect } from "./builder-steps/step-3-consultant-select";
 import { Step2Itinerary, type DayItineraryItem } from "./builder-steps/step-2-itinerary";
 
 import type { Hotel } from "@/features/hotels/types/hotel.types";
@@ -54,25 +53,20 @@ export function PackageBuilderBody(props: PackageBuilderBodyProps): React.JSX.El
     mode,
     packageName,
     setPackageName,
-    clientId,
-    setClientId,
     destinationId,
     setDestinationId,
     startDate,
-    setStartDate,
     numberOfDays,
     handleNumberOfDaysChange,
     adults,
-    setAdults,
     childrenCount,
-    setChildrenCount,
     status,
     activeDay,
     setActiveDay,
     daysData,
     setDaysData,
+    clientId,
     consultantId,
-    setConsultantId,
     clients,
     destinations,
     consultants,
@@ -86,17 +80,11 @@ export function PackageBuilderBody(props: PackageBuilderBodyProps): React.JSX.El
       <Step1Info
         packageName={packageName}
         setPackageName={setPackageName}
-        clientId={clientId}
-        setClientId={setClientId}
         destinationId={destinationId}
         setDestinationId={setDestinationId}
-        startDate={startDate}
-        setStartDate={setStartDate}
         numberOfDays={numberOfDays}
         setNumberOfDays={handleNumberOfDaysChange}
-        clients={clients}
         destinations={destinations}
-        showClientFields={true}
         onNext={() => {
           setStep(2);
         }}
@@ -119,26 +107,7 @@ export function PackageBuilderBody(props: PackageBuilderBodyProps): React.JSX.El
         onNext={() => {
           setStep(3);
         }}
-        nextButtonText="Next: Traveler Details"
-      />
-    );
-  }
-
-  if (step === 3) {
-    return (
-      <Step3ConsultantSelect
-        consultantId={consultantId}
-        setConsultantId={setConsultantId}
-        adults={adults}
-        setAdults={setAdults}
-        childrenCount={childrenCount}
-        setChildrenCount={setChildrenCount}
-        onBack={() => {
-          setStep(2);
-        }}
-        onNext={() => {
-          setStep(4);
-        }}
+        nextButtonText="Next: Preview & Save"
       />
     );
   }
@@ -159,7 +128,7 @@ export function PackageBuilderBody(props: PackageBuilderBodyProps): React.JSX.El
       hotels={hotels}
       isSubmitting={isSubmitting}
       onBack={() => {
-        setStep(3);
+        setStep(2);
       }}
       onSubmit={onSubmit}
     />

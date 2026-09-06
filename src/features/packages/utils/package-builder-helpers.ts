@@ -86,17 +86,15 @@ function resolveEditDaysData(
   pkgDuration: number,
   firstHotelId: string
 ): DayItineraryItem[] {
-  if (existingPkg.packageDays.length > 0) {
-    return existingPkg.packageDays.map((d) => ({
-      dayNumber: d.dayNumber,
-      hotelId: d.hotelId ?? firstHotelId,
-      roomTypeId: d.roomTypeId ?? undefined,
-      notes: d.notes ?? "",
-    }));
-  }
   const result: DayItineraryItem[] = [];
   for (let i = 1; i <= pkgDuration; i += 1) {
-    result.push({ dayNumber: i, hotelId: firstHotelId, notes: "" });
+    const existing = existingPkg.packageDays.find((d) => d.dayNumber === i);
+    result.push({
+      dayNumber: i,
+      hotelId: existing?.hotelId ?? firstHotelId,
+      roomTypeId: existing?.roomTypeId ?? undefined,
+      notes: existing?.notes ?? "",
+    });
   }
   return result;
 }

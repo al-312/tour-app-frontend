@@ -27,9 +27,16 @@ export default function PackageCustomizePage(): React.JSX.Element {
 
   const packageId = params.id as string;
   const initialSource = searchParams.get("source") ?? "Bangalore";
-  const initialTravelDate = searchParams.get("travelDate") ?? "2026-10-15";
-  const initialAdults = parseInt(searchParams.get("adults") ?? "2", 10);
-  const initialChildren = parseInt(searchParams.get("children") ?? "0", 10);
+  const paramTravelDate = searchParams.get("travelDate");
+  const paramAdults = parseInt(searchParams.get("adults") ?? "2", 10);
+  const paramChildren = parseInt(searchParams.get("children") ?? "0", 10);
+
+  const defaultDate = React.useMemo(() => {
+    if (paramTravelDate) return paramTravelDate;
+    const tomorrow = new Date();
+    tomorrow.setDate(tomorrow.getDate() + 1);
+    return tomorrow.toISOString().split("T")[0] ?? "2026-10-15";
+  }, [paramTravelDate]);
 
   const { data: pkg, isLoading: isPkgLoading } = useGetPackageByIdQuery(packageId, {
     skip: !packageId,
@@ -44,6 +51,14 @@ export default function PackageCustomizePage(): React.JSX.Element {
   const clients = React.useMemo(() => clientsData ?? [], [clientsData]);
 
   const [selectedClientId, setSelectedClientId] = React.useState<string>("");
+  const [travelDate, setTravelDate] = React.useState<string>(defaultDate);
+  const [adults, setAdults] = React.useState<number>(
+    Number.isNaN(paramAdults) ? 2 : paramAdults
+  );
+  const [childrenCount, setChildrenCount] = React.useState<number>(
+    Number.isNaN(paramChildren) ? 0 : paramChildren
+  );
+
   const [daySelections, setDaySelections] = React.useState<
     Record<number, DaySelectionState>
   >({});
@@ -106,7 +121,7 @@ export default function PackageCustomizePage(): React.JSX.Element {
       const res = await calculateAllocation({
         hotelId,
         roomTypeId,
-        adults: initialAdults,
+        adults,
         nights: 1,
       }).unwrap();
       setDaySelections((prev) => ({
@@ -126,9 +141,7 @@ export default function PackageCustomizePage(): React.JSX.Element {
       if (selectedRoom) {
         const rooms = Math.max(
           1,
-          Math.ceil(
-            initialAdults / (selectedRoom.maxAdults > 0 ? selectedRoom.maxAdults : 2)
-          )
+          Math.ceil(adults / (selectedRoom.maxAdults > 0 ? selectedRoom.maxAdults : 2))
         );
         setDaySelections((prev) => ({
           ...prev,
@@ -160,6 +173,10 @@ export default function PackageCustomizePage(): React.JSX.Element {
       setErrorMessage("Please select or create a Client for this inquiry.");
       return;
     }
+    if (!travelDate) {
+      setErrorMessage("Please specify a Travel Start Date for this inquiry.");
+      return;
+    }
 
     try {
       const hotelSelections = Object.values(daySelections)
@@ -187,10 +204,10 @@ export default function PackageCustomizePage(): React.JSX.Element {
         packageId: pkg.id,
         source: initialSource,
         destinationId: pkg.destinationId ?? "",
-        travelDate: initialTravelDate,
+        travelDate,
         days: daysCount,
-        adults: initialAdults,
-        children: initialChildren,
+        adults,
+        children: childrenCount,
         calculatedTotal: totalCalculatedPackagePrice,
         packageSnapshot: {
           packageName: pkg.packageName,
@@ -262,7 +279,7 @@ export default function PackageCustomizePage(): React.JSX.Element {
                 mainDestinationName={pkg.destination?.name}
                 daySel={daySel}
                 allHotels={allHotels}
-                initialAdults={initialAdults}
+                initialAdults={adults}
                 onHotelOrRoomTypeChange={handleHotelOrRoomTypeChange}
               />
             );
@@ -276,10 +293,13 @@ export default function PackageCustomizePage(): React.JSX.Element {
           onOpenCreateClientModal={(): void => {
             setIsClientModalOpen(true);
           }}
+          travelDate={travelDate}
+          onTravelDateChange={setTravelDate}
+          adults={adults}
+          onAdultsChange={setAdults}
+          childrenCount={childrenCount}
+          onChildrenCountChange={setChildrenCount}
           initialSource={initialSource}
-          initialTravelDate={initialTravelDate}
-          initialAdults={initialAdults}
-          initialChildren={initialChildren}
           isSubmittingInquiry={isSubmittingInquiry}
           onSubmitInquiry={handleSubmitInquiry}
         />
