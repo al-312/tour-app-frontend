@@ -109,7 +109,7 @@ export default function ConsultantPackageSearchPage(): React.JSX.Element {
               onChange={(e) => {
                 setDestinationId(e.target.value);
               }}
-              className="w-full h-10 px-3 rounded-xl border border-app-border bg-app-surface text-xs text-app-fg focus:outline-none focus:border-app-brand"
+              className="w-full h-10 px-3 rounded-xl border border-app-border bg-app-surface text-xs text-app-fg focus:outline-none focus:border-app-brand cursor-pointer"
             >
               <option value="">All Destinations</option>
               {destinations.map((d) => (
@@ -125,14 +125,20 @@ export default function ConsultantPackageSearchPage(): React.JSX.Element {
               <MapPin className="w-3.5 h-3.5 text-app-muted" />
               Source City
             </label>
-            <Input
-              type="text"
-              placeholder="e.g. Bangalore"
+            <select
               value={source}
               onChange={(e) => {
                 setSource(e.target.value);
               }}
-            />
+              className="w-full h-10 px-3 rounded-xl border border-app-border bg-app-surface text-xs text-app-fg focus:outline-none focus:border-app-brand cursor-pointer"
+            >
+              <option value="">All Sources</option>
+              {destinations.map((d) => (
+                <option key={d.id} value={d.name}>
+                  {d.name} ({d.country})
+                </option>
+              ))}
+            </select>
           </div>
 
           <div>

@@ -203,7 +203,7 @@ export function AuthHeader(): React.JSX.Element {
   };
 
   return (
-    <header className="sticky top-0 z-40 bg-app-surface/80 backdrop-blur-md border-b border-app-border/40 px-6 xl:px-10 py-4 transition-colors duration-300">
+    <header className="sticky top-0 z-30 bg-app-surface/80 backdrop-blur-md border-b border-app-border/40 px-6 xl:px-10 py-4 transition-colors duration-300">
       <div className="flex items-center justify-between gap-4 max-w-7xl xl:max-w-[1400px] 2xl:max-w-[1600px] 3xl:max-w-[1800px] mx-auto">
         <HeaderPageTitle pathname={pathname} />
 

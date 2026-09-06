@@ -2,6 +2,7 @@
 
 import * as React from "react";
 import { X } from "lucide-react";
+import { createPortal } from "react-dom";
 
 import { cn } from "@/lib/utils/cn";
 
@@ -25,6 +26,10 @@ const maxWidthClasses = {
   "5xl": "max-w-5xl",
 };
 
+const emptySubscribe = (): (() => void) => () => undefined;
+const getClientSnapshot = (): boolean => true;
+const getServerSnapshot = (): boolean => false;
+
 export default function Modal({
   isOpen,
   onClose,
@@ -33,6 +38,12 @@ export default function Modal({
   children,
   maxWidth = "md",
 }: ModalProps): React.JSX.Element | null {
+  const isMounted = React.useSyncExternalStore(
+    emptySubscribe,
+    getClientSnapshot,
+    getServerSnapshot
+  );
+
   React.useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent): void => {
       if (e.key === "Escape") onClose();
@@ -47,21 +58,21 @@ export default function Modal({
     };
   }, [isOpen, onClose]);
 
-  if (!isOpen) return null;
+  if (!isOpen || !isMounted) return null;
 
-  return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 overflow-y-auto">
-      {/* Backdrop */}
+  return createPortal(
+    <div className="fixed inset-0 z-[999] flex items-center justify-center p-4 overflow-y-auto">
+      {/* Backdrop covering full screen including sidebar and header */}
       <div
-        className="fixed inset-0 bg-black/60 backdrop-blur-xs transition-opacity animate-fade-in"
+        className="fixed inset-0 bg-black/70 backdrop-blur-md transition-opacity animate-fade-in z-[999]"
         onClick={onClose}
         aria-hidden="true"
       />
 
-      {/* Dialog content */}
+      {/* Dialog content on top of everything */}
       <div
         className={cn(
-          "relative w-full bg-app-surface border border-app-border/80 rounded-2xl shadow-2xl z-10 p-6 flex flex-col gap-5 animate-scale-up",
+          "relative w-full bg-app-surface border border-app-border/80 rounded-2xl shadow-2xl z-[1000] p-6 flex flex-col gap-5 animate-scale-up",
           maxWidthClasses[maxWidth]
         )}
         role="dialog"
@@ -84,6 +95,7 @@ export default function Modal({
 
         <div>{children}</div>
       </div>
-    </div>
+    </div>,
+    document.body
   );
 }
