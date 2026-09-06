@@ -35,6 +35,10 @@ interface Step1InfoProps {
   setDestinationId: (val: string) => void;
   startDate?: string | undefined;
   setStartDate?: ((val: string) => void) | undefined;
+  validFrom?: string | undefined;
+  setValidFrom?: ((val: string) => void) | undefined;
+  validTo?: string | undefined;
+  setValidTo?: ((val: string) => void) | undefined;
   numberOfDays: number;
   setNumberOfDays: (val: number) => void;
   clients?: Client[] | undefined;
@@ -52,6 +56,10 @@ export function Step1Info({
   setDestinationId,
   startDate = "",
   setStartDate,
+  validFrom = "",
+  setValidFrom,
+  validTo = "",
+  setValidTo,
   numberOfDays,
   setNumberOfDays,
   clients = [],
@@ -66,6 +74,8 @@ export function Step1Info({
     packageName,
     destinationId,
     numberOfDays,
+    validFrom,
+    validTo,
   });
 
   const errors: Step1ValidationErrors = touched ? validation.errors : {};
@@ -88,7 +98,7 @@ export function Step1Info({
           <div>
             <h2 className="text-lg font-bold text-foreground">Basic Package Details</h2>
             <p className="text-xs text-muted-foreground">
-              Define tour name, destination, and duration.
+              Define tour name, destination, package validity dates, and duration.
             </p>
           </div>
 
@@ -168,6 +178,32 @@ export function Step1Info({
                 error={errors.startDate}
                 onChange={(e) => {
                   setStartDate(e.target.value);
+                }}
+                icon={Calendar}
+              />
+            ) : null}
+
+            {setValidFrom ? (
+              <Input
+                label="Valid From Date *"
+                type="date"
+                value={validFrom}
+                error={errors.validFrom}
+                onChange={(e) => {
+                  setValidFrom(e.target.value);
+                }}
+                icon={Calendar}
+              />
+            ) : null}
+
+            {setValidTo ? (
+              <Input
+                label="Valid To Date *"
+                type="date"
+                value={validTo}
+                error={errors.validTo}
+                onChange={(e) => {
+                  setValidTo(e.target.value);
                 }}
                 icon={Calendar}
               />

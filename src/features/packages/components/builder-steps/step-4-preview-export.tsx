@@ -19,10 +19,12 @@ interface Step4PreviewExportProps {
   mode: "create" | "edit";
   packageName: string;
   startDate: string;
+  validFrom?: string | undefined;
+  validTo?: string | undefined;
   numberOfDays: number;
   adults: number;
   childrenCount: number;
-  status: "CONFIRMED" | "CANCELLED";
+  status: "CONFIRMED" | "CANCELLED" | "EXPIRED";
   selectedClient?: Client | undefined;
   selectedDestination?: Destination | undefined;
   selectedConsultant?: Consultant | undefined;
@@ -74,6 +76,8 @@ interface SummaryGridProps {
   isAdmin: boolean;
   selectedClient?: Client | undefined;
   startDate: string;
+  validFrom?: string | undefined;
+  validTo?: string | undefined;
   numberOfDays: number;
   adults: number;
   childrenCount: number;
@@ -83,6 +87,8 @@ function SummaryGrid({
   isAdmin,
   selectedClient,
   startDate,
+  validFrom,
+  validTo,
   numberOfDays,
   adults,
   childrenCount,
@@ -100,6 +106,16 @@ function SummaryGrid({
         <div className="bg-background/80 p-3 rounded-lg border border-border">
           <div className="text-muted-foreground font-semibold">Start Date</div>
           <div className="font-bold text-foreground mt-0.5">{startDate}</div>
+        </div>
+      ) : null}
+
+      {validFrom || validTo ? (
+        <div className="bg-background/80 p-3 rounded-lg border border-border">
+          <div className="text-muted-foreground font-semibold">Validity</div>
+          <div className="font-bold text-foreground mt-0.5">
+            {validFrom !== "" && validFrom !== undefined ? validFrom : "Open"}
+            {validTo ? ` to ${validTo}` : " onwards"}
+          </div>
         </div>
       ) : null}
 
@@ -129,6 +145,8 @@ export function Step4PreviewExport({
   mode,
   packageName,
   startDate,
+  validFrom,
+  validTo,
   numberOfDays,
   adults,
   childrenCount,
@@ -170,6 +188,8 @@ export function Step4PreviewExport({
           isAdmin={isAdmin}
           selectedClient={selectedClient}
           startDate={startDate}
+          validFrom={validFrom}
+          validTo={validTo}
           numberOfDays={numberOfDays}
           adults={adults}
           childrenCount={childrenCount}

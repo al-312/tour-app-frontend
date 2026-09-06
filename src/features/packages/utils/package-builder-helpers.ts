@@ -13,6 +13,8 @@ export function buildPackagePayload({
   status,
   daysData,
   startDate,
+  validFrom,
+  validTo,
   firstHotelId,
 }: {
   packageName: string;
@@ -21,11 +23,14 @@ export function buildPackagePayload({
   numberOfDays: number;
   adults?: number;
   childrenCount?: number;
-  status: "CONFIRMED" | "CANCELLED";
+  status: "CONFIRMED" | "CANCELLED" | "EXPIRED";
   daysData: DayItineraryItem[];
-  startDate: string;
+  startDate?: string;
+  validFrom?: string;
+  validTo?: string;
   firstHotelId: string;
 }): CreatePackageRequest {
+  const fromDate = validFrom ?? startDate;
   const payload: CreatePackageRequest = {
     packageName,
     source: "Bangalore",
@@ -35,6 +40,10 @@ export function buildPackagePayload({
     adults: adults ?? 2,
     children: childrenCount ?? 0,
     status,
+    fromDatetimeUtc: fromDate
+      ? new Date(fromDate).toISOString()
+      : new Date().toISOString(),
+    toDatetimeUtc: validTo ? new Date(validTo).toISOString() : new Date().toISOString(),
     packageDays: daysData.map((day) => {
       const hotelId = day.hotelId ? day.hotelId : firstHotelId;
       const item: {
@@ -51,9 +60,6 @@ export function buildPackagePayload({
       return item;
     }),
   };
-  if (startDate) {
-    payload.fromDatetimeUtc = new Date(startDate).toISOString();
-  }
   return payload;
 }
 
@@ -109,10 +115,12 @@ export function computeEditInitialState(
   clientId: string;
   destinationId: string;
   startDate: string;
+  validFrom: string;
+  validTo: string;
   numberOfDays: number;
   adults: number;
   childrenCount: number;
-  status: "CONFIRMED" | "CANCELLED";
+  status: "CONFIRMED" | "CANCELLED" | "EXPIRED";
   consultantId: string;
   daysData: DayItineraryItem[];
 } {
@@ -122,20 +130,36 @@ export function computeEditInitialState(
     consultants
   );
 
-  const rawDate = existingPkg.fromDatetimeUtc ?? existingPkg.startDate;
-  const formattedDate = rawDate ? new Date(rawDate).toISOString().split("T")[0] : "";
+  const rawFromDate = existingPkg.fromDatetimeUtc ?? existingPkg.startDate;
+  const formattedFromDate = rawFromDate
+    ? new Date(rawFromDate).toISOString().split("T")[0]
+    : "";
+  const rawToDate = existingPkg.toDatetimeUtc;
+  const formattedToDate = rawToDate
+    ? new Date(rawToDate).toISOString().split("T")[0]
+    : "";
+
   const pkgDuration = existingPkg.durationDays > 0 ? existingPkg.durationDays : 5;
   const daysData = resolveEditDaysData(existingPkg, pkgDuration, firstHotelId);
+
+  const initialStatus: "CONFIRMED" | "CANCELLED" | "EXPIRED" =
+    existingPkg.status === "EXPIRED"
+      ? "EXPIRED"
+      : existingPkg.status === "CANCELLED"
+        ? "CANCELLED"
+        : "CONFIRMED";
 
   return {
     packageName: existingPkg.packageName,
     clientId: validClientId,
     destinationId: existingPkg.destinationId ?? "",
-    startDate: formattedDate ?? "",
+    startDate: formattedFromDate ?? "",
+    validFrom: formattedFromDate ?? "",
+    validTo: formattedToDate ?? "",
     numberOfDays: pkgDuration,
     adults: existingPkg.adults ?? 2,
     childrenCount: existingPkg.children ?? 0,
-    status: existingPkg.status === "CANCELLED" ? "CANCELLED" : "CONFIRMED",
+    status: initialStatus,
     consultantId: validConsultantId,
     daysData,
   };

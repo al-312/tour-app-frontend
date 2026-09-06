@@ -6,6 +6,8 @@ export interface Step1ValidationErrors {
   numberOfDays?: string | undefined;
   clientId?: string | undefined;
   startDate?: string | undefined;
+  validFrom?: string | undefined;
+  validTo?: string | undefined;
 }
 
 export interface Step1ValidationResult {
@@ -18,6 +20,8 @@ export function validateStep1Data(data: {
   packageName: string;
   destinationId: string;
   numberOfDays: number;
+  validFrom?: string | undefined;
+  validTo?: string | undefined;
 }): Step1ValidationResult {
   const errors: Step1ValidationErrors = {};
 
@@ -29,6 +33,18 @@ export function validateStep1Data(data: {
   }
   if (!data.numberOfDays || data.numberOfDays < 1) {
     errors.numberOfDays = "Number of days must be at least 1";
+  }
+  if (!data.validFrom) {
+    errors.validFrom = "Valid From date is required";
+  }
+  if (!data.validTo) {
+    errors.validTo = "Valid To date is required";
+  } else if (
+    data.validFrom &&
+    data.validTo &&
+    new Date(data.validTo) < new Date(data.validFrom)
+  ) {
+    errors.validTo = "Valid To date cannot be earlier than Valid From date";
   }
 
   const keys = Object.keys(errors) as (keyof Step1ValidationErrors)[];

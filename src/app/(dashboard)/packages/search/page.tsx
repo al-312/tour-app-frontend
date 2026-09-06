@@ -30,10 +30,14 @@ export default function ConsultantPackageSearchPage(): React.JSX.Element {
 
   const { data: destinations = [] } = useGetDestinationsQuery(undefined);
   const {
-    data: packages = [],
+    data: rawPackages = [],
     isLoading,
     isFetching,
   } = useSearchPackagesQuery(searchParams);
+
+  const packages = React.useMemo(() => {
+    return rawPackages.filter((p) => p.status !== "EXPIRED");
+  }, [rawPackages]);
 
   const handleSearch = (e: React.SyntheticEvent): void => {
     e.preventDefault();

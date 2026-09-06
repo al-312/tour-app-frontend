@@ -68,10 +68,14 @@ export function usePackageBuilderState({
   const [clientId, setClientId] = React.useState("");
   const [destinationId, setDestinationId] = React.useState("");
   const [startDate, setStartDate] = React.useState<string>("");
+  const [validFrom, setValidFrom] = React.useState<string>("");
+  const [validTo, setValidTo] = React.useState<string>("");
   const [numberOfDays, setNumberOfDays] = React.useState(5);
   const [adults, setAdults] = React.useState(2);
   const [childrenCount, setChildrenCount] = React.useState(0);
-  const [status, setStatus] = React.useState<"CONFIRMED" | "CANCELLED">("CONFIRMED");
+  const [status, setStatus] = React.useState<"CONFIRMED" | "CANCELLED" | "EXPIRED">(
+    "CONFIRMED"
+  );
   const [activeDay, setActiveDay] = React.useState(1);
   const [daysData, setDaysData] = React.useState<DayItineraryItem[]>(() => [
     { dayNumber: 1, hotelId: "", notes: "" },
@@ -153,6 +157,8 @@ export function usePackageBuilderState({
     setClientId(init.clientId);
     setDestinationId(init.destinationId);
     setStartDate(init.startDate);
+    setValidFrom(init.validFrom);
+    setValidTo(init.validTo);
     setNumberOfDays(init.numberOfDays);
     setAdults(init.adults);
     setChildrenCount(init.childrenCount);
@@ -176,6 +182,8 @@ export function usePackageBuilderState({
         packageName,
         destinationId,
         numberOfDays,
+        validFrom,
+        validTo,
       });
       if (!v1.isValid) {
         toast.error(v1.firstError ?? "Please complete Step 1: Basic Info first");
@@ -216,6 +224,8 @@ export function usePackageBuilderState({
         status,
         daysData,
         startDate,
+        validFrom,
+        validTo,
         firstHotelId,
       });
       if (mode === "create") {
@@ -244,6 +254,10 @@ export function usePackageBuilderState({
     setDestinationId,
     startDate,
     setStartDate,
+    validFrom,
+    setValidFrom,
+    validTo,
+    setValidTo,
     numberOfDays,
     handleNumberOfDaysChange,
     adults,

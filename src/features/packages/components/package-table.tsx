@@ -39,6 +39,8 @@ function StatusBadge({ status }: { status: PackageStatus }): React.JSX.Element {
       return <Badge variant="emerald">Confirmed</Badge>;
     case "CANCELLED":
       return <Badge variant="rose">Cancelled</Badge>;
+    case "EXPIRED":
+      return <Badge variant="amber">Expired</Badge>;
     default:
       return <Badge variant="muted">{status}</Badge>;
   }
@@ -109,6 +111,9 @@ export function PackageTable({
               <option value="CANCELLED" className="bg-app-surface text-app-fg">
                 Cancelled
               </option>
+              <option value="EXPIRED" className="bg-app-surface text-app-fg">
+                Expired
+              </option>
             </select>
             <Filter className="w-3.5 h-3.5 text-app-muted absolute left-3 top-3.5 pointer-events-none" />
           </div>
@@ -154,9 +159,11 @@ export function PackageTable({
                     </span>
                     <span className="text-xs text-app-muted font-medium mt-0.5">
                       {String(pkg.durationDays)} Days
-                      {pkg.startDate
-                        ? ` • Starts ${new Date(pkg.startDate).toLocaleDateString()}`
-                        : ""}
+                      {pkg.fromDatetimeUtc || pkg.toDatetimeUtc
+                        ? ` • Valid ${pkg.fromDatetimeUtc ? new Date(pkg.fromDatetimeUtc).toLocaleDateString() : "Open"}${pkg.toDatetimeUtc ? `–${new Date(pkg.toDatetimeUtc).toLocaleDateString()}` : " onwards"}`
+                        : pkg.startDate
+                          ? ` • Starts ${new Date(pkg.startDate).toLocaleDateString()}`
+                          : ""}
                     </span>
                   </div>
                 </Table.Cell>

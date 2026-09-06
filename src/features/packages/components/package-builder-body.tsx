@@ -24,14 +24,18 @@ interface PackageBuilderBodyProps {
   setDestinationId: (val: string) => void;
   startDate: string;
   setStartDate: (val: string) => void;
+  validFrom?: string;
+  setValidFrom?: (val: string) => void;
+  validTo?: string;
+  setValidTo?: (val: string) => void;
   numberOfDays: number;
   handleNumberOfDaysChange: (count: number) => void;
   adults: number;
   setAdults: (val: number) => void;
   childrenCount: number;
   setChildrenCount: (val: number) => void;
-  status: "CONFIRMED" | "CANCELLED";
-  setStatus: (val: "CONFIRMED" | "CANCELLED") => void;
+  status: "CONFIRMED" | "CANCELLED" | "EXPIRED";
+  setStatus: (val: "CONFIRMED" | "CANCELLED" | "EXPIRED") => void;
   activeDay: number;
   setActiveDay: (day: number) => void;
   daysData: DayItineraryItem[];
@@ -60,6 +64,10 @@ export function PackageBuilderBody(props: PackageBuilderBodyProps): React.JSX.El
     setDestinationId,
     startDate,
     setStartDate,
+    validFrom,
+    setValidFrom,
+    validTo,
+    setValidTo,
     numberOfDays,
     handleNumberOfDaysChange,
     adults,
@@ -93,6 +101,10 @@ export function PackageBuilderBody(props: PackageBuilderBodyProps): React.JSX.El
         setDestinationId={setDestinationId}
         startDate={startDate}
         setStartDate={setStartDate}
+        validFrom={validFrom}
+        setValidFrom={setValidFrom}
+        validTo={validTo}
+        setValidTo={setValidTo}
         numberOfDays={numberOfDays}
         setNumberOfDays={handleNumberOfDaysChange}
         clients={clients}
@@ -131,6 +143,8 @@ export function PackageBuilderBody(props: PackageBuilderBodyProps): React.JSX.El
         mode={mode}
         packageName={packageName}
         startDate={startDate}
+        validFrom={validFrom}
+        validTo={validTo}
         numberOfDays={numberOfDays}
         adults={adults}
         childrenCount={childrenCount}
@@ -174,6 +188,8 @@ export function PackageBuilderBody(props: PackageBuilderBodyProps): React.JSX.El
       mode={mode}
       packageName={packageName}
       startDate={startDate}
+      validFrom={validFrom}
+      validTo={validTo}
       numberOfDays={numberOfDays}
       adults={adults}
       childrenCount={childrenCount}

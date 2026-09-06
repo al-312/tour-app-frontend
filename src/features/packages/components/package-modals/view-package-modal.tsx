@@ -38,6 +38,10 @@ function PackageSummaryHeader({ pkg }: { pkg: Package }): React.JSX.Element {
             <CheckCircle2 className="w-3 h-3" />{" "}
             {pkg.status === "ACTIVE" ? "Active" : "Confirmed"}
           </Badge>
+        ) : pkg.status === "EXPIRED" ? (
+          <Badge variant="amber" className="gap-1">
+            <XCircle className="w-3 h-3" /> Expired
+          </Badge>
         ) : (
           <Badge variant="rose" className="gap-1">
             <XCircle className="w-3 h-3" /> Cancelled
@@ -57,7 +61,23 @@ function PackageSummaryHeader({ pkg }: { pkg: Package }): React.JSX.Element {
           </div>
         ) : null}
 
-        {pkg.startDate ? (
+        {pkg.fromDatetimeUtc || pkg.toDatetimeUtc ? (
+          <div className="bg-app-surface p-2.5 rounded-lg border border-app-border/60">
+            <div className="text-app-muted font-semibold flex items-center gap-1 text-[11px]">
+              Validity
+            </div>
+            <div className="font-bold text-app-fg mt-0.5">
+              {pkg.fromDatetimeUtc
+                ? new Date(pkg.fromDatetimeUtc).toLocaleDateString()
+                : "Open"}
+              {pkg.toDatetimeUtc
+                ? ` – ${new Date(pkg.toDatetimeUtc).toLocaleDateString()}`
+                : " onwards"}
+            </div>
+          </div>
+        ) : null}
+
+        {pkg.startDate && !pkg.fromDatetimeUtc ? (
           <div className="bg-app-surface p-2.5 rounded-lg border border-app-border/60">
             <div className="text-app-muted font-semibold flex items-center gap-1 text-[11px]">
               Start Date

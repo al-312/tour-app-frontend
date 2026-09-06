@@ -3,7 +3,8 @@ import type { Client } from "@/features/clients/types/client.types";
 import type { Consultant } from "@/features/consultants/types/consultant.types";
 import type { Destination } from "@/features/destinations/types/destination.types";
 
-export type PackageStatus = "DRAFT" | "ACTIVE" | "INACTIVE" | "CONFIRMED" | "CANCELLED";
+export type PackageStatus =
+  "DRAFT" | "ACTIVE" | "INACTIVE" | "CONFIRMED" | "CANCELLED" | "EXPIRED";
 
 export interface PackageDay {
   id: string;
@@ -58,8 +59,8 @@ export interface CreatePackageRequest {
   durationDays: number;
   adults?: number | undefined;
   children?: number | undefined;
-  fromDatetimeUtc?: string | undefined;
-  toDatetimeUtc?: string | undefined;
+  fromDatetimeUtc: string;
+  toDatetimeUtc: string;
   summary?: string | undefined;
   startingPrice?: number | undefined;
   status?: string | undefined;

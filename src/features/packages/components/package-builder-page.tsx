@@ -40,6 +40,10 @@ export function PackageBuilderPage({
     setDestinationId,
     startDate,
     setStartDate,
+    validFrom,
+    setValidFrom,
+    validTo,
+    setValidTo,
     numberOfDays,
     handleNumberOfDaysChange,
     adults,
@@ -122,6 +126,10 @@ export function PackageBuilderPage({
         setDestinationId={setDestinationId}
         startDate={startDate}
         setStartDate={setStartDate}
+        validFrom={validFrom}
+        setValidFrom={setValidFrom}
+        validTo={validTo}
+        setValidTo={setValidTo}
         numberOfDays={numberOfDays}
         handleNumberOfDaysChange={handleNumberOfDaysChange}
         adults={adults}
