@@ -5,7 +5,6 @@ import * as React from "react";
 import { toast } from "sonner";
 import { usePathname, useRouter } from "next/navigation";
 import {
-  Bell,
   Sun,
   Moon,
   LogOut,
@@ -21,6 +20,7 @@ import { useAppDispatch, useAppSelector } from "@/store/hooks";
 
 import { useTheme } from "../shared/theme-context";
 import { PAGE_TITLES } from "./constants/layout.constants";
+import { NotificationsDropdown } from "./notifications-dropdown";
 
 function HeaderPageTitle({ pathname }: { pathname: string }): React.JSX.Element {
   const pageInfo = PAGE_TITLES[pathname] ?? {
@@ -208,14 +208,7 @@ export function AuthHeader(): React.JSX.Element {
         <HeaderPageTitle pathname={pathname} />
 
         <div className="flex items-center gap-3">
-          <button
-            type="button"
-            aria-label="Notifications"
-            className="p-2.5 rounded-xl text-app-muted hover:text-app-fg hover:bg-app-surface-variant transition-colors cursor-pointer relative"
-          >
-            <Bell className="w-4 h-4" />
-            <span className="absolute top-1.5 right-1.5 w-2 h-2 rounded-full bg-app-brand" />
-          </button>
+          <NotificationsDropdown />
 
           <ThemeToggleButton theme={theme} onToggle={toggleTheme} />
 
