@@ -24,6 +24,7 @@ interface HotelTableProps {
   onOpenCreate: () => void;
   onOpenEdit: (hotel: Hotel) => void;
   onOpenDelete: (hotel: Hotel) => void;
+  onManageRoomTypes?: (hotel: Hotel) => void;
 }
 
 function StarRatingDisplay({ rating }: { rating: number }): React.JSX.Element {
@@ -50,6 +51,7 @@ export function HotelTable({
   onOpenCreate,
   onOpenEdit,
   onOpenDelete,
+  onManageRoomTypes,
 }: HotelTableProps): React.JSX.Element {
   const [search, setSearch] = React.useState("");
   const [destinationFilter, setDestinationFilter] = React.useState<string>("ALL");
@@ -208,6 +210,18 @@ export function HotelTable({
                 </Table.Cell>
                 <Table.Cell className="text-right">
                   <div className="flex items-center justify-end gap-1">
+                    {onManageRoomTypes && (
+                      <button
+                        type="button"
+                        onClick={() => {
+                          onManageRoomTypes(hotel);
+                        }}
+                        title="Manage Room Types"
+                        className="px-2 py-1 rounded-lg text-xs font-semibold bg-app-brand/10 text-app-brand hover:bg-app-brand/20 transition-colors cursor-pointer mr-1"
+                      >
+                        Room Types ({hotel.roomTypes?.length ?? 0})
+                      </button>
+                    )}
                     <button
                       type="button"
                       onClick={() => {

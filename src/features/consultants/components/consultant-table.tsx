@@ -24,12 +24,14 @@ export function ConsultantTable({
   const [search, setSearch] = React.useState("");
 
   const filtered = React.useMemo(() => {
-    return consultants.filter(
-      (c) =>
-        c.name.toLowerCase().includes(search.toLowerCase()) ||
+    return consultants.filter((c) => {
+      const fullName = c.name ?? [c.firstName, c.lastName].filter(Boolean).join(" ");
+      return (
+        fullName.toLowerCase().includes(search.toLowerCase()) ||
         c.designation.toLowerCase().includes(search.toLowerCase()) ||
         (c.email ?? "").toLowerCase().includes(search.toLowerCase())
-    );
+      );
+    });
   }, [consultants, search]);
 
   return (
@@ -72,60 +74,73 @@ export function ConsultantTable({
             </Table.Row>
           </Table.Header>
           <Table.Body>
-            {filtered.map((consultant) => (
-              <Table.Row key={consultant.id}>
-                <Table.Cell>
-                  <div className="flex items-center gap-3">
-                    <div className="w-9 h-9 rounded-full bg-linear-to-tr from-purple-500 to-indigo-500 flex items-center justify-center text-white text-xs font-bold shrink-0">
-                      {consultant.name.slice(0, 2).toUpperCase()}
+            {filtered.map((consultant) => {
+              const fullName =
+                consultant.name ??
+                [consultant.firstName, consultant.lastName].filter(Boolean).join(" ");
+              const phoneObj =
+                typeof consultant.phone === "object" ? consultant.phone : null;
+              const phoneStr = phoneObj
+                ? [phoneObj.countryCode, phoneObj.number ?? phoneObj.phoneNumber]
+                    .filter(Boolean)
+                    .join(" ")
+                : typeof consultant.phone === "string"
+                  ? consultant.phone
+                  : "";
+
+              return (
+                <Table.Row key={consultant.id}>
+                  <Table.Cell>
+                    <div className="flex items-center gap-3">
+                      <div className="w-9 h-9 rounded-full bg-linear-to-tr from-purple-500 to-indigo-500 flex items-center justify-center text-white text-xs font-bold shrink-0">
+                        {fullName.slice(0, 2).toUpperCase()}
+                      </div>
+                      <span className="font-bold text-app-fg text-xs">{fullName}</span>
                     </div>
-                    <span className="font-bold text-app-fg text-xs">
-                      {consultant.name}
-                    </span>
-                  </div>
-                </Table.Cell>
-                <Table.Cell className="text-xs text-app-fg font-medium">
-                  {consultant.designation}
-                </Table.Cell>
-                <Table.Cell>
-                  <div className="flex flex-col gap-0.5 text-xs">
-                    {consultant.email && (
-                      <span className="text-app-fg font-mono">{consultant.email}</span>
-                    )}
-                    {consultant.phone && (
-                      <span className="text-app-muted">{consultant.phone}</span>
-                    )}
-                    {!consultant.email && !consultant.phone && (
-                      <span className="text-app-muted italic">—</span>
-                    )}
-                  </div>
-                </Table.Cell>
-                <Table.Cell className="text-right">
-                  <div className="flex items-center justify-end gap-1">
-                    <button
-                      type="button"
-                      onClick={() => {
-                        onOpenEdit(consultant);
-                      }}
-                      title="Edit Consultant"
-                      className="p-1.5 rounded-lg text-app-muted hover:text-app-fg hover:bg-app-surface-variant cursor-pointer"
-                    >
-                      <Edit3 className="w-4 h-4" />
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => {
-                        onOpenDelete(consultant);
-                      }}
-                      title="Delete Consultant"
-                      className="p-1.5 rounded-lg text-app-muted hover:text-rose-500 hover:bg-rose-500/10 cursor-pointer"
-                    >
-                      <Trash2 className="w-4 h-4" />
-                    </button>
-                  </div>
-                </Table.Cell>
-              </Table.Row>
-            ))}
+                  </Table.Cell>
+                  <Table.Cell className="text-xs text-app-fg font-medium">
+                    {consultant.designation}
+                  </Table.Cell>
+                  <Table.Cell>
+                    <div className="flex flex-col gap-0.5 text-xs">
+                      {consultant.email && (
+                        <span className="text-app-fg font-mono">{consultant.email}</span>
+                      )}
+                      {phoneStr ? (
+                        <span className="text-app-muted">{phoneStr}</span>
+                      ) : null}
+                      {!consultant.email && !phoneStr && (
+                        <span className="text-app-muted italic">—</span>
+                      )}
+                    </div>
+                  </Table.Cell>
+                  <Table.Cell className="text-right">
+                    <div className="flex items-center justify-end gap-1">
+                      <button
+                        type="button"
+                        onClick={() => {
+                          onOpenEdit(consultant);
+                        }}
+                        title="Edit Consultant"
+                        className="p-1.5 rounded-lg text-app-muted hover:text-app-fg hover:bg-app-surface-variant cursor-pointer"
+                      >
+                        <Edit3 className="w-4 h-4" />
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          onOpenDelete(consultant);
+                        }}
+                        title="Delete Consultant"
+                        className="p-1.5 rounded-lg text-app-muted hover:text-rose-500 hover:bg-rose-500/10 cursor-pointer"
+                      >
+                        <Trash2 className="w-4 h-4" />
+                      </button>
+                    </div>
+                  </Table.Cell>
+                </Table.Row>
+              );
+            })}
           </Table.Body>
         </Table>
       )}

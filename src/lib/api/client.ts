@@ -28,6 +28,7 @@ const getAuthToken = (state: RootState): string | null => {
 
 const rawBaseQuery = fetchBaseQuery({
   baseUrl: API_BASE_URL,
+  timeout: 30000,
   prepareHeaders: (headers, { getState }) => {
     const token = getAuthToken(getState() as RootState);
     if (token) headers.set("Authorization", `Bearer ${token}`);
@@ -172,6 +173,8 @@ export const apiSlice = createApi({
     "Attraction",
     "Consultant",
     "Package",
+    "Inquiry",
+    "AuditLog",
   ],
   endpoints: () => ({}),
 });

@@ -71,7 +71,11 @@ export function ViewPackageModal({
                 <User className="w-3 h-3 text-app-brand" /> Client
               </div>
               <div className="font-bold text-app-fg mt-0.5 truncate">
-                {pkg.client?.name ?? "Unassigned"}
+                {pkg.client?.name ??
+                  ([pkg.client?.firstName, pkg.client?.lastName]
+                    .filter(Boolean)
+                    .join(" ") ||
+                    "Unassigned")}
               </div>
             </div>
 
@@ -87,7 +91,7 @@ export function ViewPackageModal({
             <div className="bg-app-surface p-2.5 rounded-lg border border-app-border/60">
               <div className="text-app-muted font-semibold text-[11px]">Duration</div>
               <div className="font-bold text-app-fg mt-0.5">
-                {String(pkg.numberOfDays)} Days
+                {String(pkg.durationDays)} Days
               </div>
             </div>
 
@@ -96,8 +100,8 @@ export function ViewPackageModal({
                 <UsersIcon className="w-3 h-3 text-app-brand" /> Travelers
               </div>
               <div className="font-bold text-app-fg mt-0.5">
-                {String(pkg.adults)} Adults
-                {pkg.children > 0 ? `, ${String(pkg.children)} Children` : ""}
+                {String(pkg.adults ?? 2)} Adults
+                {(pkg.children ?? 0) > 0 ? `, ${String(pkg.children)} Children` : ""}
               </div>
             </div>
           </div>
@@ -158,24 +162,42 @@ export function ViewPackageModal({
                 <Briefcase className="w-3 h-3 text-app-brand" /> Travel Consultant
               </div>
               <div className="text-xs font-bold text-app-fg mt-0.5">
-                {pkg.consultant.name}
+                {pkg.consultant.name ??
+                  ([pkg.consultant.firstName, pkg.consultant.lastName]
+                    .filter(Boolean)
+                    .join(" ") ||
+                    "Unassigned")}
               </div>
               <div className="text-[11px] text-app-muted">
                 {pkg.consultant.designation}
               </div>
             </div>
-            <div className="flex flex-col text-[11px] text-app-muted gap-0.5 text-right">
-              {pkg.consultant.phone ? (
-                <span className="flex items-center gap-1 justify-end">
-                  <Phone className="w-3 h-3" /> {pkg.consultant.phone}
-                </span>
-              ) : null}
-              {pkg.consultant.email ? (
-                <span className="flex items-center gap-1 justify-end">
-                  <Mail className="w-3 h-3" /> {pkg.consultant.email}
-                </span>
-              ) : null}
-            </div>
+            {(() => {
+              const phoneObj =
+                typeof pkg.consultant.phone === "object" ? pkg.consultant.phone : null;
+              const phoneStr = phoneObj
+                ? [phoneObj.countryCode, phoneObj.number ?? phoneObj.phoneNumber]
+                    .filter(Boolean)
+                    .join(" ")
+                : typeof pkg.consultant.phone === "string"
+                  ? pkg.consultant.phone
+                  : "";
+
+              return (
+                <div className="flex flex-col text-[11px] text-app-muted gap-0.5 text-right">
+                  {phoneStr ? (
+                    <span className="flex items-center gap-1 justify-end">
+                      <Phone className="w-3 h-3" /> {phoneStr}
+                    </span>
+                  ) : null}
+                  {pkg.consultant.email ? (
+                    <span className="flex items-center gap-1 justify-end">
+                      <Mail className="w-3 h-3" /> {pkg.consultant.email}
+                    </span>
+                  ) : null}
+                </div>
+              );
+            })()}
           </div>
         ) : null}
 

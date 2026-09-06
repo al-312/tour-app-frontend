@@ -30,7 +30,7 @@ export function DeleteConsultantModal({
   const handleDelete = async (): Promise<void> => {
     try {
       await deleteConsultant(consultant.id).unwrap();
-      toast.success(`Consultant "${consultant.name}" deleted successfully`);
+      toast.success(`Consultant "${consultant.name ?? ""}" deleted successfully`);
       onClose();
     } catch (err) {
       toast.error(apiTransformer.transformError(err, "Failed to delete consultant"));

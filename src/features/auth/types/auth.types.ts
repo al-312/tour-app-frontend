@@ -1,10 +1,15 @@
-export type UserRole = "ADMIN" | "CONSULTANT" | "CLIENT";
+export type UserRole = "SUPER_ADMIN" | "ADMIN" | "CONSULTANT" | "CLIENT";
 
 export interface User {
   id: string;
   email: string;
   name: string;
   role: UserRole;
+  status?: string;
+  mustChangePassword?: boolean;
+  passwordChangedAt?: string | null;
+  phone?: string | null;
+  companyName?: string | null;
   avatarUrl?: string;
   createdAt: string;
   updatedAt: string;

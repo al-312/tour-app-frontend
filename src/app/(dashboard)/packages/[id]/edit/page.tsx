@@ -9,5 +9,15 @@ export default function EditPackagePage(): React.JSX.Element {
   const params = useParams<{ id: string }>();
   const pkgId = params.id;
 
-  return <PackageBuilderPage mode="edit" pkgId={pkgId} />;
+  return (
+    <React.Suspense
+      fallback={
+        <div className="flex items-center justify-center p-16 text-sm font-semibold text-app-muted">
+          Loading Package Builder...
+        </div>
+      }
+    >
+      <PackageBuilderPage mode="edit" pkgId={pkgId} />
+    </React.Suspense>
+  );
 }

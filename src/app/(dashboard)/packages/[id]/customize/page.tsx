@@ -1,0 +1,300 @@
+"use client";
+
+import * as React from "react";
+import { Building2 } from "lucide-react";
+import { useParams, useSearchParams, useRouter } from "next/navigation";
+
+import { useGetPackageByIdQuery } from "@/features/packages/services/packages-api.slice";
+import { useCreateInquiryMutation } from "@/features/inquiries/services/inquiries-api.slice";
+import {
+  useGetClientsQuery,
+  useCreateClientMutation,
+} from "@/features/clients/services/clients-api.slice";
+import {
+  useGetHotelsQuery,
+  useCalculateAllocationMutation,
+} from "@/features/hotels/services/hotels-api.slice";
+
+import { CustomizeHeader } from "./customize-header";
+import { CustomizeClientModal } from "./customize-client-modal";
+import { CustomizeClientSection } from "./customize-client-section";
+import { CustomizeDayCard, type DaySelectionState } from "./customize-day-card";
+
+export default function PackageCustomizePage(): React.JSX.Element {
+  const params = useParams();
+  const searchParams = useSearchParams();
+  const router = useRouter();
+
+  const packageId = params.id as string;
+  const initialSource = searchParams.get("source") ?? "Bangalore";
+  const initialTravelDate = searchParams.get("travelDate") ?? "2026-10-15";
+  const initialAdults = parseInt(searchParams.get("adults") ?? "2", 10);
+  const initialChildren = parseInt(searchParams.get("children") ?? "0", 10);
+
+  const { data: pkg, isLoading: isPkgLoading } = useGetPackageByIdQuery(packageId, {
+    skip: !packageId,
+  });
+  const { data: hotelsData } = useGetHotelsQuery(undefined);
+  const { data: clientsData } = useGetClientsQuery(undefined);
+
+  const [createInquiry, { isLoading: isSubmittingInquiry }] = useCreateInquiryMutation();
+  const [createClient, { isLoading: isCreatingClient }] = useCreateClientMutation();
+
+  const allHotels = React.useMemo(() => hotelsData ?? [], [hotelsData]);
+  const clients = React.useMemo(() => clientsData ?? [], [clientsData]);
+
+  const [selectedClientId, setSelectedClientId] = React.useState<string>("");
+  const [daySelections, setDaySelections] = React.useState<
+    Record<number, DaySelectionState>
+  >({});
+  const [isClientModalOpen, setIsClientModalOpen] = React.useState(false);
+  const [errorMessage, setErrorMessage] = React.useState<string | null>(null);
+  const [successMessage, setSuccessMessage] = React.useState<string | null>(null);
+
+  const [calculateAllocation] = useCalculateAllocationMutation();
+
+  React.useEffect(() => {
+    if (pkg?.packageDays && pkg.packageDays.length > 0) {
+      const initialMap: Record<number, DaySelectionState> = {};
+      pkg.packageDays.forEach((pd) => {
+        const destId = pd.destinationId ?? pkg.destinationId ?? "";
+        const defaultHotel = allHotels.find((h) => h.destinationId === destId);
+        const defaultRoomType = defaultHotel?.roomTypes?.[0];
+
+        initialMap[pd.dayNumber] = {
+          dayNumber: pd.dayNumber,
+          destinationId: destId,
+          destinationName: pd.destination?.name ?? pkg.destination?.name ?? "Destination",
+          hotelId: defaultHotel?.id ?? "",
+          roomTypeId: defaultRoomType?.id ?? "",
+          roomsCount: 1,
+          extraBedsCount: 0,
+          calculatedPrice: defaultRoomType ? defaultRoomType.roomPrice : 0,
+          notes: pd.notes ?? undefined,
+        };
+      });
+      queueMicrotask(() => {
+        setDaySelections(initialMap);
+      });
+    }
+  }, [allHotels, pkg]);
+
+  const handleHotelOrRoomTypeChange = async (
+    dayNumber: number,
+    hotelId: string,
+    roomTypeId: string
+  ): Promise<void> => {
+    const current = daySelections[dayNumber];
+    if (!current) return;
+
+    if (!hotelId || !roomTypeId) {
+      setDaySelections((prev) => ({
+        ...prev,
+        [dayNumber]: {
+          ...current,
+          hotelId,
+          roomTypeId,
+          roomsCount: 0,
+          extraBedsCount: 0,
+          calculatedPrice: 0,
+        },
+      }));
+      return;
+    }
+
+    try {
+      const res = await calculateAllocation({
+        hotelId,
+        roomTypeId,
+        adults: initialAdults,
+        nights: 1,
+      }).unwrap();
+      setDaySelections((prev) => ({
+        ...prev,
+        [dayNumber]: {
+          ...current,
+          hotelId,
+          roomTypeId,
+          roomsCount: res.numberOfRooms,
+          extraBedsCount: res.numberOfExtraBeds,
+          calculatedPrice: res.calculatedTotal,
+        },
+      }));
+    } catch {
+      const selectedHotel = allHotels.find((h) => h.id === hotelId);
+      const selectedRoom = selectedHotel?.roomTypes?.find((rt) => rt.id === roomTypeId);
+      if (selectedRoom) {
+        const rooms = Math.max(
+          1,
+          Math.ceil(
+            initialAdults / (selectedRoom.maxAdults > 0 ? selectedRoom.maxAdults : 2)
+          )
+        );
+        setDaySelections((prev) => ({
+          ...prev,
+          [dayNumber]: {
+            ...current,
+            hotelId,
+            roomTypeId,
+            roomsCount: rooms,
+            extraBedsCount: 0,
+            calculatedPrice: rooms * selectedRoom.roomPrice,
+          },
+        }));
+      }
+    }
+  };
+
+  const totalCalculatedPackagePrice = React.useMemo(() => {
+    return Object.values(daySelections).reduce(
+      (sum, item) => sum + item.calculatedPrice,
+      0
+    );
+  }, [daySelections]);
+
+  const handleSubmitInquiry = async (): Promise<void> => {
+    setErrorMessage(null);
+    setSuccessMessage(null);
+    if (!pkg) return;
+    if (!selectedClientId) {
+      setErrorMessage("Please select or create a Client for this inquiry.");
+      return;
+    }
+
+    try {
+      const hotelSelections = Object.values(daySelections)
+        .filter((ds) => ds.hotelId && ds.roomTypeId)
+        .map((ds) => ({
+          dayNumber: ds.dayNumber,
+          destinationId: ds.destinationId,
+          destinationName: ds.destinationName,
+          hotelId: ds.hotelId,
+          roomTypeId: ds.roomTypeId,
+          roomsCount: ds.roomsCount,
+          extraBedsCount: ds.extraBedsCount,
+          calculatedPrice: ds.calculatedPrice,
+          notes: ds.notes,
+        }));
+
+      const daysCount =
+        pkg.durationDays > 0
+          ? pkg.durationDays
+          : pkg.packageDays.length > 0
+            ? pkg.packageDays.length
+            : 1;
+      const inquiry = await createInquiry({
+        clientId: selectedClientId,
+        packageId: pkg.id,
+        source: initialSource,
+        destinationId: pkg.destinationId ?? "",
+        travelDate: initialTravelDate,
+        days: daysCount,
+        adults: initialAdults,
+        children: initialChildren,
+        calculatedTotal: totalCalculatedPackagePrice,
+        packageSnapshot: {
+          packageName: pkg.packageName,
+          clientName: clients.find((c) => c.id === selectedClientId)?.name,
+          destinationName: pkg.destination?.name,
+          hotelSelections,
+        },
+      }).unwrap();
+
+      setSuccessMessage(
+        `Inquiry ${inquiry.inquiryNumber} submitted successfully! Redirecting...`
+      );
+      setTimeout(() => {
+        router.push("/inquiries");
+      }, 1500);
+    } catch (err: unknown) {
+      const apiErr = err as { data?: { message?: string }; message?: string } | undefined;
+      const msg = apiErr?.data?.message ?? apiErr?.message;
+      setErrorMessage(msg ?? "Failed to submit inquiry.");
+    }
+  };
+
+  if (isPkgLoading || !pkg) {
+    return (
+      <div className="min-h-screen bg-app-bg flex items-center justify-center p-8">
+        <div className="w-8 h-8 border-4 border-app-brand/20 border-t-app-brand rounded-full animate-spin" />
+      </div>
+    );
+  }
+
+  return (
+    <div className="max-w-6xl mx-auto flex flex-col gap-8 pb-16 pt-6">
+      <CustomizeHeader
+        durationDays={pkg.durationDays}
+        packageName={pkg.packageName}
+        totalCalculatedPackagePrice={totalCalculatedPackagePrice}
+        errorMessage={errorMessage}
+        successMessage={successMessage}
+      />
+
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        <div className="lg:col-span-2 flex flex-col gap-6">
+          <h2 className="text-base font-bold text-app-fg font-display-md flex items-center gap-2">
+            <Building2 className="w-4 h-4 text-app-brand" />
+            Itinerary Hotel Selection & Room Allocation
+          </h2>
+
+          {pkg.packageDays.map((pd) => {
+            const daySel = daySelections[pd.dayNumber] ?? {
+              dayNumber: pd.dayNumber,
+              destinationId: pd.destinationId ?? pkg.destinationId ?? "",
+              destinationName:
+                pd.destination?.name ?? pkg.destination?.name ?? "Destination",
+              hotelId: "",
+              roomTypeId: "",
+              roomsCount: 0,
+              extraBedsCount: 0,
+              calculatedPrice: 0,
+            };
+            const dayDestId = pd.destinationId ?? pkg.destinationId ?? "";
+
+            return (
+              <CustomizeDayCard
+                key={pd.dayNumber}
+                dayNumber={pd.dayNumber}
+                notes={pd.notes}
+                destinationName={pd.destination?.name}
+                dayDestinationId={dayDestId}
+                mainDestinationName={pkg.destination?.name}
+                daySel={daySel}
+                allHotels={allHotels}
+                initialAdults={initialAdults}
+                onHotelOrRoomTypeChange={handleHotelOrRoomTypeChange}
+              />
+            );
+          })}
+        </div>
+
+        <CustomizeClientSection
+          clients={clients}
+          selectedClientId={selectedClientId}
+          onSelectClient={setSelectedClientId}
+          onOpenCreateClientModal={(): void => {
+            setIsClientModalOpen(true);
+          }}
+          initialSource={initialSource}
+          initialTravelDate={initialTravelDate}
+          initialAdults={initialAdults}
+          initialChildren={initialChildren}
+          isSubmittingInquiry={isSubmittingInquiry}
+          onSubmitInquiry={handleSubmitInquiry}
+        />
+      </div>
+
+      <CustomizeClientModal
+        isOpen={isClientModalOpen}
+        onClose={(): void => {
+          setIsClientModalOpen(false);
+        }}
+        onClientCreated={setSelectedClientId}
+        createClient={createClient}
+        isCreatingClient={isCreatingClient}
+        onSetErrorMessage={setErrorMessage}
+      />
+    </div>
+  );
+}

@@ -3,8 +3,8 @@
 import * as React from "react";
 import { toast } from "sonner";
 import { useForm } from "react-hook-form";
+import { MapPin, Globe } from "lucide-react";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { MapPin, Globe, Image as ImageIcon } from "lucide-react";
 
 import Modal from "@/components/ui/modal";
 import Input from "@/components/ui/input";
@@ -35,7 +35,7 @@ export function CreateDestinationModal({
     formState: { errors },
   } = useForm<DestinationFormData>({
     resolver: zodResolver(destinationSchema),
-    defaultValues: { name: "", country: "", description: "", coverImage: "" },
+    defaultValues: { name: "", country: "", description: "" },
   });
 
   const onSubmit = async (data: DestinationFormData): Promise<void> => {
@@ -44,7 +44,6 @@ export function CreateDestinationModal({
         name: data.name,
         country: data.country,
         description: data.description ?? undefined,
-        coverImage: data.coverImage ?? undefined,
       }).unwrap();
 
       toast.success(`Destination "${data.name}" created successfully!`);
@@ -87,13 +86,6 @@ export function CreateDestinationModal({
           placeholder="e.g. City of lights..."
           error={errors.description?.message}
           {...register("description")}
-        />
-        <Input
-          label="Cover Image URL"
-          placeholder="https://images.unsplash.com/..."
-          icon={ImageIcon}
-          error={errors.coverImage?.message}
-          {...register("coverImage")}
         />
 
         <div className="flex items-center justify-end gap-3 pt-3 border-t border-app-border/40">

@@ -32,6 +32,11 @@ export function Step3ConsultantSelect({
   const validation = validateStep3Data(consultantId);
   const selectedConsultant = consultants.find((c) => c.id === consultantId);
 
+  const getConsultantDisplayName = (c: Consultant): string => {
+    const fullName = [c.firstName, c.lastName].filter(Boolean).join(" ");
+    return c.name ?? (fullName !== "" ? fullName : null) ?? "Consultant";
+  };
+
   const handleNextStep = (): void => {
     setTouched(true);
     if (!validation.isValid) {
@@ -42,6 +47,16 @@ export function Step3ConsultantSelect({
     }
     onNext();
   };
+
+  const selectedPhoneObj = selectedConsultant?.phone;
+  const selectedPhoneStr = selectedPhoneObj
+    ? [
+        selectedPhoneObj.countryCode,
+        selectedPhoneObj.number ?? selectedPhoneObj.phoneNumber,
+      ]
+        .filter(Boolean)
+        .join(" ")
+    : "";
 
   return (
     <Card className="p-6">
@@ -66,7 +81,7 @@ export function Step3ConsultantSelect({
           <option value="">Select a consultant...</option>
           {consultants.map((c) => (
             <option key={c.id} value={c.id}>
-              {c.name} ({c.designation})
+              {getConsultantDisplayName(c)} ({c.designation})
             </option>
           ))}
         </Select>
@@ -77,7 +92,7 @@ export function Step3ConsultantSelect({
               Assigned Consultant Details
             </div>
             <div className="text-sm font-bold text-foreground">
-              {selectedConsultant.name}
+              {getConsultantDisplayName(selectedConsultant)}
             </div>
             <div className="text-xs text-muted-foreground">
               {selectedConsultant.designation}
@@ -86,9 +101,7 @@ export function Step3ConsultantSelect({
               {selectedConsultant.email ? (
                 <span>✉️ {selectedConsultant.email}</span>
               ) : null}
-              {selectedConsultant.phone ? (
-                <span>📞 {selectedConsultant.phone}</span>
-              ) : null}
+              {selectedPhoneStr ? <span>📞 {selectedPhoneStr}</span> : null}
             </div>
           </div>
         ) : null}
