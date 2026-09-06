@@ -9,18 +9,15 @@ export interface StepItem {
   sub: string;
 }
 
-export const ADMIN_STEPS: StepItem[] = [
-  { id: 1, title: "Basic Info", sub: "Package & Details" },
-  { id: 2, title: "Daily Itinerary", sub: "Hotel Stay" },
-  { id: 3, title: "Preview & Save", sub: "Master Template" },
-];
-
-export const CONSULTANT_STEPS: StepItem[] = [
+export const PACKAGE_BUILDER_STEPS: StepItem[] = [
   { id: 1, title: "Basic Info", sub: "Package & Client" },
   { id: 2, title: "Daily Itinerary", sub: "Hotel Stay" },
-  { id: 3, title: "Select Consultant", sub: "Assign Consultant" },
-  { id: 4, title: "Preview Proposal", sub: "Review & Save" },
+  { id: 3, title: "Traveler Details", sub: "Adults & Children" },
+  { id: 4, title: "Preview & Save", sub: "Review & Publish" },
 ];
+
+export const ADMIN_STEPS = PACKAGE_BUILDER_STEPS;
+export const CONSULTANT_STEPS = PACKAGE_BUILDER_STEPS;
 
 interface StepIndicatorProps {
   currentStep: number;
@@ -30,7 +27,7 @@ interface StepIndicatorProps {
 
 export function StepIndicator({
   currentStep,
-  steps = CONSULTANT_STEPS,
+  steps = PACKAGE_BUILDER_STEPS,
   onStepClick,
 }: StepIndicatorProps): React.JSX.Element {
   const colsClass = steps.length === 3 ? "md:grid-cols-3" : "md:grid-cols-4";

@@ -4,7 +4,6 @@ import * as React from "react";
 import { toast } from "sonner";
 import { useRouter, useSearchParams, usePathname } from "next/navigation";
 
-import { useAppSelector } from "@/store/hooks";
 import { apiTransformer } from "@/lib/api/api-transformer";
 import { useGetHotelsQuery } from "@/features/hotels/services/hotels-api.slice";
 import { useGetClientsQuery } from "@/features/clients/services/clients-api.slice";
@@ -44,9 +43,7 @@ export function usePackageBuilderState({
   const searchParams = useSearchParams();
   const pathname = usePathname();
 
-  const { user } = useAppSelector((state) => state.auth);
-  const isAdmin = user?.role === "ADMIN" || user?.role === "SUPER_ADMIN";
-  const maxStep = isAdmin ? 3 : 4;
+  const maxStep = 4;
 
   const rawStep = parseInt(searchParams.get("step") ?? "1", 10);
   const step = (rawStep >= 1 && rawStep <= maxStep ? rawStep : 1) as 1 | 2 | 3 | 4;
@@ -101,12 +98,13 @@ export function usePackageBuilderState({
 
   const firstHotelId = React.useMemo(() => hotels[0]?.id ?? "", [hotels]);
 
-  if (firstHotelId && appliedHotelId !== firstHotelId) {
-    setAppliedHotelId(firstHotelId);
+  if (appliedHotelId !== destinationId) {
+    setAppliedHotelId(destinationId);
     setDaysData((prev) =>
       prev.map((d) => ({
         ...d,
-        hotelId: hotels.some((h) => h.id === d.hotelId) ? d.hotelId : firstHotelId,
+        hotelId: hotels.some((h) => h.id === d.hotelId) ? d.hotelId : "",
+        roomTypeId: hotels.some((h) => h.id === d.hotelId) ? d.roomTypeId : undefined,
       }))
     );
   }
@@ -164,7 +162,6 @@ export function usePackageBuilderState({
         destinationId,
         startDate,
         numberOfDays,
-        adults,
       });
       if (!v1.isValid) {
         toast.error(v1.firstError ?? "Please complete Step 1: Basic Info first");
@@ -179,9 +176,9 @@ export function usePackageBuilderState({
       }
     }
     if (targetStep > 3) {
-      const v3 = validateStep3Data(consultantId);
+      const v3 = validateStep3Data({ adults });
       if (!v3.isValid) {
-        toast.error(v3.error ?? "Please select a Travel Consultant in Step 3 first");
+        toast.error(v3.error ?? "Please specify valid traveler counts in Step 3 first");
         return;
       }
     }
@@ -197,8 +194,6 @@ export function usePackageBuilderState({
       numberOfDays,
       adults,
       daysData,
-      consultantId,
-      isAdmin,
     });
     if (!check.isValid) {
       if (check.firstError) toast.error(check.firstError);
@@ -210,7 +205,10 @@ export function usePackageBuilderState({
       const payload = buildPackagePayload({
         packageName,
         destinationId,
+        clientId,
         numberOfDays,
+        adults,
+        childrenCount,
         status,
         daysData,
         startDate,

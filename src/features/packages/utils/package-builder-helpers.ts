@@ -6,7 +6,10 @@ import type { DayItineraryItem } from "../components/builder-steps/step-2-itiner
 export function buildPackagePayload({
   packageName,
   destinationId,
+  clientId,
   numberOfDays,
+  adults,
+  childrenCount,
   status,
   daysData,
   startDate,
@@ -14,7 +17,10 @@ export function buildPackagePayload({
 }: {
   packageName: string;
   destinationId: string;
+  clientId?: string;
   numberOfDays: number;
+  adults?: number;
+  childrenCount?: number;
   status: "CONFIRMED" | "CANCELLED";
   daysData: DayItineraryItem[];
   startDate: string;
@@ -23,8 +29,11 @@ export function buildPackagePayload({
   const payload: CreatePackageRequest = {
     packageName,
     source: "Bangalore",
-    destinationId: destinationId ? destinationId : "",
+    destinationId: destinationId || "",
+    clientId: clientId ?? undefined,
     durationDays: numberOfDays,
+    adults: adults ?? 2,
+    children: childrenCount ?? 0,
     status,
     packageDays: daysData.map((day) => {
       const hotelId = day.hotelId ? day.hotelId : firstHotelId;

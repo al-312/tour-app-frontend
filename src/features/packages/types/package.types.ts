@@ -54,13 +54,16 @@ export interface CreatePackageRequest {
   packageName: string;
   source: string;
   destinationId: string;
+  clientId?: string | undefined;
   durationDays: number;
-  fromDatetimeUtc?: string;
-  toDatetimeUtc?: string;
-  summary?: string;
-  startingPrice?: number;
-  status?: string;
-  packageDays?: CreatePackageDayInput[];
+  adults?: number | undefined;
+  children?: number | undefined;
+  fromDatetimeUtc?: string | undefined;
+  toDatetimeUtc?: string | undefined;
+  summary?: string | undefined;
+  startingPrice?: number | undefined;
+  status?: string | undefined;
+  packageDays?: CreatePackageDayInput[] | undefined;
 }
 
 export interface SearchPackagesParams {

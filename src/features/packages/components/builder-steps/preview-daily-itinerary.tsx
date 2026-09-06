@@ -23,10 +23,10 @@ export function PreviewDailyItinerary({
 
       <div className="space-y-3">
         {daysData.map((d) => {
-          const hotelObj = hotels.find((h) => h.id === d.hotelId) ?? hotels[0];
-          const roomTypeObj =
-            hotelObj?.roomTypes?.find((rt) => rt.id === d.roomTypeId) ??
-            hotelObj?.roomTypes?.[0];
+          const hotelObj = d.hotelId ? hotels.find((h) => h.id === d.hotelId) : undefined;
+          const roomTypeObj = d.roomTypeId
+            ? hotelObj?.roomTypes?.find((rt) => rt.id === d.roomTypeId)
+            : undefined;
 
           return (
             <div
@@ -56,7 +56,11 @@ export function PreviewDailyItinerary({
                       </span>
                     ) : null}
                   </div>
-                ) : null}
+                ) : (
+                  <span className="text-xs text-muted-foreground italic">
+                    No hotel selected
+                  </span>
+                )}
               </div>
 
               {d.notes ? (

@@ -17,11 +17,10 @@ export interface Step1ValidationResult {
 
 export function validateStep1Data(data: {
   packageName: string;
-  clientId: string;
+  clientId?: string;
   destinationId: string;
-  startDate: string;
+  startDate?: string;
   numberOfDays: number;
-  adults: number;
 }): Step1ValidationResult {
   const errors: Step1ValidationErrors = {};
 
@@ -33,9 +32,6 @@ export function validateStep1Data(data: {
   }
   if (!data.numberOfDays || data.numberOfDays < 1) {
     errors.numberOfDays = "Number of days must be at least 1";
-  }
-  if (!data.adults || data.adults < 1) {
-    errors.adults = "Adult travelers must be at least 1";
   }
 
   const keys = Object.keys(errors) as (keyof Step1ValidationErrors)[];
@@ -93,11 +89,13 @@ export interface Step3ValidationResult {
   error?: string | undefined;
 }
 
-export function validateStep3Data(consultantId: string): Step3ValidationResult {
-  if (!consultantId) {
+export function validateStep3Data(data: {
+  adults?: number | undefined;
+}): Step3ValidationResult {
+  if (data.adults !== undefined && data.adults < 1) {
     return {
       isValid: false,
-      error: "Please select an assigned Travel Consultant",
+      error: "Adult travelers must be at least 1",
     };
   }
   return { isValid: true };
@@ -111,8 +109,6 @@ export function validateAllSteps(data: {
   numberOfDays: number;
   adults: number;
   daysData: DayItineraryItem[];
-  consultantId: string;
-  isAdmin?: boolean;
 }): {
   isValid: boolean;
   targetStep?: 1 | 2 | 3 | 4 | undefined;
@@ -136,15 +132,15 @@ export function validateAllSteps(data: {
     };
   }
 
-  if (!data.isAdmin) {
-    const v3 = validateStep3Data(data.consultantId);
-    if (!v3.isValid) {
-      return {
-        isValid: false,
-        targetStep: 3,
-        firstError: v3.error ?? "Please select a Travel Consultant in Step 3 first",
-      };
-    }
+  const v3 = validateStep3Data({
+    adults: data.adults,
+  });
+  if (!v3.isValid) {
+    return {
+      isValid: false,
+      targetStep: 3,
+      firstError: v3.error ?? "Please complete Step 3: Traveler Details first",
+    };
   }
 
   return { isValid: true };

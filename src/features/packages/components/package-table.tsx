@@ -139,7 +139,7 @@ export function PackageTable({
               <Table.Head>Client</Table.Head>
               <Table.Head>Destination</Table.Head>
               <Table.Head>Travelers</Table.Head>
-              <Table.Head>Consultant</Table.Head>
+              <Table.Head>User</Table.Head>
               <Table.Head>Status</Table.Head>
               <Table.Head className="text-right">Actions</Table.Head>
             </Table.Row>
@@ -204,20 +204,16 @@ export function PackageTable({
                 </Table.Cell>
 
                 <Table.Cell>
-                  {pkg.consultant ? (
-                    <div className="flex items-center gap-1.5 text-xs text-app-fg font-medium">
-                      <Briefcase className="w-3.5 h-3.5 text-app-muted shrink-0" />
-                      <span>
-                        {pkg.consultant.name ??
-                          ([pkg.consultant.firstName, pkg.consultant.lastName]
-                            .filter(Boolean)
-                            .join(" ") ||
-                            "Unassigned")}
-                      </span>
-                    </div>
-                  ) : (
-                    <span className="text-xs text-app-muted italic">Unassigned</span>
-                  )}
+                  <div className="flex items-center gap-1.5 text-xs text-app-fg font-medium">
+                    <Briefcase className="w-3.5 h-3.5 text-app-muted shrink-0" />
+                    <span>
+                      {pkg.consultant?.name ??
+                        ([pkg.consultant?.firstName, pkg.consultant?.lastName]
+                          .filter(Boolean)
+                          .join(" ") ||
+                          "User")}
+                    </span>
+                  </div>
                 </Table.Cell>
 
                 <Table.Cell>

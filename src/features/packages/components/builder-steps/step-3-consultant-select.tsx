@@ -2,40 +2,43 @@
 
 import * as React from "react";
 import { toast } from "sonner";
-import { Briefcase, ChevronLeft, ChevronRight } from "lucide-react";
+import {
+  ChevronLeft,
+  ChevronRight,
+  User as UserIcon,
+  Users as UsersIcon,
+} from "lucide-react";
 
 import Card from "@/components/ui/card";
-import Select from "@/components/ui/select";
+import Input from "@/components/ui/input";
 import Button from "@/components/ui/button";
+import { useAppSelector } from "@/store/hooks";
 
 import { validateStep3Data } from "../../utils/package-builder-validation";
 
-import type { Consultant } from "@/features/consultants/types/consultant.types";
-
 interface Step3ConsultantSelectProps {
-  consultantId: string;
-  setConsultantId: (id: string) => void;
-  consultants: Consultant[];
+  consultantId?: string;
+  setConsultantId?: (id: string) => void;
+  adults: number;
+  setAdults: (val: number) => void;
+  childrenCount: number;
+  setChildrenCount: (val: number) => void;
   onBack: () => void;
   onNext: () => void;
 }
 
 export function Step3ConsultantSelect({
-  consultantId,
-  setConsultantId,
-  consultants,
+  adults,
+  setAdults,
+  childrenCount,
+  setChildrenCount,
   onBack,
   onNext,
 }: Step3ConsultantSelectProps): React.JSX.Element {
   const [touched, setTouched] = React.useState(false);
+  const { user } = useAppSelector((state) => state.auth);
 
-  const validation = validateStep3Data(consultantId);
-  const selectedConsultant = consultants.find((c) => c.id === consultantId);
-
-  const getConsultantDisplayName = (c: Consultant): string => {
-    const fullName = [c.firstName, c.lastName].filter(Boolean).join(" ");
-    return c.name ?? (fullName !== "" ? fullName : null) ?? "Consultant";
-  };
+  const validation = validateStep3Data({ adults });
 
   const handleNextStep = (): void => {
     setTouched(true);
@@ -48,63 +51,59 @@ export function Step3ConsultantSelect({
     onNext();
   };
 
-  const selectedPhoneObj = selectedConsultant?.phone;
-  const selectedPhoneStr = selectedPhoneObj
-    ? [
-        selectedPhoneObj.countryCode,
-        selectedPhoneObj.number ?? selectedPhoneObj.phoneNumber,
-      ]
-        .filter(Boolean)
-        .join(" ")
-    : "";
+  const userDisplayName = user?.name ?? user?.email ?? "Current User";
 
   return (
     <Card className="p-6">
       <div className="space-y-6">
         <div>
-          <h2 className="text-lg font-bold text-foreground">Assign Travel Consultant</h2>
+          <h2 className="text-lg font-bold text-foreground">
+            Traveler Details & Package User
+          </h2>
           <p className="text-xs text-muted-foreground">
-            Select the travel consultant managing this package offer and proposal
-            branding.
+            Specify adult and child traveler counts for this tour package proposal.
           </p>
         </div>
 
-        <Select
-          label="Travel Consultant *"
-          value={consultantId}
-          error={touched && !validation.isValid ? validation.error : undefined}
-          onChange={(e) => {
-            setConsultantId(e.target.value);
-          }}
-          icon={Briefcase}
-        >
-          <option value="">Select a consultant...</option>
-          {consultants.map((c) => (
-            <option key={c.id} value={c.id}>
-              {getConsultantDisplayName(c)} ({c.designation})
-            </option>
-          ))}
-        </Select>
-
-        {selectedConsultant ? (
-          <div className="p-4 rounded-xl border border-primary/20 bg-primary/5 space-y-2">
-            <div className="text-xs font-bold uppercase tracking-wider text-primary">
-              Assigned Consultant Details
-            </div>
-            <div className="text-sm font-bold text-foreground">
-              {getConsultantDisplayName(selectedConsultant)}
-            </div>
-            <div className="text-xs text-muted-foreground">
-              {selectedConsultant.designation}
-            </div>
-            <div className="text-xs text-muted-foreground flex gap-4 pt-1">
-              {selectedConsultant.email ? (
-                <span>✉️ {selectedConsultant.email}</span>
-              ) : null}
-              {selectedPhoneStr ? <span>📞 {selectedPhoneStr}</span> : null}
-            </div>
+        {/* User Info Card (Automatic, no selection dropdown) */}
+        <div className="p-4 rounded-xl border border-primary/20 bg-primary/5 space-y-2">
+          <div className="text-xs font-bold uppercase tracking-wider text-primary flex items-center gap-1.5">
+            <UserIcon className="w-4 h-4" />
+            Package User (Created By)
           </div>
-        ) : null}
+          <div className="text-sm font-bold text-foreground">{userDisplayName}</div>
+          <div className="text-xs text-muted-foreground">
+            Role: {user?.role ?? "USER"} {user?.email ? `• ${user.email}` : ""}
+          </div>
+        </div>
+
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <Input
+            label="Adult Travelers *"
+            type="number"
+            min={1}
+            value={adults === 0 ? "" : adults}
+            error={
+              touched && adults < 1 ? "Adult travelers must be at least 1" : undefined
+            }
+            onChange={(e) => {
+              const raw = e.target.value;
+              setAdults(raw === "" ? 0 : parseInt(raw, 10) || 0);
+            }}
+            icon={UsersIcon}
+          />
+
+          <Input
+            label="Child Travelers"
+            type="number"
+            min={0}
+            value={childrenCount === 0 ? "" : childrenCount}
+            onChange={(e) => {
+              const raw = e.target.value;
+              setChildrenCount(raw === "" ? 0 : parseInt(raw, 10) || 0);
+            }}
+          />
+        </div>
 
         <div className="flex justify-between pt-4 border-t border-border">
           <Button variant="outline" onClick={onBack} className="gap-2">
@@ -112,7 +111,7 @@ export function Step3ConsultantSelect({
             Back
           </Button>
           <Button onClick={handleNextStep} className="gap-2">
-            Next: Proposal Preview & Export
+            Next: Preview & Save
             <ChevronRight className="w-4 h-4" />
           </Button>
         </div>

@@ -79,7 +79,6 @@ export function PackageBuilderBody(props: PackageBuilderBodyProps): React.JSX.El
     hotels,
     isSubmitting,
     onSubmit,
-    isAdmin = false,
   } = props;
 
   if (step === 1) {
@@ -95,13 +94,9 @@ export function PackageBuilderBody(props: PackageBuilderBodyProps): React.JSX.El
         setStartDate={setStartDate}
         numberOfDays={numberOfDays}
         setNumberOfDays={handleNumberOfDaysChange}
-        adults={adults}
-        setAdults={setAdults}
-        childrenCount={childrenCount}
-        setChildrenCount={setChildrenCount}
         clients={clients}
         destinations={destinations}
-        showClientFields={!isAdmin}
+        showClientFields={true}
         onNext={() => {
           setStep(2);
         }}
@@ -124,31 +119,7 @@ export function PackageBuilderBody(props: PackageBuilderBodyProps): React.JSX.El
         onNext={() => {
           setStep(3);
         }}
-      />
-    );
-  }
-
-  if (isAdmin) {
-    // Admin 3rd step is Preview & Save Master Template
-    return (
-      <Step4PreviewExport
-        mode={mode}
-        packageName={packageName}
-        startDate={startDate}
-        numberOfDays={numberOfDays}
-        adults={adults}
-        childrenCount={childrenCount}
-        status={status}
-        selectedClient={clients.find((c) => c.id === clientId)}
-        selectedDestination={destinations.find((d) => d.id === destinationId)}
-        selectedConsultant={consultants.find((c) => c.id === consultantId)}
-        daysData={daysData}
-        hotels={hotels}
-        isSubmitting={isSubmitting}
-        onBack={() => {
-          setStep(2);
-        }}
-        onSubmit={onSubmit}
+        nextButtonText="Next: Traveler Details"
       />
     );
   }
@@ -158,7 +129,10 @@ export function PackageBuilderBody(props: PackageBuilderBodyProps): React.JSX.El
       <Step3ConsultantSelect
         consultantId={consultantId}
         setConsultantId={setConsultantId}
-        consultants={consultants}
+        adults={adults}
+        setAdults={setAdults}
+        childrenCount={childrenCount}
+        setChildrenCount={setChildrenCount}
         onBack={() => {
           setStep(2);
         }}

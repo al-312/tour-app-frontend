@@ -36,6 +36,7 @@ interface Step2ItineraryProps {
   hotels: Hotel[];
   onBack: () => void;
   onNext: () => void;
+  nextButtonText?: string | undefined;
 }
 
 export function Step2Itinerary({
@@ -47,6 +48,7 @@ export function Step2Itinerary({
   hotels,
   onBack,
   onNext,
+  nextButtonText = "Next: Consultant & Travelers",
 }: Step2ItineraryProps): React.JSX.Element {
   const [touched, setTouched] = React.useState(false);
 
@@ -246,7 +248,7 @@ export function Step2Itinerary({
             Back
           </Button>
           <Button onClick={handleNextStep} className="gap-2">
-            Next: Select Consultant
+            {nextButtonText}
             <ChevronRight className="w-4 h-4" />
           </Button>
         </div>

@@ -79,39 +79,52 @@ export function Step4PreviewExport({
         </div>
 
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-xs pt-2">
-          <div className="bg-background/80 p-3 rounded-lg border border-border">
-            <div className="text-muted-foreground font-semibold flex items-center gap-1">
-              <User className="w-3.5 h-3.5 text-primary" />
-              Client
-            </div>
-            <div className="font-bold text-foreground mt-0.5">
-              {selectedClient?.name ?? "N/A"}
-            </div>
-            {selectedClient?.email ? (
-              <div className="text-[11px] text-muted-foreground truncate">
-                {selectedClient.email}
+          {selectedClient ? (
+            <div className="bg-background/80 p-3 rounded-lg border border-border">
+              <div className="text-muted-foreground font-semibold flex items-center gap-1">
+                <User className="w-3.5 h-3.5 text-primary" />
+                Client
               </div>
-            ) : null}
-          </div>
-          <div className="bg-background/80 p-3 rounded-lg border border-border">
-            <div className="text-muted-foreground font-semibold">Start Date</div>
-            <div className="font-bold text-foreground mt-0.5">
-              {startDate !== "" ? startDate : "TBD"}
+              <div className="font-bold text-foreground mt-0.5 truncate">
+                {selectedClient.name ||
+                  [selectedClient.firstName, selectedClient.lastName]
+                    .filter(Boolean)
+                    .join(" ") ||
+                  "Assigned Client"}
+              </div>
+              {selectedClient.email ? (
+                <div className="text-[11px] text-muted-foreground truncate">
+                  {selectedClient.email}
+                </div>
+              ) : null}
             </div>
-          </div>
-          <div className="bg-background/80 p-3 rounded-lg border border-border">
-            <div className="text-muted-foreground font-semibold">Duration</div>
-            <div className="font-bold text-foreground mt-0.5">
-              {String(numberOfDays)} Days
+          ) : null}
+
+          {startDate !== "" ? (
+            <div className="bg-background/80 p-3 rounded-lg border border-border">
+              <div className="text-muted-foreground font-semibold">Start Date</div>
+              <div className="font-bold text-foreground mt-0.5">{startDate}</div>
             </div>
-          </div>
-          <div className="bg-background/80 p-3 rounded-lg border border-border">
-            <div className="text-muted-foreground font-semibold">Travelers</div>
-            <div className="font-bold text-foreground mt-0.5">
-              {String(adults)} Adults
-              {childrenCount ? `, ${String(childrenCount)} Children` : ""}
+          ) : null}
+
+          {numberOfDays > 0 ? (
+            <div className="bg-background/80 p-3 rounded-lg border border-border">
+              <div className="text-muted-foreground font-semibold">Duration</div>
+              <div className="font-bold text-foreground mt-0.5">
+                {String(numberOfDays)} Days
+              </div>
             </div>
-          </div>
+          ) : null}
+
+          {adults > 0 ? (
+            <div className="bg-background/80 p-3 rounded-lg border border-border">
+              <div className="text-muted-foreground font-semibold">Travelers</div>
+              <div className="font-bold text-foreground mt-0.5">
+                {String(adults)} Adults
+                {childrenCount > 0 ? `, ${String(childrenCount)} Children` : ""}
+              </div>
+            </div>
+          ) : null}
         </div>
       </div>
 

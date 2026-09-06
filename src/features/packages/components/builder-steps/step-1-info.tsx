@@ -7,7 +7,6 @@ import {
   UserCheck,
   MapPin,
   Calendar,
-  Users as UsersIcon,
   ChevronRight,
   Plus,
   Clock,
@@ -38,10 +37,6 @@ interface Step1InfoProps {
   setStartDate: (val: string) => void;
   numberOfDays: number;
   setNumberOfDays: (val: number) => void;
-  adults: number;
-  setAdults: (val: number) => void;
-  childrenCount: number;
-  setChildrenCount: (val: number) => void;
   clients: Client[];
   destinations: Destination[];
   onNext: () => void;
@@ -59,10 +54,6 @@ export function Step1Info({
   setStartDate,
   numberOfDays,
   setNumberOfDays,
-  adults,
-  setAdults,
-  childrenCount,
-  setChildrenCount,
   clients,
   destinations,
   onNext,
@@ -77,7 +68,6 @@ export function Step1Info({
     destinationId,
     startDate,
     numberOfDays,
-    adults,
   });
 
   const errors: Step1ValidationErrors = touched ? validation.errors : {};
@@ -100,7 +90,7 @@ export function Step1Info({
           <div>
             <h2 className="text-lg font-bold text-foreground">Basic Package Details</h2>
             <p className="text-xs text-muted-foreground">
-              Define tour name, destination, duration, and traveler capacity.
+              Define tour name, destination, and duration.
             </p>
           </div>
 
@@ -197,30 +187,6 @@ export function Step1Info({
                 setNumberOfDays(raw === "" ? 0 : parseInt(raw, 10) || 0);
               }}
               icon={Clock}
-            />
-
-            <Input
-              label="Adult Travelers *"
-              type="number"
-              min={1}
-              value={adults === 0 ? "" : adults}
-              error={errors.adults}
-              onChange={(e) => {
-                const raw = e.target.value;
-                setAdults(raw === "" ? 0 : parseInt(raw, 10) || 0);
-              }}
-              icon={UsersIcon}
-            />
-
-            <Input
-              label="Child Travelers"
-              type="number"
-              min={0}
-              value={childrenCount === 0 ? "" : childrenCount}
-              onChange={(e) => {
-                const raw = e.target.value;
-                setChildrenCount(raw === "" ? 0 : parseInt(raw, 10) || 0);
-              }}
             />
           </div>
 
