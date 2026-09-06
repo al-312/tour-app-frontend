@@ -2,18 +2,18 @@
 
 import * as React from "react";
 import {
-  Search,
-  Plus,
-  PackageCheck,
-  Edit3,
-  Trash2,
-  Filter,
-  UserCheck,
-  MapPin,
-  Users as UsersIcon,
-  Briefcase,
-  Eye,
   Ban,
+  Briefcase,
+  Edit3,
+  Eye,
+  Filter,
+  MapPin,
+  PackageCheck,
+  Plus,
+  Search,
+  Trash2,
+  UserCheck,
+  Users as UsersIcon,
 } from "lucide-react";
 
 import Table from "@/components/ui/table";
@@ -58,14 +58,20 @@ export function PackageTable({
 
   const filtered = React.useMemo(() => {
     return packages.filter((p) => {
-      const clientName = p.client?.name ?? "";
+      const clientName =
+        p.client?.name ??
+        [p.client?.firstName, p.client?.lastName].filter(Boolean).join(" ");
+      const consultantName =
+        p.consultant?.name ??
+        [p.consultant?.firstName, p.consultant?.lastName].filter(Boolean).join(" ");
       const destName = p.destination?.name ?? "";
-      const matchesSearch =
+
+      return (
         p.packageName.toLowerCase().includes(search.toLowerCase()) ||
         clientName.toLowerCase().includes(search.toLowerCase()) ||
-        destName.toLowerCase().includes(search.toLowerCase());
-
-      return matchesSearch;
+        consultantName.toLowerCase().includes(search.toLowerCase()) ||
+        destName.toLowerCase().includes(search.toLowerCase())
+      );
     });
   }, [packages, search]);
 
@@ -147,7 +153,7 @@ export function PackageTable({
                       {pkg.packageName}
                     </span>
                     <span className="text-xs text-app-muted font-medium mt-0.5">
-                      {String(pkg.numberOfDays)} Days
+                      {String(pkg.durationDays)} Days
                       {pkg.startDate
                         ? ` • Starts ${new Date(pkg.startDate).toLocaleDateString()}`
                         : ""}
@@ -159,7 +165,13 @@ export function PackageTable({
                   {pkg.client ? (
                     <div className="flex items-center gap-1.5 text-xs text-app-fg font-medium">
                       <UserCheck className="w-3.5 h-3.5 text-app-muted shrink-0" />
-                      <span>{pkg.client.name}</span>
+                      <span>
+                        {pkg.client.name ||
+                          [pkg.client.firstName, pkg.client.lastName]
+                            .filter(Boolean)
+                            .join(" ") ||
+                          "Unassigned"}
+                      </span>
                     </div>
                   ) : (
                     <span className="text-xs text-app-muted italic">Unassigned</span>
@@ -183,9 +195,9 @@ export function PackageTable({
                   <div className="flex items-center gap-1.5 text-xs text-app-fg font-medium">
                     <UsersIcon className="w-3.5 h-3.5 text-app-muted shrink-0" />
                     <span>
-                      {String(pkg.adults)} Adult{pkg.adults > 1 ? "s" : ""}
-                      {pkg.children > 0
-                        ? `, ${String(pkg.children)} Child${pkg.children > 1 ? "ren" : ""}`
+                      {String(pkg.adults ?? 2)} Adult{(pkg.adults ?? 2) > 1 ? "s" : ""}
+                      {(pkg.children ?? 0) > 0
+                        ? `, ${String(pkg.children)} Child${(pkg.children ?? 0) > 1 ? "ren" : ""}`
                         : ""}
                     </span>
                   </div>
@@ -195,7 +207,13 @@ export function PackageTable({
                   {pkg.consultant ? (
                     <div className="flex items-center gap-1.5 text-xs text-app-fg font-medium">
                       <Briefcase className="w-3.5 h-3.5 text-app-muted shrink-0" />
-                      <span>{pkg.consultant.name}</span>
+                      <span>
+                        {pkg.consultant.name ??
+                          ([pkg.consultant.firstName, pkg.consultant.lastName]
+                            .filter(Boolean)
+                            .join(" ") ||
+                            "Unassigned")}
+                      </span>
                     </div>
                   ) : (
                     <span className="text-xs text-app-muted italic">Unassigned</span>

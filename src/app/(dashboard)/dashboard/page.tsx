@@ -98,7 +98,7 @@ export default function DashboardPage(): React.JSX.Element {
             Retry
           </Button>
         </div>
-      ) : currentUser?.role !== "ADMIN" ? (
+      ) : currentUser?.role !== "ADMIN" && currentUser?.role !== "SUPER_ADMIN" ? (
         <div className="flex flex-col items-center justify-center p-12 text-center rounded-2xl border border-amber-500/20 bg-amber-500/10 text-amber-600 gap-3">
           <ShieldAlert className="w-8 h-8 shrink-0" />
           <div>

@@ -9,8 +9,14 @@ export interface StepItem {
   sub: string;
 }
 
-const DEFAULT_STEPS: StepItem[] = [
-  { id: 1, title: "Basic Info", sub: "Package & Traveler" },
+export const ADMIN_STEPS: StepItem[] = [
+  { id: 1, title: "Basic Info", sub: "Package & Details" },
+  { id: 2, title: "Daily Itinerary", sub: "Hotel Stay" },
+  { id: 3, title: "Preview & Save", sub: "Master Template" },
+];
+
+export const CONSULTANT_STEPS: StepItem[] = [
+  { id: 1, title: "Basic Info", sub: "Package & Client" },
   { id: 2, title: "Daily Itinerary", sub: "Hotel Stay" },
   { id: 3, title: "Select Consultant", sub: "Assign Consultant" },
   { id: 4, title: "Preview Proposal", sub: "Review & Save" },
@@ -24,11 +30,13 @@ interface StepIndicatorProps {
 
 export function StepIndicator({
   currentStep,
-  steps = DEFAULT_STEPS,
+  steps = CONSULTANT_STEPS,
   onStepClick,
 }: StepIndicatorProps): React.JSX.Element {
+  const colsClass = steps.length === 3 ? "md:grid-cols-3" : "md:grid-cols-4";
+
   return (
-    <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+    <div className={`grid grid-cols-2 ${colsClass} gap-4`}>
       {steps.map((s) => {
         const isActive = currentStep === s.id;
         const isPassed = currentStep > s.id;

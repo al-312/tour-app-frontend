@@ -1,7 +1,7 @@
 "use client";
 
 import * as React from "react";
-import { useRouter } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 
 import { useAppSelector } from "@/store/hooks";
 import { isClient } from "@/lib/utils/is-client";
@@ -17,7 +17,8 @@ export default function AuthGuard({
   children: React.ReactNode;
 }): React.JSX.Element | null {
   const router = useRouter();
-  const { isAuthenticated, isHydrated } = useAppSelector((state) => state.auth);
+  const pathname = usePathname();
+  const { user, isAuthenticated, isHydrated } = useAppSelector((state) => state.auth);
   const isMounted = React.useSyncExternalStore(
     emptySubscribe,
     getSnapshot,
@@ -25,16 +26,35 @@ export default function AuthGuard({
   );
 
   React.useEffect((): void => {
-    if (isMounted && isHydrated && !isAuthenticated) {
-      if (isClient()) {
-        sessionStorage.setItem(
-          "auth_restricted_message",
-          "Access restricted. Please sign in to view your dashboard."
-        );
+    if (isMounted && isHydrated) {
+      if (!isAuthenticated) {
+        if (isClient()) {
+          sessionStorage.setItem(
+            "auth_restricted_message",
+            "Access restricted. Please sign in to view your dashboard."
+          );
+        }
+        router.replace("/login");
+        return;
       }
-      router.replace("/login");
+
+      if (user?.mustChangePassword && pathname !== "/change-password") {
+        router.replace("/change-password");
+        return;
+      }
+
+      if (pathname === "/dashboard" || pathname === "/") {
+        if (user?.role === "CONSULTANT") {
+          router.replace("/packages/search");
+          return;
+        }
+        if (user?.role === "ADMIN" || user?.role === "SUPER_ADMIN") {
+          router.replace("/consultants");
+          return;
+        }
+      }
     }
-  }, [isMounted, isHydrated, isAuthenticated, router]);
+  }, [isMounted, isHydrated, isAuthenticated, user, pathname, router]);
 
   if (!isMounted || !isHydrated || !isAuthenticated) {
     return (

@@ -45,6 +45,7 @@ interface Step1InfoProps {
   clients: Client[];
   destinations: Destination[];
   onNext: () => void;
+  showClientFields?: boolean;
 }
 
 export function Step1Info({
@@ -65,6 +66,7 @@ export function Step1Info({
   clients,
   destinations,
   onNext,
+  showClientFields = true,
 }: Step1InfoProps): React.JSX.Element {
   const [touched, setTouched] = React.useState(false);
   const [isClientModalOpen, setIsClientModalOpen] = React.useState(false);
@@ -98,8 +100,7 @@ export function Step1Info({
           <div>
             <h2 className="text-lg font-bold text-foreground">Basic Package Details</h2>
             <p className="text-xs text-muted-foreground">
-              Define tour name, target client, destination, start date, and traveler
-              capacity.
+              Define tour name, destination, duration, and traveler capacity.
             </p>
           </div>
 
@@ -115,40 +116,44 @@ export function Step1Info({
               icon={PackageCheck}
             />
 
-            <div className="flex flex-col gap-1">
-              <div className="flex items-center justify-between">
-                <span className="text-xs font-semibold tracking-wider text-muted-foreground uppercase">
-                  Assign Client *
-                </span>
-                <Button
-                  type="button"
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => {
-                    setIsClientModalOpen(true);
+            {showClientFields ? (
+              <div className="flex flex-col gap-1">
+                <div className="flex items-center justify-between">
+                  <span className="text-xs font-semibold tracking-wider text-muted-foreground uppercase">
+                    Assign Client (Optional)
+                  </span>
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => {
+                      setIsClientModalOpen(true);
+                    }}
+                    className="text-xs text-primary hover:text-primary/80 h-auto py-0.5 px-2 gap-1"
+                  >
+                    <Plus className="w-3.5 h-3.5" />
+                    Create Client
+                  </Button>
+                </div>
+                <Select
+                  value={clientId}
+                  error={errors.clientId}
+                  onChange={(e) => {
+                    setClientId(e.target.value);
                   }}
-                  className="text-xs text-primary hover:text-primary/80 h-auto py-0.5 px-2 gap-1"
+                  icon={UserCheck}
                 >
-                  <Plus className="w-3.5 h-3.5" />
-                  Create Client
-                </Button>
+                  <option value="">Select a client (optional)...</option>
+                  {clients.map((c) => (
+                    <option key={c.id} value={c.id}>
+                      {c.name ||
+                        [c.firstName, c.lastName].filter(Boolean).join(" ") ||
+                        "Client"}
+                    </option>
+                  ))}
+                </Select>
               </div>
-              <Select
-                value={clientId}
-                error={errors.clientId}
-                onChange={(e) => {
-                  setClientId(e.target.value);
-                }}
-                icon={UserCheck}
-              >
-                <option value="">Select a client...</option>
-                {clients.map((c) => (
-                  <option key={c.id} value={c.id}>
-                    {c.name}
-                  </option>
-                ))}
-              </Select>
-            </div>
+            ) : null}
 
             <Select
               label="Destination *"
@@ -167,16 +172,18 @@ export function Step1Info({
               ))}
             </Select>
 
-            <Input
-              label="Tour Start Date *"
-              type="date"
-              value={startDate}
-              error={errors.startDate}
-              onChange={(e) => {
-                setStartDate(e.target.value);
-              }}
-              icon={Calendar}
-            />
+            {showClientFields ? (
+              <Input
+                label="Tour Start Date (Optional)"
+                type="date"
+                value={startDate}
+                error={errors.startDate}
+                onChange={(e) => {
+                  setStartDate(e.target.value);
+                }}
+                icon={Calendar}
+              />
+            ) : null}
 
             <Input
               label="Number of Days *"

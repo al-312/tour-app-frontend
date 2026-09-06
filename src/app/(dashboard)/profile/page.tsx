@@ -151,11 +151,13 @@ function PersonalInfoForm(): React.JSX.Element {
   );
 }
 
-function SecurityPasswordForm(): React.JSX.Element {
-  const { user } = useAppSelector((state) => state.auth);
-  const [updateUser, { isLoading }] = useUpdateUserMutation();
+import { useChangePasswordMutation } from "@/features/auth/services/auth-api.slice";
 
-  const [password, setPassword] = React.useState("");
+function SecurityPasswordForm(): React.JSX.Element {
+  const [changePassword, { isLoading }] = useChangePasswordMutation();
+
+  const [currentPassword, setCurrentPassword] = React.useState("");
+  const [newPassword, setNewPassword] = React.useState("");
   const [confirmPassword, setConfirmPassword] = React.useState("");
   const [passwordError, setPasswordError] = React.useState<string | null>(null);
 
@@ -163,26 +165,31 @@ function SecurityPasswordForm(): React.JSX.Element {
     e.preventDefault();
     setPasswordError(null);
 
-    if (!user) return;
-    if (password.length < 6) {
-      setPasswordError("Password must be at least 6 characters long.");
+    if (newPassword.length < 6) {
+      setPasswordError("New password must be at least 6 characters long.");
       return;
     }
-    if (password !== confirmPassword) {
-      setPasswordError("Passwords do not match.");
+    if (newPassword !== confirmPassword) {
+      setPasswordError("New password and confirmation password do not match.");
       return;
     }
 
     try {
-      await updateUser({
-        id: user.id,
-        data: { password },
+      await changePassword({
+        currentPassword,
+        newPassword,
+        confirmPassword,
       }).unwrap();
       toast.success("Password updated successfully!");
-      setPassword("");
+      setCurrentPassword("");
+      setNewPassword("");
       setConfirmPassword("");
-    } catch (err) {
-      toast.error(apiTransformer.transformError(err, "Failed to update password"));
+    } catch (err: unknown) {
+      const apiError = err as { data?: { message?: string } } | undefined;
+      toast.error(
+        apiError?.data?.message ??
+          apiTransformer.transformError(err, "Failed to update password")
+      );
     }
   };
 
@@ -207,13 +214,24 @@ function SecurityPasswordForm(): React.JSX.Element {
           className="flex flex-col gap-4"
         >
           <Input
+            label="Current Password"
+            type="password"
+            placeholder="Enter current password"
+            icon={Lock}
+            value={currentPassword}
+            onChange={(e) => {
+              setCurrentPassword(e.target.value);
+            }}
+          />
+
+          <Input
             label="New Password"
             type="password"
             placeholder="At least 6 characters"
             icon={Lock}
-            value={password}
+            value={newPassword}
             onChange={(e) => {
-              setPassword(e.target.value);
+              setNewPassword(e.target.value);
             }}
             error={passwordError ?? undefined}
           />
@@ -236,7 +254,7 @@ function SecurityPasswordForm(): React.JSX.Element {
           type="submit"
           form="security-password-form"
           isLoading={isLoading}
-          disabled={!password || !confirmPassword}
+          disabled={!currentPassword || !newPassword || !confirmPassword}
           className="w-full sm:w-auto"
         >
           Update Password

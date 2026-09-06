@@ -28,14 +28,8 @@ export function validateStep1Data(data: {
   if (!data.packageName.trim()) {
     errors.packageName = "Package name is required";
   }
-  if (!data.clientId) {
-    errors.clientId = "Please select a client";
-  }
   if (!data.destinationId) {
     errors.destinationId = "Please select a destination";
-  }
-  if (!data.startDate) {
-    errors.startDate = "Please select a tour start date";
   }
   if (!data.numberOfDays || data.numberOfDays < 1) {
     errors.numberOfDays = "Number of days must be at least 1";
@@ -118,9 +112,10 @@ export function validateAllSteps(data: {
   adults: number;
   daysData: DayItineraryItem[];
   consultantId: string;
+  isAdmin?: boolean;
 }): {
   isValid: boolean;
-  targetStep?: 1 | 2 | 3 | undefined;
+  targetStep?: 1 | 2 | 3 | 4 | undefined;
   firstError?: string | undefined;
 } {
   const v1 = validateStep1Data(data);
@@ -141,13 +136,15 @@ export function validateAllSteps(data: {
     };
   }
 
-  const v3 = validateStep3Data(data.consultantId);
-  if (!v3.isValid) {
-    return {
-      isValid: false,
-      targetStep: 3,
-      firstError: v3.error ?? "Please select a Travel Consultant in Step 3 first",
-    };
+  if (!data.isAdmin) {
+    const v3 = validateStep3Data(data.consultantId);
+    if (!v3.isValid) {
+      return {
+        isValid: false,
+        targetStep: 3,
+        firstError: v3.error ?? "Please select a Travel Consultant in Step 3 first",
+      };
+    }
   }
 
   return { isValid: true };

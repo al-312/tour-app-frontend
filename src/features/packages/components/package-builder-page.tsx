@@ -5,10 +5,15 @@ import { ChevronLeft } from "lucide-react";
 
 import Button from "@/components/ui/button";
 import Heading from "@/components/ui/heading";
+import { useAppSelector } from "@/store/hooks";
 
 import { PackageBuilderBody } from "./package-builder-body";
-import { StepIndicator } from "./builder-steps/step-indicator";
 import { usePackageBuilderState } from "../hooks/use-package-builder-state";
+import {
+  StepIndicator,
+  ADMIN_STEPS,
+  CONSULTANT_STEPS,
+} from "./builder-steps/step-indicator";
 
 interface PackageBuilderPageProps {
   mode: "create" | "edit";
@@ -19,6 +24,10 @@ export function PackageBuilderPage({
   mode,
   pkgId,
 }: PackageBuilderPageProps): React.JSX.Element {
+  const { user } = useAppSelector((state) => state.auth);
+  const isAdmin = user?.role === "ADMIN" || user?.role === "SUPER_ADMIN";
+  const steps = isAdmin ? ADMIN_STEPS : CONSULTANT_STEPS;
+
   const {
     router,
     step,
@@ -63,7 +72,7 @@ export function PackageBuilderPage({
   }
 
   return (
-    <div className="flex flex-col gap-6 max-w-5xl mx-auto pb-12">
+    <div className="flex flex-col gap-6 pb-12">
       {/* Top Bar Navigation */}
       <div className="flex items-center justify-between">
         <Button
@@ -88,13 +97,14 @@ export function PackageBuilderPage({
           {mode === "create" ? "Create Tour Package" : "Edit Tour Package"}
         </Heading>
         <p className="text-muted-foreground text-xs sm:text-sm mt-1">
-          Follow the 4-step wizard to define details, daily hotel stay, consultant, and
-          preview.
+          {isAdmin
+            ? "Follow the 3-step wizard to define details, daily hotel stay, and preview template."
+            : "Follow the 4-step wizard to define details, daily hotel stay, consultant, and preview proposal."}
         </p>
       </div>
 
       {/* Stepper Header */}
-      <StepIndicator currentStep={step} onStepClick={handleStepClick} />
+      <StepIndicator currentStep={step} steps={steps} onStepClick={handleStepClick} />
 
       {/* Active Step Content */}
       <PackageBuilderBody
@@ -103,6 +113,7 @@ export function PackageBuilderPage({
           handleStepClick(s);
         }}
         mode={mode}
+        isAdmin={isAdmin}
         packageName={packageName}
         setPackageName={setPackageName}
         clientId={clientId}

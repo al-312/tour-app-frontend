@@ -1,26 +1,34 @@
+export interface PhoneObject {
+  countryCode?: string | undefined;
+  number?: string | undefined;
+  phoneNumber?: string | undefined;
+}
+
 export interface Consultant {
   id: string;
-  name: string;
+  firstName: string;
+  lastName?: string | undefined;
+  name?: string | undefined;
   designation: string;
-  phone?: string | undefined;
+  phone?: PhoneObject | undefined;
   email?: string | undefined;
-  logo?: string | undefined;
+  temporaryPassword?: string | undefined;
   createdAt: string;
   updatedAt: string;
 }
 
 export interface CreateConsultantRequest {
-  name: string;
+  firstName: string;
+  lastName?: string | undefined;
   designation: string;
-  phone?: string | undefined;
+  phone?: PhoneObject | undefined;
   email?: string | undefined;
-  logo?: string | undefined;
 }
 
 export interface UpdateConsultantRequest {
-  name?: string | undefined;
+  firstName?: string | undefined;
+  lastName?: string | undefined;
   designation?: string | undefined;
-  phone?: string | undefined;
+  phone?: PhoneObject | undefined;
   email?: string | undefined;
-  logo?: string | undefined;
 }

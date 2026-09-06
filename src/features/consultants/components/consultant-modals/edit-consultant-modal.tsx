@@ -4,12 +4,14 @@ import * as React from "react";
 import { toast } from "sonner";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { User, Briefcase, Mail, Phone, Image as ImageIcon } from "lucide-react";
+import { User, Briefcase, Mail, Phone } from "lucide-react";
 
 import Modal from "@/components/ui/modal";
 import Input from "@/components/ui/input";
 import Button from "@/components/ui/button";
 import { apiTransformer } from "@/lib/api/api-transformer";
+import { getMaxPhoneLengthForCountry } from "@/lib/utils/phone.utils";
+import { CountryCodeSelect } from "@/components/ui/country-code-select";
 
 import { useUpdateConsultantMutation } from "../../services/consultants-api.slice";
 import {
@@ -36,39 +38,59 @@ export function EditConsultantModal({
     register,
     handleSubmit,
     reset,
+    watch,
+    setValue,
     formState: { errors },
   } = useForm<ConsultantFormData>({
     resolver: zodResolver(consultantSchema),
   });
 
+  const selectedCountryCode = watch("phone.countryCode") ?? "+1";
+  const maxPhoneLength = getMaxPhoneLengthForCountry(selectedCountryCode);
+
   React.useEffect(() => {
     if (consultant) {
+      const phoneObj = typeof consultant.phone === "object" ? consultant.phone : null;
       reset({
-        name: consultant.name,
+        firstName: consultant.firstName,
+        lastName: consultant.lastName ?? "",
         designation: consultant.designation,
-        phone: consultant.phone ?? "",
         email: consultant.email ?? "",
-        logo: consultant.logo ?? "",
+        phone: {
+          countryCode: phoneObj?.countryCode ?? "+1",
+          number: phoneObj?.number ?? phoneObj?.phoneNumber ?? "",
+        },
       });
     }
   }, [consultant, reset]);
 
   if (!consultant) return <></>;
 
+  const fullName =
+    consultant.name ??
+    [consultant.firstName, consultant.lastName].filter(Boolean).join(" ");
+
   const onSubmit = async (data: ConsultantFormData): Promise<void> => {
     try {
       await updateConsultant({
         id: consultant.id,
         data: {
-          name: data.name,
+          firstName: data.firstName,
+          lastName: data.lastName ?? undefined,
           designation: data.designation,
-          phone: data.phone ?? undefined,
           email: data.email ?? undefined,
-          logo: data.logo ?? undefined,
+          phone:
+            data.phone?.countryCode || data.phone?.number || data.phone?.phoneNumber
+              ? {
+                  countryCode: data.phone.countryCode ?? undefined,
+                  number: data.phone.number ?? data.phone.phoneNumber ?? undefined,
+                  phoneNumber: data.phone.number ?? data.phone.phoneNumber ?? undefined,
+                }
+              : undefined,
         },
       }).unwrap();
 
-      toast.success(`Consultant "${data.name}" updated successfully!`);
+      toast.success(`Consultant "${data.firstName}" updated successfully!`);
       onClose();
     } catch (err) {
       toast.error(apiTransformer.transformError(err, "Failed to update consultant"));
@@ -80,7 +102,7 @@ export function EditConsultantModal({
       isOpen={isOpen}
       onClose={onClose}
       title="Edit Consultant"
-      description={`Update profile for ${consultant.name}`}
+      description={`Update profile for ${fullName}`}
     >
       <form
         onSubmit={(e): void => {
@@ -88,13 +110,23 @@ export function EditConsultantModal({
         }}
         className="flex flex-col gap-4"
       >
-        <Input
-          label="Full Name"
-          placeholder="e.g. Sarah Jenkins"
-          icon={User}
-          error={errors.name?.message}
-          {...register("name")}
-        />
+        <div className="grid grid-cols-2 gap-3">
+          <Input
+            label="First Name"
+            placeholder="e.g. Sarah"
+            icon={User}
+            error={errors.firstName?.message}
+            {...register("firstName")}
+          />
+          <Input
+            label="Last Name"
+            placeholder="e.g. Jenkins"
+            icon={User}
+            error={errors.lastName?.message}
+            {...register("lastName")}
+          />
+        </div>
+
         <Input
           label="Designation / Title"
           placeholder="e.g. Senior Travel Specialist"
@@ -110,20 +142,28 @@ export function EditConsultantModal({
           error={errors.email?.message}
           {...register("email")}
         />
-        <Input
-          label="Phone Number"
-          placeholder="+1 555 987 6543"
-          icon={Phone}
-          error={errors.phone?.message}
-          {...register("phone")}
-        />
-        <Input
-          label="Avatar / Logo URL"
-          placeholder="https://images.unsplash.com/..."
-          icon={ImageIcon}
-          error={errors.logo?.message}
-          {...register("logo")}
-        />
+        <div className="grid grid-cols-5 gap-3">
+          <div className="col-span-2">
+            <CountryCodeSelect
+              label="Country Code"
+              value={watch("phone.countryCode") ?? "+1"}
+              onChange={(code) => {
+                setValue("phone.countryCode", code, { shouldValidate: true });
+              }}
+              error={errors.phone?.countryCode?.message}
+            />
+          </div>
+          <div className="col-span-3">
+            <Input
+              label="Phone Number"
+              placeholder="555 987 6543"
+              maxLength={maxPhoneLength}
+              icon={Phone}
+              error={errors.phone?.number?.message}
+              {...register("phone.number")}
+            />
+          </div>
+        </div>
 
         <div className="flex items-center justify-end gap-3 pt-3 border-t border-app-border/40">
           <Button type="button" variant="outline" onClick={onClose}>

@@ -7,10 +7,11 @@ import { ChevronLeft, ChevronRight } from "lucide-react";
 
 import { cn } from "@/lib/utils/cn";
 import Badge from "@/components/ui/badge";
+import { useAppSelector } from "@/store/hooks";
 
-import { NAVIGATION_ITEMS } from "./constants/layout.constants";
+import { GET_NAVIGATION_ITEMS } from "./constants/layout.constants";
 
-import type { SidebarContextType } from "./types/layout.types";
+import type { SidebarContextType, NavigationItem } from "./types/layout.types";
 
 const SidebarContext = React.createContext<SidebarContextType | undefined>(undefined);
 
@@ -180,11 +181,11 @@ function SidebarNavLinkItem({
   pathname,
   isCollapsed,
 }: {
-  item: (typeof NAVIGATION_ITEMS)[number];
+  item: NavigationItem;
   pathname: string;
   isCollapsed: boolean;
 }): React.JSX.Element {
-  const isActive = pathname === item.href;
+  const isActive = pathname === item.href || pathname.startsWith(item.href + "/");
   const Icon = item.icon;
   const className = getSidebarLinkClasses(isActive, isCollapsed);
   const iconClass = isActive
@@ -208,11 +209,13 @@ function SidebarNavLinkItem({
 export function Sidebar(): React.JSX.Element {
   const pathname = usePathname();
   const { isCollapsed, toggleSidebar } = useSidebar();
+  const { user } = useAppSelector((state) => state.auth);
+  const navItems = GET_NAVIGATION_ITEMS(user?.role);
 
   return (
     <aside
       className={cn(
-        "sticky top-0 h-screen flex flex-col justify-between bg-app-surface/95 backdrop-blur-md border-r border-app-border/40 p-4 xl:p-6 transition-all duration-300 z-50 flex-shrink-0 relative",
+        "top-0 h-screen flex flex-col justify-between bg-app-surface/95 backdrop-blur-md border-r border-app-border/40 p-4 xl:p-6 transition-all duration-300 z-50 flex-shrink-0 relative",
         isCollapsed ? "w-20 xl:w-24" : "w-64 xl:w-72 2xl:w-80"
       )}
     >
@@ -222,7 +225,7 @@ export function Sidebar(): React.JSX.Element {
         <SidebarBrandLogo isCollapsed={isCollapsed} />
 
         <nav className="flex flex-col gap-1.5 pt-2">
-          {NAVIGATION_ITEMS.map((item) => (
+          {navItems.map((item) => (
             <SidebarNavLinkItem
               key={item.href}
               item={item}

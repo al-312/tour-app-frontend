@@ -35,7 +35,24 @@ const authApiSlice = apiSlice.injectEndpoints({
       transformResponse: apiTransformer.unwrapData<AuthResponse["user"]>,
       providesTags: ["User"],
     }),
+    changePassword: builder.mutation<
+      AuthResponse,
+      { currentPassword: string; newPassword: string; confirmPassword: string }
+    >({
+      query: (body) => ({
+        url: "/auth/change-password",
+        method: "POST",
+        body,
+      }),
+      transformResponse: apiTransformer.unwrapData<AuthResponse>,
+      invalidatesTags: ["Auth", "User"],
+    }),
   }),
 });
 
-export const { useLoginMutation, useRegisterMutation, useGetMeQuery } = authApiSlice;
+export const {
+  useLoginMutation,
+  useRegisterMutation,
+  useGetMeQuery,
+  useChangePasswordMutation,
+} = authApiSlice;

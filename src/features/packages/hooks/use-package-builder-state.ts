@@ -2,14 +2,20 @@
 
 import * as React from "react";
 import { toast } from "sonner";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams, usePathname } from "next/navigation";
 
+import { useAppSelector } from "@/store/hooks";
 import { apiTransformer } from "@/lib/api/api-transformer";
 import { useGetHotelsQuery } from "@/features/hotels/services/hotels-api.slice";
 import { useGetClientsQuery } from "@/features/clients/services/clients-api.slice";
 import { useGetConsultantsQuery } from "@/features/consultants/services/consultants-api.slice";
 import { useGetDestinationsQuery } from "@/features/destinations/services/destinations-api.slice";
 
+import {
+  buildPackagePayload,
+  computeEditInitialState,
+  resizeDaysData,
+} from "../utils/package-builder-helpers";
 import {
   useCreatePackageMutation,
   useUpdatePackageMutation,
@@ -22,7 +28,6 @@ import {
   validateAllSteps,
 } from "../utils/package-builder-validation";
 
-import type { CreatePackageRequest } from "../types/package.types";
 import type { PackageBuilderHookState } from "../types/package-builder-state.types";
 import type { DayItineraryItem } from "../components/builder-steps/step-2-itinerary";
 
@@ -36,7 +41,24 @@ export function usePackageBuilderState({
   pkgId,
 }: UsePackageBuilderStateProps): PackageBuilderHookState {
   const router = useRouter();
-  const [step, setStep] = React.useState<1 | 2 | 3 | 4>(1);
+  const searchParams = useSearchParams();
+  const pathname = usePathname();
+
+  const { user } = useAppSelector((state) => state.auth);
+  const isAdmin = user?.role === "ADMIN" || user?.role === "SUPER_ADMIN";
+  const maxStep = isAdmin ? 3 : 4;
+
+  const rawStep = parseInt(searchParams.get("step") ?? "1", 10);
+  const step = (rawStep >= 1 && rawStep <= maxStep ? rawStep : 1) as 1 | 2 | 3 | 4;
+
+  const setStep = React.useCallback(
+    (targetStep: 1 | 2 | 3 | 4) => {
+      const params = new URLSearchParams(Array.from(searchParams.entries()));
+      params.set("step", String(targetStep));
+      router.push(`${pathname}?${params.toString()}`);
+    },
+    [pathname, router, searchParams]
+  );
 
   const { data: existingPkg, isLoading: isPkgLoading } = useGetPackageByIdQuery(
     pkgId ?? "",
@@ -45,22 +67,23 @@ export function usePackageBuilderState({
 
   const [loadedPkgId, setLoadedPkgId] = React.useState<string | null>(null);
   const [appliedHotelId, setAppliedHotelId] = React.useState<string>("");
+
   const [packageName, setPackageName] = React.useState("");
   const [clientId, setClientId] = React.useState("");
   const [destinationId, setDestinationId] = React.useState("");
-  const [startDate, setStartDate] = React.useState("");
+  const [startDate, setStartDate] = React.useState<string>("");
   const [numberOfDays, setNumberOfDays] = React.useState(5);
   const [adults, setAdults] = React.useState(2);
   const [childrenCount, setChildrenCount] = React.useState(0);
   const [status, setStatus] = React.useState<"CONFIRMED" | "CANCELLED">("CONFIRMED");
   const [activeDay, setActiveDay] = React.useState(1);
-  const [daysData, setDaysData] = React.useState<DayItineraryItem[]>(() => {
-    const initial: DayItineraryItem[] = [];
-    for (let i = 1; i <= 5; i += 1) {
-      initial.push({ dayNumber: i, hotelId: "", notes: "" });
-    }
-    return initial;
-  });
+  const [daysData, setDaysData] = React.useState<DayItineraryItem[]>(() => [
+    { dayNumber: 1, hotelId: "", notes: "" },
+    { dayNumber: 2, hotelId: "", notes: "" },
+    { dayNumber: 3, hotelId: "", notes: "" },
+    { dayNumber: 4, hotelId: "", notes: "" },
+    { dayNumber: 5, hotelId: "", notes: "" },
+  ]);
   const [consultantId, setConsultantId] = React.useState("");
 
   const [createPackage, { isLoading: isCreating }] = useCreatePackageMutation();
@@ -81,57 +104,54 @@ export function usePackageBuilderState({
   if (firstHotelId && appliedHotelId !== firstHotelId) {
     setAppliedHotelId(firstHotelId);
     setDaysData((prev) =>
-      prev.map((d) => {
-        const isValid = hotels.some((h) => h.id === d.hotelId);
-        return {
-          ...d,
-          hotelId: isValid ? d.hotelId : firstHotelId,
-        };
-      })
+      prev.map((d) => ({
+        ...d,
+        hotelId: hotels.some((h) => h.id === d.hotelId) ? d.hotelId : firstHotelId,
+      }))
     );
   }
 
+  React.useEffect(() => {
+    if (clientId && clients.length > 0) {
+      if (!clients.some((c) => c.id === clientId)) {
+        queueMicrotask(() => {
+          setClientId("");
+        });
+      }
+    }
+  }, [clients, clientId]);
+
+  React.useEffect(() => {
+    if (consultants.length > 0 && consultants[0]) {
+      if (!consultantId || !consultants.some((c) => c.id === consultantId)) {
+        const defaultId = consultants[0].id;
+        queueMicrotask(() => {
+          setConsultantId(defaultId);
+        });
+      }
+    }
+  }, [consultants, consultantId]);
+
   if (mode === "edit" && existingPkg && loadedPkgId !== existingPkg.id) {
     setLoadedPkgId(existingPkg.id);
-    setPackageName(existingPkg.packageName);
-    setClientId(existingPkg.clientId ?? "");
-    setDestinationId(existingPkg.destinationId ?? "");
-    setStartDate(existingPkg.startDate ? existingPkg.startDate.slice(0, 10) : "");
-    setNumberOfDays(existingPkg.numberOfDays);
-    setAdults(existingPkg.adults);
-    setChildrenCount(existingPkg.children);
-    setStatus(existingPkg.status === "CANCELLED" ? "CANCELLED" : "CONFIRMED");
-    setConsultantId(existingPkg.consultantId ?? "");
+    const init = computeEditInitialState(existingPkg, clients, consultants, firstHotelId);
+    setPackageName(init.packageName);
+    setClientId(init.clientId);
+    setDestinationId(init.destinationId);
+    setStartDate(init.startDate);
+    setNumberOfDays(init.numberOfDays);
+    setAdults(init.adults);
+    setChildrenCount(init.childrenCount);
+    setStatus(init.status);
+    setConsultantId(init.consultantId);
+    setDaysData(init.daysData);
     setActiveDay(1);
-
-    if (existingPkg.packageDays.length > 0) {
-      setDaysData(
-        existingPkg.packageDays.map((d) => ({
-          dayNumber: d.dayNumber,
-          hotelId: d.hotelId ?? firstHotelId,
-          notes: d.notes ?? "",
-        }))
-      );
-    } else {
-      const initialDays: DayItineraryItem[] = [];
-      for (let i = 1; i <= existingPkg.numberOfDays; i += 1) {
-        initialDays.push({ dayNumber: i, hotelId: firstHotelId, notes: "" });
-      }
-      setDaysData(initialDays);
-    }
   }
 
   const handleNumberOfDaysChange = (count: number): void => {
     setNumberOfDays(count);
     if (count > 0) {
-      setDaysData((prev) => {
-        const result: DayItineraryItem[] = [];
-        for (let i = 1; i <= count; i += 1) {
-          const existing = prev.find((d) => d.dayNumber === i);
-          result.push(existing ?? { dayNumber: i, hotelId: firstHotelId, notes: "" });
-        }
-        return result;
-      });
+      setDaysData((prev) => resizeDaysData(count, prev, firstHotelId));
       if (activeDay > count) setActiveDay(1);
     }
   };
@@ -168,23 +188,6 @@ export function usePackageBuilderState({
     setStep(targetStep as 1 | 2 | 3 | 4);
   };
 
-  const getPayload = (): CreatePackageRequest => ({
-    packageName,
-    clientId: clientId || undefined,
-    destinationId: destinationId || undefined,
-    consultantId: consultantId || undefined,
-    startDate: startDate || undefined,
-    numberOfDays,
-    adults,
-    children: childrenCount,
-    status,
-    packageDays: daysData.map((day) => ({
-      dayNumber: day.dayNumber,
-      hotelId: day.hotelId || firstHotelId,
-      notes: day.notes || undefined,
-    })),
-  });
-
   const handleSubmitPackage = async (): Promise<void> => {
     const check = validateAllSteps({
       packageName,
@@ -195,6 +198,7 @@ export function usePackageBuilderState({
       adults,
       daysData,
       consultantId,
+      isAdmin,
     });
     if (!check.isValid) {
       if (check.firstError) toast.error(check.firstError);
@@ -203,7 +207,15 @@ export function usePackageBuilderState({
     }
 
     try {
-      const payload = getPayload();
+      const payload = buildPackagePayload({
+        packageName,
+        destinationId,
+        numberOfDays,
+        status,
+        daysData,
+        startDate,
+        firstHotelId,
+      });
       if (mode === "create") {
         await createPackage(payload).unwrap();
         toast.success(`Tour Package "${packageName}" created successfully!`);

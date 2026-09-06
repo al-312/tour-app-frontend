@@ -3,29 +3,38 @@ import type { Client } from "@/features/clients/types/client.types";
 import type { Consultant } from "@/features/consultants/types/consultant.types";
 import type { Destination } from "@/features/destinations/types/destination.types";
 
-export type PackageStatus = "CONFIRMED" | "CANCELLED";
+export type PackageStatus = "DRAFT" | "ACTIVE" | "INACTIVE" | "CONFIRMED" | "CANCELLED";
 
 export interface PackageDay {
   id: string;
   dayNumber: number;
+  destinationId?: string | null;
+  destination?: Destination | null;
   hotelId: string | null;
-  hotel?: Hotel | null | undefined;
-  notes?: string | undefined;
+  hotel?: Hotel | null;
+  sortOrder?: number;
+  notes?: string;
 }
 
 export interface Package {
   id: string;
   packageName: string;
-  clientId: string | null;
-  client?: Client | null | undefined;
+  source: string;
   destinationId: string | null;
-  destination?: Destination | null | undefined;
-  consultantId: string | null;
-  consultant?: Consultant | null | undefined;
-  startDate?: string | null | undefined;
-  numberOfDays: number;
-  adults: number;
-  children: number;
+  destination?: Destination | null;
+  durationDays: number;
+  numberOfDays?: number;
+  fromDatetimeUtc?: string | null;
+  toDatetimeUtc?: string | null;
+  summary?: string;
+  startingPrice?: number;
+  clientId?: string | null;
+  client?: Client | null;
+  consultantId?: string | null;
+  consultant?: Consultant | null;
+  startDate?: string | null;
+  adults?: number;
+  children?: number;
   status: PackageStatus;
   packageDays: PackageDay[];
   createdAt: string;
@@ -34,32 +43,29 @@ export interface Package {
 
 export interface CreatePackageDayInput {
   dayNumber: number;
-  hotelId: string;
-  notes?: string | undefined;
+  destinationId?: string;
+  hotelId?: string;
+  notes?: string;
 }
 
 export interface CreatePackageRequest {
   packageName: string;
-  clientId?: string | undefined;
-  destinationId?: string | undefined;
-  consultantId?: string | undefined;
-  startDate?: string | undefined;
-  numberOfDays: number;
-  adults: number;
-  children?: number | undefined;
-  status?: PackageStatus | undefined;
-  packageDays?: CreatePackageDayInput[] | undefined;
+  source: string;
+  destinationId: string;
+  durationDays: number;
+  fromDatetimeUtc?: string;
+  toDatetimeUtc?: string;
+  summary?: string;
+  startingPrice?: number;
+  status?: string;
+  packageDays?: CreatePackageDayInput[];
 }
 
-export interface UpdatePackageRequest {
-  packageName?: string | undefined;
-  clientId?: string | null | undefined;
-  destinationId?: string | null | undefined;
-  consultantId?: string | null | undefined;
-  startDate?: string | null | undefined;
-  numberOfDays?: number | undefined;
-  adults?: number | undefined;
-  children?: number | undefined;
-  status?: PackageStatus | undefined;
-  packageDays?: CreatePackageDayInput[] | undefined;
+export interface SearchPackagesParams {
+  destinationId?: string;
+  source?: string;
+  travelDate?: string;
+  days?: number;
+  adults?: number;
+  children?: number;
 }

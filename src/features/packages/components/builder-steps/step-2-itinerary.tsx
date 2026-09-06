@@ -7,6 +7,7 @@ import { Calendar, Hotel as HotelIcon, ChevronLeft, ChevronRight } from "lucide-
 import Card from "@/components/ui/card";
 import Select from "@/components/ui/select";
 import Button from "@/components/ui/button";
+import Textarea from "@/components/ui/textarea";
 
 import { DayHeaderTabs } from "./day-header-tabs";
 import { validateStep2Data } from "../../utils/package-builder-validation";
@@ -134,7 +135,7 @@ export function Step2Itinerary({
             </div>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div className="space-y-4">
             <Select
               label="Select Hotel Accommodation *"
               value={activeHotelId}
@@ -151,20 +152,15 @@ export function Step2Itinerary({
               ))}
             </Select>
 
-            <div>
-              <label className="block text-xs font-semibold text-foreground mb-1.5">
-                Day Notes / Instructions
-              </label>
-              <input
-                type="text"
-                className="w-full px-3 py-2 text-sm bg-background border border-border rounded-lg focus:ring-2 focus:ring-primary/20 focus:outline-none"
-                placeholder="e.g. Breakfast at hotel, sightseeing, transfer at 3 PM"
-                value={currentDayData.notes}
-                onChange={(e) => {
-                  updateActiveDayNotes(e.target.value);
-                }}
-              />
-            </div>
+            <Textarea
+              label="Day Notes / Instructions"
+              rows={4}
+              placeholder="e.g. Breakfast at hotel, sightseeing tours, transfer at 3 PM..."
+              value={currentDayData.notes}
+              onChange={(e) => {
+                updateActiveDayNotes(e.target.value);
+              }}
+            />
           </div>
         </div>
 
