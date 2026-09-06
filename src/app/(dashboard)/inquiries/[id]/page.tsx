@@ -15,17 +15,8 @@ import {
 } from "@/features/inquiries/services/inquiries-api.slice";
 
 import { ClientDetailsCard } from "./client-details-card";
-import { HotelBreakdownCard } from "./hotel-breakdown-card";
 import { AdminReviewControls } from "./admin-review-controls";
-
-interface HotelSelectionSnapshot {
-  dayNumber?: number;
-  hotelName?: string;
-  roomTypeName?: string;
-  numberOfRooms?: number;
-  numberOfExtraBeds?: number;
-  calculatedTotal?: number;
-}
+import { HotelBreakdownCard, type HotelSelectionSnapshot } from "./hotel-breakdown-card";
 
 interface PackageSnapshot {
   packageName?: string;

@@ -25,6 +25,7 @@ export interface Inquiry {
   packageId: string;
   package?: { id: string; packageName: string };
   packageSnapshot?: unknown;
+  hotelSelections?: InquiryHotelSelectionItem[];
   source: string;
   destinationId: string;
   destination?: { id: string; name: string };
@@ -46,6 +47,24 @@ export interface Inquiry {
   approvedAt?: string;
   createdAt: string;
   updatedAt: string;
+}
+
+export interface InquiryHotelSelectionItem {
+  id?: string;
+  dayNumber: number;
+  destinationId?: string;
+  hotelId?: string;
+  hotel?: { id: string; name: string };
+  hotelName?: string;
+  roomTypeId?: string;
+  roomType?: { id: string; name: string; price: number; extraBedPrice: number };
+  roomTypeName?: string;
+  numberOfRooms: number;
+  numberOfExtraBeds: number;
+  roomPrice: number;
+  extraBedPrice: number;
+  nights: number;
+  calculatedTotal: number;
 }
 
 export interface CreateInquiryInput {

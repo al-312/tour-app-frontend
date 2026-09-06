@@ -4,21 +4,19 @@ import * as React from "react";
 import { Building2 } from "lucide-react";
 import { useParams, useSearchParams, useRouter } from "next/navigation";
 
+import { useGetHotelsQuery } from "@/features/hotels/services/hotels-api.slice";
 import { useGetPackageByIdQuery } from "@/features/packages/services/packages-api.slice";
 import { useCreateInquiryMutation } from "@/features/inquiries/services/inquiries-api.slice";
 import {
   useGetClientsQuery,
   useCreateClientMutation,
 } from "@/features/clients/services/clients-api.slice";
-import {
-  useGetHotelsQuery,
-  useCalculateAllocationMutation,
-} from "@/features/hotels/services/hotels-api.slice";
 
 import { CustomizeHeader } from "./customize-header";
+import { CustomizeDayCard } from "./customize-day-card";
 import { CustomizeClientModal } from "./customize-client-modal";
 import { CustomizeClientSection } from "./customize-client-section";
-import { CustomizeDayCard, type DaySelectionState } from "./customize-day-card";
+import { useCustomizeInquiryState } from "./use-customize-inquiry-state";
 
 export default function PackageCustomizePage(): React.JSX.Element {
   const params = useParams();
@@ -59,111 +57,21 @@ export default function PackageCustomizePage(): React.JSX.Element {
     Number.isNaN(paramChildren) ? 0 : paramChildren
   );
 
-  const [daySelections, setDaySelections] = React.useState<
-    Record<number, DaySelectionState>
-  >({});
+  const {
+    daySelections,
+    handleAdultsChange,
+    handleHotelOrRoomTypeChange,
+    totalCalculatedPackagePrice,
+  } = useCustomizeInquiryState({
+    pkg,
+    allHotels,
+    adults,
+    setAdults,
+  });
+
   const [isClientModalOpen, setIsClientModalOpen] = React.useState(false);
   const [errorMessage, setErrorMessage] = React.useState<string | null>(null);
   const [successMessage, setSuccessMessage] = React.useState<string | null>(null);
-
-  const [calculateAllocation] = useCalculateAllocationMutation();
-
-  React.useEffect(() => {
-    if (pkg?.packageDays && pkg.packageDays.length > 0) {
-      const initialMap: Record<number, DaySelectionState> = {};
-      pkg.packageDays.forEach((pd) => {
-        const destId = pd.destinationId ?? pkg.destinationId ?? "";
-        const defaultHotel = allHotels.find((h) => h.destinationId === destId);
-        const defaultRoomType = defaultHotel?.roomTypes?.[0];
-
-        initialMap[pd.dayNumber] = {
-          dayNumber: pd.dayNumber,
-          destinationId: destId,
-          destinationName: pd.destination?.name ?? pkg.destination?.name ?? "Destination",
-          hotelId: defaultHotel?.id ?? "",
-          roomTypeId: defaultRoomType?.id ?? "",
-          roomsCount: 1,
-          extraBedsCount: 0,
-          calculatedPrice: defaultRoomType ? defaultRoomType.roomPrice : 0,
-          notes: pd.notes ?? undefined,
-        };
-      });
-      queueMicrotask(() => {
-        setDaySelections(initialMap);
-      });
-    }
-  }, [allHotels, pkg]);
-
-  const handleHotelOrRoomTypeChange = async (
-    dayNumber: number,
-    hotelId: string,
-    roomTypeId: string
-  ): Promise<void> => {
-    const current = daySelections[dayNumber];
-    if (!current) return;
-
-    if (!hotelId || !roomTypeId) {
-      setDaySelections((prev) => ({
-        ...prev,
-        [dayNumber]: {
-          ...current,
-          hotelId,
-          roomTypeId,
-          roomsCount: 0,
-          extraBedsCount: 0,
-          calculatedPrice: 0,
-        },
-      }));
-      return;
-    }
-
-    try {
-      const res = await calculateAllocation({
-        hotelId,
-        roomTypeId,
-        adults,
-        nights: 1,
-      }).unwrap();
-      setDaySelections((prev) => ({
-        ...prev,
-        [dayNumber]: {
-          ...current,
-          hotelId,
-          roomTypeId,
-          roomsCount: res.numberOfRooms,
-          extraBedsCount: res.numberOfExtraBeds,
-          calculatedPrice: res.calculatedTotal,
-        },
-      }));
-    } catch {
-      const selectedHotel = allHotels.find((h) => h.id === hotelId);
-      const selectedRoom = selectedHotel?.roomTypes?.find((rt) => rt.id === roomTypeId);
-      if (selectedRoom) {
-        const rooms = Math.max(
-          1,
-          Math.ceil(adults / (selectedRoom.maxAdults > 0 ? selectedRoom.maxAdults : 2))
-        );
-        setDaySelections((prev) => ({
-          ...prev,
-          [dayNumber]: {
-            ...current,
-            hotelId,
-            roomTypeId,
-            roomsCount: rooms,
-            extraBedsCount: 0,
-            calculatedPrice: rooms * selectedRoom.roomPrice,
-          },
-        }));
-      }
-    }
-  };
-
-  const totalCalculatedPackagePrice = React.useMemo(() => {
-    return Object.values(daySelections).reduce(
-      (sum, item) => sum + item.calculatedPrice,
-      0
-    );
-  }, [daySelections]);
 
   const handleSubmitInquiry = async (): Promise<void> => {
     setErrorMessage(null);
@@ -296,7 +204,7 @@ export default function PackageCustomizePage(): React.JSX.Element {
           travelDate={travelDate}
           onTravelDateChange={setTravelDate}
           adults={adults}
-          onAdultsChange={setAdults}
+          onAdultsChange={handleAdultsChange}
           childrenCount={childrenCount}
           onChildrenCountChange={setChildrenCount}
           initialSource={initialSource}
