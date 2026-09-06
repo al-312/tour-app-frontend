@@ -215,8 +215,8 @@ export function Sidebar(): React.JSX.Element {
   return (
     <aside
       className={cn(
-        "top-0 h-screen flex flex-col justify-between bg-app-surface/95 backdrop-blur-md border-r border-app-border/40 p-4 xl:p-6 transition-all duration-300 z-30 flex-shrink-0 relative",
-        isCollapsed ? "w-20 xl:w-24" : "w-64 xl:w-72 2xl:w-80"
+        "sticky top-0 h-screen flex flex-col justify-between bg-app-surface border-r border-app-border/40 p-4 xl:p-6 transition-all duration-300 z-40 flex-shrink-0",
+        isCollapsed ? "w-20 xl:w-24" : "w-64 xl:w-60 2xl:w-64"
       )}
     >
       <SidebarFloatingToggle isCollapsed={isCollapsed} onToggle={toggleSidebar} />

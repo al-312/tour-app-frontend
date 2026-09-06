@@ -61,39 +61,43 @@ export default function Modal({
   if (!isOpen || !isMounted) return null;
 
   return createPortal(
-    <div className="fixed inset-0 z-[999] flex items-center justify-center p-4 overflow-y-auto">
-      {/* Backdrop covering full screen including sidebar and header */}
+    <div className="fixed inset-0 z-[9999] overflow-y-auto">
+      {/* Dark backdrop overlay covering full screen including sidebar and topbar */}
       <div
-        className="fixed inset-0 bg-black/70 backdrop-blur-md transition-opacity animate-fade-in z-[999]"
+        className="fixed inset-0 bg-black/80 backdrop-blur-xs transition-opacity animate-fade-in"
         onClick={onClose}
         aria-hidden="true"
       />
 
-      {/* Dialog content on top of everything */}
-      <div
-        className={cn(
-          "relative w-full bg-app-surface border border-app-border/80 rounded-2xl shadow-2xl z-[1000] p-6 flex flex-col gap-5 animate-scale-up",
-          maxWidthClasses[maxWidth]
-        )}
-        role="dialog"
-        aria-modal="true"
-      >
-        <div className="flex items-start justify-between gap-4 border-b border-app-border/40 pb-4">
-          <div>
-            <h3 className="text-lg font-bold text-app-fg font-display-lg">{title}</h3>
-            {description && <p className="text-xs text-app-muted mt-1">{description}</p>}
+      {/* Centered dialog container */}
+      <div className="flex min-h-full items-center justify-center p-4 relative z-10 pointer-events-none">
+        <div
+          className={cn(
+            "relative w-full bg-app-surface border border-app-border/80 rounded-2xl shadow-2xl pointer-events-auto p-6 flex flex-col gap-5 animate-scale-up",
+            maxWidthClasses[maxWidth]
+          )}
+          role="dialog"
+          aria-modal="true"
+        >
+          <div className="flex items-start justify-between gap-4 border-b border-app-border/40 pb-4">
+            <div>
+              <h3 className="text-lg font-bold text-app-fg font-display-lg">{title}</h3>
+              {description && (
+                <p className="text-xs text-app-muted mt-1">{description}</p>
+              )}
+            </div>
+            <button
+              type="button"
+              onClick={onClose}
+              aria-label="Close modal"
+              className="p-1.5 rounded-lg text-app-muted hover:text-app-fg hover:bg-app-surface-variant transition-colors cursor-pointer"
+            >
+              <X className="w-4 h-4" />
+            </button>
           </div>
-          <button
-            type="button"
-            onClick={onClose}
-            aria-label="Close modal"
-            className="p-1.5 rounded-lg text-app-muted hover:text-app-fg hover:bg-app-surface-variant transition-colors cursor-pointer"
-          >
-            <X className="w-4 h-4" />
-          </button>
-        </div>
 
-        <div>{children}</div>
+          <div>{children}</div>
+        </div>
       </div>
     </div>,
     document.body
