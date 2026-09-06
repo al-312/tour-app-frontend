@@ -2,8 +2,9 @@
 
 import * as React from "react";
 import { toast } from "sonner";
-import { useRouter, useSearchParams, usePathname } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 
+import { useAppSelector } from "@/store/hooks";
 import { apiTransformer } from "@/lib/api/api-transformer";
 import { useGetHotelsQuery } from "@/features/hotels/services/hotels-api.slice";
 import { useGetClientsQuery } from "@/features/clients/services/clients-api.slice";
@@ -40,9 +41,9 @@ export function usePackageBuilderState({
 }: UsePackageBuilderStateProps): PackageBuilderHookState {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const pathname = usePathname();
-
-  const maxStep = 4;
+  const { user } = useAppSelector((state) => state.auth);
+  const isAdmin = user?.role === "ADMIN" || user?.role === "SUPER_ADMIN";
+  const maxStep = isAdmin ? 3 : 4;
 
   const rawStep = parseInt(searchParams.get("step") ?? "1", 10);
   const step = (rawStep >= 1 && rawStep <= maxStep ? rawStep : 1) as 1 | 2 | 3 | 4;
@@ -50,10 +51,10 @@ export function usePackageBuilderState({
   const setStep = React.useCallback(
     (targetStep: 1 | 2 | 3 | 4) => {
       const params = new URLSearchParams(Array.from(searchParams.entries()));
-      params.set("step", String(targetStep));
-      router.push(`${pathname}?${params.toString()}`);
+      params.set("step", targetStep.toString());
+      router.push(`?${params.toString()}`);
     },
-    [pathname, router, searchParams]
+    [router, searchParams]
   );
 
   const { data: existingPkg, isLoading: isPkgLoading } = useGetPackageByIdQuery(

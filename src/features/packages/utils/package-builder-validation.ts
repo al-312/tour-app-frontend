@@ -4,6 +4,8 @@ export interface Step1ValidationErrors {
   packageName?: string | undefined;
   destinationId?: string | undefined;
   numberOfDays?: string | undefined;
+  clientId?: string | undefined;
+  startDate?: string | undefined;
 }
 
 export interface Step1ValidationResult {

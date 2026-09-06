@@ -9,7 +9,11 @@ import { useAppSelector } from "@/store/hooks";
 
 import { PackageBuilderBody } from "./package-builder-body";
 import { usePackageBuilderState } from "../hooks/use-package-builder-state";
-import { StepIndicator, PACKAGE_BUILDER_STEPS } from "./builder-steps/step-indicator";
+import {
+  StepIndicator,
+  ADMIN_STEPS,
+  CONSULTANT_STEPS,
+} from "./builder-steps/step-indicator";
 
 interface PackageBuilderPageProps {
   mode: "create" | "edit";
@@ -22,7 +26,7 @@ export function PackageBuilderPage({
 }: PackageBuilderPageProps): React.JSX.Element {
   const { user } = useAppSelector((state) => state.auth);
   const isAdmin = user?.role === "ADMIN" || user?.role === "SUPER_ADMIN";
-  const steps = PACKAGE_BUILDER_STEPS;
+  const steps = isAdmin ? ADMIN_STEPS : CONSULTANT_STEPS;
 
   const {
     router,
@@ -93,8 +97,9 @@ export function PackageBuilderPage({
           {mode === "create" ? "Create Tour Package" : "Edit Tour Package"}
         </Heading>
         <p className="text-muted-foreground text-xs sm:text-sm mt-1">
-          Follow the 4-step wizard to define details, daily hotel stay, traveler counts,
-          and preview proposal.
+          {isAdmin
+            ? "Follow the 3-step wizard to define details, daily hotel stay, and preview template."
+            : "Follow the 4-step wizard to define details, daily hotel stay, traveler counts, and preview proposal."}
         </p>
       </div>
 

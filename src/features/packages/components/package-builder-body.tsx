@@ -4,6 +4,7 @@ import * as React from "react";
 
 import { Step1Info } from "./builder-steps/step-1-info";
 import { Step4PreviewExport } from "./builder-steps/step-4-preview-export";
+import { Step3ConsultantSelect } from "./builder-steps/step-3-consultant-select";
 import { Step2Itinerary, type DayItineraryItem } from "./builder-steps/step-2-itinerary";
 
 import type { Hotel } from "@/features/hotels/types/hotel.types";
@@ -53,26 +54,32 @@ export function PackageBuilderBody(props: PackageBuilderBodyProps): React.JSX.El
     mode,
     packageName,
     setPackageName,
+    clientId,
+    setClientId,
     destinationId,
     setDestinationId,
     startDate,
+    setStartDate,
     numberOfDays,
     handleNumberOfDaysChange,
     adults,
+    setAdults,
     childrenCount,
+    setChildrenCount,
     status,
     activeDay,
     setActiveDay,
     daysData,
     setDaysData,
-    clientId,
     consultantId,
+    setConsultantId,
     clients,
     destinations,
     consultants,
     hotels,
     isSubmitting,
     onSubmit,
+    isAdmin = false,
   } = props;
 
   if (step === 1) {
@@ -80,11 +87,17 @@ export function PackageBuilderBody(props: PackageBuilderBodyProps): React.JSX.El
       <Step1Info
         packageName={packageName}
         setPackageName={setPackageName}
+        clientId={clientId}
+        setClientId={setClientId}
         destinationId={destinationId}
         setDestinationId={setDestinationId}
+        startDate={startDate}
+        setStartDate={setStartDate}
         numberOfDays={numberOfDays}
         setNumberOfDays={handleNumberOfDaysChange}
+        clients={clients}
         destinations={destinations}
+        showClientFields={!isAdmin}
         onNext={() => {
           setStep(2);
         }}
@@ -107,7 +120,51 @@ export function PackageBuilderBody(props: PackageBuilderBodyProps): React.JSX.El
         onNext={() => {
           setStep(3);
         }}
-        nextButtonText="Next: Preview & Save"
+        nextButtonText={isAdmin ? "Next: Preview & Save" : "Next: Traveler Details"}
+      />
+    );
+  }
+
+  if (isAdmin) {
+    return (
+      <Step4PreviewExport
+        mode={mode}
+        packageName={packageName}
+        startDate={startDate}
+        numberOfDays={numberOfDays}
+        adults={adults}
+        childrenCount={childrenCount}
+        status={status}
+        selectedClient={clients.find((c) => c.id === clientId)}
+        selectedDestination={destinations.find((d) => d.id === destinationId)}
+        selectedConsultant={consultants.find((c) => c.id === consultantId)}
+        daysData={daysData}
+        hotels={hotels}
+        isSubmitting={isSubmitting}
+        onBack={() => {
+          setStep(2);
+        }}
+        onSubmit={onSubmit}
+        isAdmin={true}
+      />
+    );
+  }
+
+  if (step === 3) {
+    return (
+      <Step3ConsultantSelect
+        consultantId={consultantId}
+        setConsultantId={setConsultantId}
+        adults={adults}
+        setAdults={setAdults}
+        childrenCount={childrenCount}
+        setChildrenCount={setChildrenCount}
+        onBack={() => {
+          setStep(2);
+        }}
+        onNext={() => {
+          setStep(4);
+        }}
       />
     );
   }
@@ -128,9 +185,10 @@ export function PackageBuilderBody(props: PackageBuilderBodyProps): React.JSX.El
       hotels={hotels}
       isSubmitting={isSubmitting}
       onBack={() => {
-        setStep(2);
+        setStep(3);
       }}
       onSubmit={onSubmit}
+      isAdmin={false}
     />
   );
 }
