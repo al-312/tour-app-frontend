@@ -34,6 +34,8 @@ export function PackageBuilderPage({
     isPkgLoading,
     packageName,
     setPackageName,
+    source,
+    setSource,
     clientId,
     setClientId,
     destinationId,
@@ -120,6 +122,8 @@ export function PackageBuilderPage({
         isAdmin={isAdmin}
         packageName={packageName}
         setPackageName={setPackageName}
+        source={source}
+        setSource={setSource}
         clientId={clientId}
         setClientId={setClientId}
         destinationId={destinationId}

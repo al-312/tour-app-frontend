@@ -2,6 +2,7 @@ import type { DayItineraryItem } from "../components/builder-steps/step-2-itiner
 
 export interface Step1ValidationErrors {
   packageName?: string | undefined;
+  source?: string | undefined;
   destinationId?: string | undefined;
   numberOfDays?: string | undefined;
   clientId?: string | undefined;
@@ -18,6 +19,7 @@ export interface Step1ValidationResult {
 
 export function validateStep1Data(data: {
   packageName: string;
+  source?: string | undefined;
   destinationId: string;
   numberOfDays: number;
   validFrom?: string | undefined;
@@ -27,6 +29,9 @@ export function validateStep1Data(data: {
 
   if (!data.packageName.trim()) {
     errors.packageName = "Package name is required";
+  }
+  if (!data.source?.trim()) {
+    errors.source = "Source city is required";
   }
   if (!data.destinationId) {
     errors.destinationId = "Please select a destination";
@@ -116,6 +121,7 @@ export function validateStep3Data(data: {
 
 export function validateAllSteps(data: {
   packageName: string;
+  source?: string | undefined;
   destinationId: string;
   numberOfDays: number;
   daysData: DayItineraryItem[];

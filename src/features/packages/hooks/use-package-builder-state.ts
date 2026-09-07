@@ -65,6 +65,7 @@ export function usePackageBuilderState({
   const [loadedPkgId, setLoadedPkgId] = React.useState<string | null>(null);
 
   const [packageName, setPackageName] = React.useState("");
+  const [source, setSource] = React.useState("Bangalore");
   const [clientId, setClientId] = React.useState("");
   const [destinationId, setDestinationId] = React.useState("");
   const [startDate, setStartDate] = React.useState<string>("");
@@ -154,6 +155,7 @@ export function usePackageBuilderState({
     setLoadedPkgId(existingPkg.id);
     const init = computeEditInitialState(existingPkg, clients, consultants, firstHotelId);
     setPackageName(init.packageName);
+    setSource(init.source);
     setClientId(init.clientId);
     setDestinationId(init.destinationId);
     setStartDate(init.startDate);
@@ -180,6 +182,7 @@ export function usePackageBuilderState({
     if (targetStep > 1) {
       const v1 = validateStep1Data({
         packageName,
+        source,
         destinationId,
         numberOfDays,
         validFrom,
@@ -203,6 +206,7 @@ export function usePackageBuilderState({
   const handleSubmitPackage = async (): Promise<void> => {
     const check = validateAllSteps({
       packageName,
+      source,
       destinationId,
       numberOfDays,
       daysData,
@@ -216,6 +220,7 @@ export function usePackageBuilderState({
     try {
       const payload = buildPackagePayload({
         packageName,
+        source,
         destinationId,
         clientId,
         numberOfDays,
@@ -248,6 +253,8 @@ export function usePackageBuilderState({
     isPkgLoading,
     packageName,
     setPackageName,
+    source,
+    setSource,
     clientId,
     setClientId,
     destinationId,

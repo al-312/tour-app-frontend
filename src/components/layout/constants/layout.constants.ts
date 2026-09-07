@@ -26,7 +26,7 @@ export const GET_NAVIGATION_ITEMS = (role?: UserRole): NavigationItem[] => {
   const items: NavigationItem[] = [
     { name: "Consultants", href: "/consultants", icon: Briefcase },
     { name: "Hotels", href: "/hotels", icon: Building2 },
-    { name: "Destinations", href: "/destinations", icon: MapPin },
+    { name: "Locations", href: "/destinations", icon: MapPin },
     { name: "Packages", href: "/packages", icon: PackageCheck },
     { name: "Inquiries", href: "/inquiries", icon: FileText },
   ];
@@ -44,8 +44,8 @@ export const PAGE_TITLES: Record<string, { title: string; subtitle: string }> = 
     subtitle: "Search travel packages by destination, dates, and guests",
   },
   "/destinations": {
-    title: "Destination Management",
-    subtitle: "Manage travel destinations, countries, and cover imagery",
+    title: "Location Management",
+    subtitle: "Manage source & destination travel locations, cities, and countries",
   },
   "/hotels": {
     title: "Hotel & Room Management",
