@@ -1,24 +1,24 @@
 "use client";
 
 import * as React from "react";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
 import { Search, MapPin, Calendar, Users, Clock, Compass } from "lucide-react";
 
 import Card from "@/components/ui/card";
 import Input from "@/components/ui/input";
+import Select from "@/components/ui/select";
 import Button from "@/components/ui/button";
 import { useSearchPackagesQuery } from "@/features/packages/services/packages-api.slice";
 import { useGetDestinationsQuery } from "@/features/destinations/services/destinations-api.slice";
+import {
+  searchPackageSchema,
+  type SearchPackageFormData,
+} from "@/features/packages/schemas/package.schema";
 
 import { PackageSearchResultCard } from "./package-search-result-card";
 
 export default function ConsultantPackageSearchPage(): React.JSX.Element {
-  const [destinationId, setDestinationId] = React.useState("");
-  const [source, setSource] = React.useState("Bangalore");
-  const [travelDate, setTravelDate] = React.useState("2026-10-15");
-  const [days, setDays] = React.useState<number | "">(5);
-  const [adults, setAdults] = React.useState<number | "">(2);
-  const [children, setChildren] = React.useState<number | "">(0);
-
   const [searchParams, setSearchParams] = React.useState<{
     destinationId?: string;
     source?: string;
@@ -28,19 +28,57 @@ export default function ConsultantPackageSearchPage(): React.JSX.Element {
     children?: number;
   }>({});
 
-  const { data: destinations = [] } = useGetDestinationsQuery(undefined);
+  const { data: locations = [] } = useGetDestinationsQuery(undefined);
   const {
     data: rawPackages = [],
     isLoading,
     isFetching,
   } = useSearchPackagesQuery(searchParams);
 
+  const {
+    register,
+    handleSubmit,
+    watch,
+    formState: { errors },
+  } = useForm<SearchPackageFormData>({
+    resolver: zodResolver(searchPackageSchema),
+    defaultValues: {
+      destinationId: "",
+      source: "",
+      travelDate: "2026-10-15",
+      days: 5,
+      adults: 2,
+      children: 0,
+    },
+  });
+
+  const currentSource = watch("source") ?? "";
+
   const packages = React.useMemo(() => {
     return rawPackages.filter((p) => p.status !== "EXPIRED");
   }, [rawPackages]);
 
-  const handleSearch = (e: React.SyntheticEvent): void => {
-    e.preventDefault();
+  const sourceLocationOptions = React.useMemo(() => {
+    return [
+      { value: "", label: "All Source Locations" },
+      ...locations.map((loc) => ({
+        value: loc.name,
+        label: `${loc.name} (${loc.country})`,
+      })),
+    ];
+  }, [locations]);
+
+  const destinationLocationOptions = React.useMemo(() => {
+    return [
+      { value: "", label: "All Destination Locations" },
+      ...locations.map((loc) => ({
+        value: loc.id,
+        label: `${loc.name} (${loc.country})`,
+      })),
+    ];
+  }, [locations]);
+
+  const onSearchSubmit = (data: SearchPackageFormData): void => {
     const params: {
       destinationId?: string;
       source?: string;
@@ -50,32 +88,25 @@ export default function ConsultantPackageSearchPage(): React.JSX.Element {
       children?: number;
     } = {};
 
-    const finalDays = typeof days === "number" && days > 0 ? days : 1;
-    const finalAdults = typeof adults === "number" && adults > 0 ? adults : 1;
-    const finalChildren = typeof children === "number" && children >= 0 ? children : 0;
-
-    if (destinationId) params.destinationId = destinationId;
-    if (source) params.source = source;
-    if (travelDate) params.travelDate = travelDate;
-    if (finalDays) params.days = finalDays;
-    if (finalAdults) params.adults = finalAdults;
-    if (finalChildren) params.children = finalChildren;
+    if (data.destinationId) params.destinationId = data.destinationId;
+    if (data.source?.trim()) params.source = data.source.trim();
+    if (data.travelDate) params.travelDate = data.travelDate;
+    if (data.days) params.days = data.days;
+    if (data.adults) params.adults = data.adults;
+    if (data.children !== undefined) params.children = data.children;
 
     setSearchParams(params);
   };
 
   const handleOpenCustomizeInNewTab = (pkgId: string): void => {
-    const finalDays = typeof days === "number" && days > 0 ? days : 1;
-    const finalAdults = typeof adults === "number" && adults > 0 ? adults : 1;
-    const finalChildren = typeof children === "number" && children >= 0 ? children : 0;
-
+    const formValues = watch();
     const query = new URLSearchParams({
-      destinationId,
-      source,
-      travelDate,
-      days: finalDays.toString(),
-      adults: finalAdults.toString(),
-      children: finalChildren.toString(),
+      destinationId: formValues.destinationId ?? "",
+      source: formValues.source ?? "",
+      travelDate: formValues.travelDate ?? "2026-10-15",
+      days: String(formValues.days ?? 5),
+      adults: String(formValues.adults ?? 2),
+      children: String(formValues.children ?? 0),
     });
     window.open(`/packages/${pkgId}/customize?${query.toString()}`, "_blank");
   };
@@ -93,56 +124,43 @@ export default function ConsultantPackageSearchPage(): React.JSX.Element {
             Search Tour Packages
           </h1>
           <p className="text-sm text-app-muted mt-2">
-            Enter travel criteria below to search available curated travel packages for
-            your clients. Selecting a package opens customization in a new browser tab.
+            Select source and destination locations below to search available curated
+            travel packages for your clients. Selecting a package opens customization in a
+            new browser tab.
           </p>
         </div>
 
-        {/* Search Criteria Form */}
+        {/* Search Criteria Form using React Hook Form */}
         <form
-          onSubmit={handleSearch}
+          onSubmit={(e): void => {
+            void handleSubmit(onSearchSubmit)(e);
+          }}
           className="mt-6 bg-app-surface/90 border border-app-border/80 rounded-2xl p-5 shadow-lg grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-4 items-end"
         >
           <div>
             <label className="block text-xs font-semibold text-app-fg mb-1.5 flex items-center gap-1.5">
-              <MapPin className="w-3.5 h-3.5 text-app-brand" />
-              Destination
+              <MapPin className="w-3.5 h-3.5 text-app-muted" />
+              Source Location
             </label>
-            <select
-              value={destinationId}
-              onChange={(e) => {
-                setDestinationId(e.target.value);
-              }}
-              className="w-full h-10 px-3 rounded-xl border border-app-border bg-app-surface text-xs text-app-fg focus:outline-none focus:border-app-brand cursor-pointer"
-            >
-              <option value="">All Destinations</option>
-              {destinations.map((d) => (
-                <option key={d.id} value={d.id}>
-                  {d.name} ({d.country})
-                </option>
-              ))}
-            </select>
+            <Select
+              options={sourceLocationOptions}
+              className="h-10 text-xs"
+              error={errors.source?.message}
+              {...register("source")}
+            />
           </div>
 
           <div>
             <label className="block text-xs font-semibold text-app-fg mb-1.5 flex items-center gap-1.5">
-              <MapPin className="w-3.5 h-3.5 text-app-muted" />
-              Source City
+              <MapPin className="w-3.5 h-3.5 text-app-brand" />
+              Destination Location
             </label>
-            <select
-              value={source}
-              onChange={(e) => {
-                setSource(e.target.value);
-              }}
-              className="w-full h-10 px-3 rounded-xl border border-app-border bg-app-surface text-xs text-app-fg focus:outline-none focus:border-app-brand cursor-pointer"
-            >
-              <option value="">All Sources</option>
-              {destinations.map((d) => (
-                <option key={d.id} value={d.name}>
-                  {d.name} ({d.country})
-                </option>
-              ))}
-            </select>
+            <Select
+              options={destinationLocationOptions}
+              className="h-10 text-xs"
+              error={errors.destinationId?.message}
+              {...register("destinationId")}
+            />
           </div>
 
           <div>
@@ -152,10 +170,9 @@ export default function ConsultantPackageSearchPage(): React.JSX.Element {
             </label>
             <Input
               type="date"
-              value={travelDate}
-              onChange={(e) => {
-                setTravelDate(e.target.value);
-              }}
+              className="h-10 text-xs"
+              error={errors.travelDate?.message}
+              {...register("travelDate")}
             />
           </div>
 
@@ -167,21 +184,9 @@ export default function ConsultantPackageSearchPage(): React.JSX.Element {
             <Input
               type="number"
               min={1}
-              value={days}
-              onChange={(e) => {
-                const val = e.target.value;
-                if (val === "") {
-                  setDays("");
-                } else {
-                  const parsed = parseInt(val, 10);
-                  setDays(isNaN(parsed) ? "" : parsed);
-                }
-              }}
-              onBlur={() => {
-                if (days === "" || days < 1) {
-                  setDays(1);
-                }
-              }}
+              className="h-10 text-xs"
+              error={errors.days?.message}
+              {...register("days", { valueAsNumber: true })}
             />
           </div>
 
@@ -196,42 +201,18 @@ export default function ConsultantPackageSearchPage(): React.JSX.Element {
                 min={1}
                 title="Adults"
                 placeholder="Adults"
-                value={adults}
-                onChange={(e) => {
-                  const val = e.target.value;
-                  if (val === "") {
-                    setAdults("");
-                  } else {
-                    const parsed = parseInt(val, 10);
-                    setAdults(isNaN(parsed) ? "" : parsed);
-                  }
-                }}
-                onBlur={() => {
-                  if (adults === "" || adults < 1) {
-                    setAdults(1);
-                  }
-                }}
+                className="h-10 text-xs"
+                error={errors.adults?.message}
+                {...register("adults", { valueAsNumber: true })}
               />
               <Input
                 type="number"
                 min={0}
                 title="Children"
                 placeholder="Children"
-                value={children}
-                onChange={(e) => {
-                  const val = e.target.value;
-                  if (val === "") {
-                    setChildren("");
-                  } else {
-                    const parsed = parseInt(val, 10);
-                    setChildren(isNaN(parsed) ? "" : parsed);
-                  }
-                }}
-                onBlur={() => {
-                  if (children === "" || children < 0) {
-                    setChildren(0);
-                  }
-                }}
+                className="h-10 text-xs"
+                error={errors.children?.message}
+                {...register("children", { valueAsNumber: true })}
               />
             </div>
           </div>
@@ -276,7 +257,7 @@ export default function ConsultantPackageSearchPage(): React.JSX.Element {
             </div>
             <h3 className="text-base font-bold text-app-fg">No Packages Found</h3>
             <p className="text-xs text-app-muted max-w-md mt-1">
-              Try adjusting your search criteria such as destination, source city, or
+              Try adjusting your search criteria such as destination, source location, or
               number of days.
             </p>
           </Card>
@@ -286,7 +267,7 @@ export default function ConsultantPackageSearchPage(): React.JSX.Element {
               <PackageSearchResultCard
                 key={pkg.id}
                 pkg={pkg}
-                source={source}
+                source={currentSource}
                 onCustomize={handleOpenCustomizeInNewTab}
               />
             ))}

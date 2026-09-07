@@ -49,7 +49,7 @@ export function DestinationTable({
 
         <Button onClick={onOpenCreate} className="shrink-0">
           <Plus className="w-4 h-4 mr-1" />
-          <span>Add Destination</span>
+          <span>Add Location</span>
         </Button>
       </div>
 
@@ -59,14 +59,14 @@ export function DestinationTable({
             <MapPin className="w-6 h-6" />
           </div>
           <h4 className="text-sm font-bold text-app-fg font-display-lg">
-            No destinations found
+            No locations found
           </h4>
         </div>
       ) : (
         <Table>
           <Table.Header>
             <Table.Row>
-              <Table.Head>Destination</Table.Head>
+              <Table.Head>Location / City</Table.Head>
               <Table.Head>Country</Table.Head>
               <Table.Head>Description</Table.Head>
               <Table.Head className="text-right">Actions</Table.Head>
@@ -96,7 +96,7 @@ export function DestinationTable({
                       onClick={() => {
                         onOpenEdit(dest);
                       }}
-                      title="Edit Destination"
+                      title="Edit Location"
                       className="p-1.5 rounded-lg text-app-muted hover:text-app-fg hover:bg-app-surface-variant cursor-pointer"
                     >
                       <Edit3 className="w-4 h-4" />
@@ -106,7 +106,7 @@ export function DestinationTable({
                       onClick={() => {
                         onOpenDelete(dest);
                       }}
-                      title="Delete Destination"
+                      title="Delete Location"
                       className="p-1.5 rounded-lg text-app-muted hover:text-rose-500 hover:bg-rose-500/10 cursor-pointer"
                     >
                       <Trash2 className="w-4 h-4" />

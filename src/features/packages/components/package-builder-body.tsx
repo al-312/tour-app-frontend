@@ -18,6 +18,8 @@ interface PackageBuilderBodyProps {
   mode: "create" | "edit";
   packageName: string;
   setPackageName: (val: string) => void;
+  source: string;
+  setSource: (val: string) => void;
   clientId: string;
   setClientId: (val: string) => void;
   destinationId: string;
@@ -58,6 +60,8 @@ export function PackageBuilderBody(props: PackageBuilderBodyProps): React.JSX.El
     mode,
     packageName,
     setPackageName,
+    source,
+    setSource,
     clientId,
     setClientId,
     destinationId,
@@ -95,6 +99,8 @@ export function PackageBuilderBody(props: PackageBuilderBodyProps): React.JSX.El
       <Step1Info
         packageName={packageName}
         setPackageName={setPackageName}
+        source={source}
+        setSource={setSource}
         clientId={clientId}
         setClientId={setClientId}
         destinationId={destinationId}

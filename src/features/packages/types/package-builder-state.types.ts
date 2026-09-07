@@ -13,6 +13,8 @@ export interface PackageBuilderHookState {
   isPkgLoading: boolean;
   packageName: string;
   setPackageName: (val: string) => void;
+  source: string;
+  setSource: (val: string) => void;
   clientId: string;
   setClientId: (val: string) => void;
   destinationId: string;

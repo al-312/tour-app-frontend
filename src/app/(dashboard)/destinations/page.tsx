@@ -1,13 +1,12 @@
 "use client";
 
 import * as React from "react";
-import { MapPin, Globe, RefreshCw, AlertCircle, Building2 } from "lucide-react";
+import { MapPin, Globe, Building2 } from "lucide-react";
 
 import Card from "@/components/ui/card";
-import Button from "@/components/ui/button";
 import Heading from "@/components/ui/heading";
-import { apiTransformer } from "@/lib/api/api-transformer";
 import { DestinationTable } from "@/features/destinations/components/destination-table";
+import { PageLoadingState, PageErrorState } from "@/components/shared/page-state-views";
 import { useGetDestinationsQuery } from "@/features/destinations/services/destinations-api.slice";
 import { DestinationModals } from "@/features/destinations/components/destination-modals/destination-modals";
 
@@ -36,16 +35,17 @@ export default function DestinationsPage(): React.JSX.Element {
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
           <Heading level={1} size="2xl">
-            Destination Management
+            Location Management
           </Heading>
           <p className="text-app-muted text-sm font-medium mt-1">
-            Manage travel destinations, countries, and cover imagery for packages.
+            Manage source &amp; destination travel locations, cities, and countries for
+            packages.
           </p>
         </div>
         <div className="flex items-center gap-2">
           <div className="px-3 py-1.5 rounded-xl bg-app-surface-variant/80 border border-app-border/60 text-xs font-semibold text-app-fg flex items-center gap-2">
             <MapPin className="w-4 h-4 text-app-brand" />
-            <span>{destinations.length} Total Destinations</span>
+            <span>{destinations.length} Total Locations</span>
           </div>
         </div>
       </div>
@@ -55,7 +55,7 @@ export default function DestinationsPage(): React.JSX.Element {
         <Card className="p-5 flex items-center justify-between">
           <div>
             <span className="text-xs font-semibold text-app-muted uppercase">
-              Destinations
+              Locations
             </span>
             <div className="text-2xl font-extrabold text-app-fg mt-1 font-display-lg">
               {destinations.length}
@@ -95,38 +95,16 @@ export default function DestinationsPage(): React.JSX.Element {
 
       {/* Content */}
       {isLoading ? (
-        <div className="flex flex-col items-center justify-center p-16 rounded-2xl border border-app-border/40 bg-app-surface shadow-sm">
-          <RefreshCw className="w-8 h-8 text-app-brand animate-spin mb-3" />
-          <span className="text-sm font-semibold text-app-fg">
-            Loading destinations...
-          </span>
-        </div>
+        <PageLoadingState label="Loading locations..." />
       ) : isError ? (
-        <div className="flex flex-col items-center justify-center p-12 text-center rounded-2xl border border-rose-500/20 bg-rose-500/10 text-rose-600 gap-3">
-          <AlertCircle className="w-8 h-8 shrink-0" />
-          <div>
-            <h4 className="text-base font-bold font-display-lg">
-              Failed to load destinations
-            </h4>
-            <p className="text-xs text-rose-600/80 mt-1 max-w-md">
-              {apiTransformer.transformError(
-                error,
-                "Unable to connect to destination service."
-              )}
-            </p>
-          </div>
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => {
-              void refetch();
-            }}
-            className="mt-2 border-rose-500/40 hover:bg-rose-500/20"
-          >
-            <RefreshCw className="w-3.5 h-3.5 mr-1.5" />
-            Retry
-          </Button>
-        </div>
+        <PageErrorState
+          title="Failed to load locations"
+          error={error}
+          defaultMessage="Unable to connect to location service."
+          onRetry={() => {
+            void refetch();
+          }}
+        />
       ) : (
         <DestinationTable
           destinations={destinations}

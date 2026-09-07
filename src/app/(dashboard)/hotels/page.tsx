@@ -2,14 +2,14 @@
 
 import Link from "next/link";
 import * as React from "react";
-import { AlertCircle, Building2, Plus, RefreshCw } from "lucide-react";
+import { Building2, Plus } from "lucide-react";
 
 import Button from "@/components/ui/button";
 import Heading from "@/components/ui/heading";
-import { apiTransformer } from "@/lib/api/api-transformer";
 import { HotelTable } from "@/features/hotels/components/hotel-table";
 import { useGetHotelsQuery } from "@/features/hotels/services/hotels-api.slice";
 import { HotelStatsCards } from "@/features/hotels/components/hotel-stats-cards";
+import { PageLoadingState, PageErrorState } from "@/components/shared/page-state-views";
 import { DeleteHotelModal } from "@/features/hotels/components/hotel-modals/delete-hotel-modal";
 import { useGetDestinationsQuery } from "@/features/destinations/services/destinations-api.slice";
 
@@ -20,7 +20,7 @@ function HotelsHeader({ totalHotels = 0 }: { totalHotels?: number }): React.JSX.
     <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
       <div>
         <Heading level={1} size="2xl">
-          Hotel & Accommodations Management
+          Hotel &amp; Accommodations Management
         </Heading>
         <p className="text-app-muted text-sm font-medium mt-1">
           Manage hotel properties, star ratings, room types, pricing, and allocations.
@@ -65,34 +65,16 @@ export default function HotelsPage(): React.JSX.Element {
 
       {/* Main Table Content */}
       {isLoading ? (
-        <div className="flex flex-col items-center justify-center p-16 rounded-2xl border border-app-border/40 bg-app-surface shadow-sm">
-          <RefreshCw className="w-8 h-8 text-app-brand animate-spin mb-3" />
-          <span className="text-sm font-semibold text-app-fg">Loading hotels...</span>
-        </div>
+        <PageLoadingState label="Loading hotels..." />
       ) : isError ? (
-        <div className="flex flex-col items-center justify-center p-12 text-center rounded-2xl border border-rose-500/20 bg-rose-500/10 text-rose-600 gap-3">
-          <AlertCircle className="w-8 h-8 shrink-0" />
-          <div>
-            <h4 className="text-base font-bold font-display-lg">Failed to load hotels</h4>
-            <p className="text-xs text-rose-600/80 mt-1 max-w-md">
-              {apiTransformer.transformError(
-                error,
-                "Unable to connect to hotel service."
-              )}
-            </p>
-          </div>
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={(): void => {
-              void refetch();
-            }}
-            className="mt-2 border-rose-500/40 hover:bg-rose-500/20"
-          >
-            <RefreshCw className="w-3.5 h-3.5 mr-1.5" />
-            Retry
-          </Button>
-        </div>
+        <PageErrorState
+          title="Failed to load hotels"
+          error={error}
+          defaultMessage="Unable to connect to hotel service."
+          onRetry={(): void => {
+            void refetch();
+          }}
+        />
       ) : (
         <HotelTable
           hotels={hotels}

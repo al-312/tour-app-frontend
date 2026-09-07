@@ -64,10 +64,10 @@ export function EditDestinationModal({
         },
       }).unwrap();
 
-      toast.success(`Destination "${data.name}" updated successfully!`);
+      toast.success(`Location "${data.name}" updated successfully!`);
       onClose();
     } catch (err) {
-      toast.error(apiTransformer.transformError(err, "Failed to update destination"));
+      toast.error(apiTransformer.transformError(err, "Failed to update location"));
     }
   };
 
@@ -75,7 +75,7 @@ export function EditDestinationModal({
     <Modal
       isOpen={isOpen}
       onClose={onClose}
-      title="Edit Destination"
+      title="Edit Location"
       description={`Update details for ${destination.name}`}
     >
       <form
@@ -85,7 +85,7 @@ export function EditDestinationModal({
         className="flex flex-col gap-4"
       >
         <Input
-          label="Destination Name"
+          label="Location / City Name"
           placeholder="e.g. Paris"
           icon={MapPin}
           error={errors.name?.message}

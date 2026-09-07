@@ -5,6 +5,7 @@ import type { DayItineraryItem } from "../components/builder-steps/step-2-itiner
 
 export function buildPackagePayload({
   packageName,
+  source,
   destinationId,
   clientId,
   numberOfDays,
@@ -18,6 +19,7 @@ export function buildPackagePayload({
   firstHotelId,
 }: {
   packageName: string;
+  source?: string;
   destinationId: string;
   clientId?: string;
   numberOfDays: number;
@@ -33,7 +35,7 @@ export function buildPackagePayload({
   const fromDate = validFrom ?? startDate;
   const payload: CreatePackageRequest = {
     packageName,
-    source: "Bangalore",
+    source: source?.trim() ? source.trim() : "Bangalore",
     destinationId: destinationId || "",
     clientId: clientId ?? undefined,
     durationDays: numberOfDays,
@@ -112,6 +114,7 @@ export function computeEditInitialState(
   firstHotelId: string
 ): {
   packageName: string;
+  source: string;
   clientId: string;
   destinationId: string;
   startDate: string;
@@ -151,6 +154,7 @@ export function computeEditInitialState(
 
   return {
     packageName: existingPkg.packageName,
+    source: existingPkg.source,
     clientId: validClientId,
     destinationId: existingPkg.destinationId ?? "",
     startDate: formattedFromDate ?? "",

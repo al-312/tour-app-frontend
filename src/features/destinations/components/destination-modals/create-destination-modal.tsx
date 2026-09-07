@@ -46,11 +46,11 @@ export function CreateDestinationModal({
         description: data.description ?? undefined,
       }).unwrap();
 
-      toast.success(`Destination "${data.name}" created successfully!`);
+      toast.success(`Location "${data.name}" created successfully!`);
       reset();
       onClose();
     } catch (err) {
-      toast.error(apiTransformer.transformError(err, "Failed to create destination"));
+      toast.error(apiTransformer.transformError(err, "Failed to create location"));
     }
   };
 
@@ -58,8 +58,8 @@ export function CreateDestinationModal({
     <Modal
       isOpen={isOpen}
       onClose={onClose}
-      title="Add New Destination"
-      description="Add a new city / destination to the database"
+      title="Add New Location"
+      description="Add a new city / location to the database (used for both sources & destinations)"
     >
       <form
         onSubmit={(e): void => {
@@ -68,22 +68,22 @@ export function CreateDestinationModal({
         className="flex flex-col gap-4"
       >
         <Input
-          label="Destination Name"
-          placeholder="e.g. Paris"
+          label="Location / City Name"
+          placeholder="e.g. Paris, Bangalore, Dubai"
           icon={MapPin}
           error={errors.name?.message}
           {...register("name")}
         />
         <Input
           label="Country"
-          placeholder="e.g. France"
+          placeholder="e.g. France, India, UAE"
           icon={Globe}
           error={errors.country?.message}
           {...register("country")}
         />
         <Input
           label="Description"
-          placeholder="e.g. City of lights..."
+          placeholder="e.g. Popular travel hub..."
           error={errors.description?.message}
           {...register("description")}
         />
@@ -93,7 +93,7 @@ export function CreateDestinationModal({
             Cancel
           </Button>
           <Button type="submit" isLoading={isLoading}>
-            Create Destination
+            Create Location
           </Button>
         </div>
       </form>

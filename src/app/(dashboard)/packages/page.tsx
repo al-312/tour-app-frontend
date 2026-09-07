@@ -2,15 +2,14 @@
 
 import * as React from "react";
 import { useRouter } from "next/navigation";
-import { PackageCheck, RefreshCw, AlertCircle, CheckCircle } from "lucide-react";
+import { PackageCheck, AlertCircle, CheckCircle } from "lucide-react";
 
 import Card from "@/components/ui/card";
-import Button from "@/components/ui/button";
 import Heading from "@/components/ui/heading";
 import { useAppSelector } from "@/store/hooks";
-import { apiTransformer } from "@/lib/api/api-transformer";
 import { PackageTable } from "@/features/packages/components/package-table";
 import { useGetPackagesQuery } from "@/features/packages/services/packages-api.slice";
+import { PageLoadingState, PageErrorState } from "@/components/shared/page-state-views";
 import { ViewPackageModal } from "@/features/packages/components/package-modals/view-package-modal";
 import { CancelPackageModal } from "@/features/packages/components/package-modals/cancel-package-modal";
 import { DeletePackageModal } from "@/features/packages/components/package-modals/delete-package-modal";
@@ -112,38 +111,16 @@ export default function PackagesPage(): React.JSX.Element {
 
       {/* Main Content */}
       {isLoading ? (
-        <div className="flex flex-col items-center justify-center p-16 rounded-2xl border border-app-border/40 bg-app-surface shadow-sm">
-          <RefreshCw className="w-8 h-8 text-app-brand animate-spin mb-3" />
-          <span className="text-sm font-semibold text-app-fg">
-            Loading tour packages...
-          </span>
-        </div>
+        <PageLoadingState label="Loading tour packages..." />
       ) : isError ? (
-        <div className="flex flex-col items-center justify-center p-12 text-center rounded-2xl border border-rose-500/20 bg-rose-500/10 text-rose-600 gap-3">
-          <AlertCircle className="w-8 h-8 shrink-0" />
-          <div>
-            <h4 className="text-base font-bold font-display-lg">
-              Failed to load packages
-            </h4>
-            <p className="text-xs text-rose-600/80 mt-1 max-w-md">
-              {apiTransformer.transformError(
-                error,
-                "Unable to connect to package service."
-              )}
-            </p>
-          </div>
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => {
-              void refetch();
-            }}
-            className="mt-2 border-rose-500/40 hover:bg-rose-500/20"
-          >
-            <RefreshCw className="w-3.5 h-3.5 mr-1.5" />
-            Retry
-          </Button>
-        </div>
+        <PageErrorState
+          title="Failed to load packages"
+          error={error}
+          defaultMessage="Unable to connect to package service."
+          onRetry={() => {
+            void refetch();
+          }}
+        />
       ) : (
         <PackageTable
           packages={packages}

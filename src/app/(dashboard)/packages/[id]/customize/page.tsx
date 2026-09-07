@@ -24,7 +24,7 @@ export default function PackageCustomizePage(): React.JSX.Element {
   const router = useRouter();
 
   const packageId = params.id as string;
-  const initialSource = searchParams.get("source") ?? "Bangalore";
+  const urlSource = searchParams.get("source");
   const paramTravelDate = searchParams.get("travelDate");
   const paramAdults = parseInt(searchParams.get("adults") ?? "2", 10);
   const paramChildren = parseInt(searchParams.get("children") ?? "0", 10);
@@ -47,6 +47,7 @@ export default function PackageCustomizePage(): React.JSX.Element {
 
   const allHotels = React.useMemo(() => hotelsData ?? [], [hotelsData]);
   const clients = React.useMemo(() => clientsData ?? [], [clientsData]);
+  const initialSource = urlSource ?? pkg?.source ?? "Bangalore";
 
   const [selectedClientId, setSelectedClientId] = React.useState<string>("");
   const [travelDate, setTravelDate] = React.useState<string>(defaultDate);

@@ -1,7 +1,8 @@
 "use client";
 
 import * as React from "react";
-import { toast } from "sonner";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
 import {
   ChevronLeft,
   ChevronRight,
@@ -13,8 +14,10 @@ import Card from "@/components/ui/card";
 import Input from "@/components/ui/input";
 import Button from "@/components/ui/button";
 import { useAppSelector } from "@/store/hooks";
-
-import { validateStep3Data } from "../../utils/package-builder-validation";
+import {
+  step3Schema,
+  type Step3FormData,
+} from "@/features/packages/schemas/package.schema";
 
 interface Step3ConsultantSelectProps {
   consultantId?: string;
@@ -35,18 +38,24 @@ export function Step3ConsultantSelect({
   onBack,
   onNext,
 }: Step3ConsultantSelectProps): React.JSX.Element {
-  const [touched, setTouched] = React.useState(false);
   const { user } = useAppSelector((state) => state.auth);
 
-  const validation = validateStep3Data({ adults });
+  const {
+    register,
+    handleSubmit,
+    formState: { errors },
+  } = useForm<Step3FormData>({
+    resolver: zodResolver(step3Schema),
+    defaultValues: {
+      adults: adults || 2,
+      childrenCount: childrenCount || 0,
+    },
+  });
 
-  const handleNextStep = (): void => {
-    setTouched(true);
-    if (!validation.isValid) {
-      if (validation.error) {
-        toast.error(validation.error);
-      }
-      return;
+  const onFormSubmit = (data: Step3FormData): void => {
+    setAdults(data.adults);
+    if (data.childrenCount !== undefined) {
+      setChildrenCount(data.childrenCount);
     }
     onNext();
   };
@@ -55,7 +64,12 @@ export function Step3ConsultantSelect({
 
   return (
     <Card className="p-6">
-      <div className="space-y-6">
+      <form
+        onSubmit={(e): void => {
+          void handleSubmit(onFormSubmit)(e);
+        }}
+        className="space-y-6"
+      >
         <div>
           <h2 className="text-lg font-bold text-foreground">
             Traveler Details & Package User
@@ -65,7 +79,7 @@ export function Step3ConsultantSelect({
           </p>
         </div>
 
-        {/* User Info Card (Automatic, no selection dropdown) */}
+        {/* User Info Card */}
         <div className="p-4 rounded-xl border border-primary/20 bg-primary/5 space-y-2">
           <div className="text-xs font-bold uppercase tracking-wider text-primary flex items-center gap-1.5">
             <UserIcon className="w-4 h-4" />
@@ -82,40 +96,43 @@ export function Step3ConsultantSelect({
             label="Adult Travelers *"
             type="number"
             min={1}
-            value={adults === 0 ? "" : adults}
-            error={
-              touched && adults < 1 ? "Adult travelers must be at least 1" : undefined
-            }
-            onChange={(e) => {
-              const raw = e.target.value;
-              setAdults(raw === "" ? 0 : parseInt(raw, 10) || 0);
-            }}
             icon={UsersIcon}
+            error={errors.adults?.message}
+            {...register("adults", {
+              valueAsNumber: true,
+              onChange: (e: React.ChangeEvent<HTMLInputElement>) => {
+                const raw = e.target.value;
+                setAdults(raw === "" ? 0 : parseInt(raw, 10) || 0);
+              },
+            })}
           />
 
           <Input
             label="Child Travelers"
             type="number"
             min={0}
-            value={childrenCount === 0 ? "" : childrenCount}
-            onChange={(e) => {
-              const raw = e.target.value;
-              setChildrenCount(raw === "" ? 0 : parseInt(raw, 10) || 0);
-            }}
+            error={errors.childrenCount?.message}
+            {...register("childrenCount", {
+              valueAsNumber: true,
+              onChange: (e: React.ChangeEvent<HTMLInputElement>) => {
+                const raw = e.target.value;
+                setChildrenCount(raw === "" ? 0 : parseInt(raw, 10) || 0);
+              },
+            })}
           />
         </div>
 
         <div className="flex justify-between pt-4 border-t border-border">
-          <Button variant="outline" onClick={onBack} className="gap-2">
+          <Button type="button" variant="outline" onClick={onBack} className="gap-2">
             <ChevronLeft className="w-4 h-4" />
             Back
           </Button>
-          <Button onClick={handleNextStep} className="gap-2">
+          <Button type="submit" className="gap-2">
             Next: Preview & Save
             <ChevronRight className="w-4 h-4" />
           </Button>
         </div>
-      </div>
+      </form>
     </Card>
   );
 }
