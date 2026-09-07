@@ -1,42 +1,72 @@
-interface CustomApiError {
-  message: string;
-  statusCode?: number | undefined;
-  error?: string | undefined;
-}
+import { type CustomApiError, extractErrorList } from "./api-error-parser";
 
 interface BackendResponse<T> {
   statusCode: number;
-  message: string;
+  message: string | string[];
   data: T;
+  success?: boolean;
 }
 
-const getErrorMessageStr = (msg: unknown, err?: string): string => {
-  if (Array.isArray(msg)) return msg.join(", ");
-  return typeof msg === "string" ? msg : (err ?? "An error occurred");
+const extractErrorMessage = (
+  error: unknown,
+  fallback = "An unexpected error occurred. Please try again."
+): string => {
+  const list = extractErrorList(error);
+  if (list.length > 0 && list[0]) {
+    return list[0];
+  }
+  return fallback;
 };
 
-const parseNestedErrorData = (dataObj: unknown): CustomApiError | null => {
-  if (!dataObj || typeof dataObj !== "object") return null;
-  const obj = dataObj as {
-    message?: string | string[];
-    statusCode?: number;
-    error?: string;
-  };
+function extractStatusAndDetails(obj: Record<string, unknown>): {
+  statusCode?: number | undefined;
+  errorTitle?: string | undefined;
+  path?: string | undefined;
+  timestamp?: string | undefined;
+} {
+  const targetObj =
+    typeof obj.data === "object" && obj.data !== null
+      ? (obj.data as Record<string, unknown>)
+      : obj;
+
+  const statusCode =
+    typeof targetObj.statusCode === "number"
+      ? targetObj.statusCode
+      : typeof obj.status === "number"
+        ? obj.status
+        : undefined;
+
+  const errorTitle = typeof targetObj.error === "string" ? targetObj.error : undefined;
+  const path = typeof targetObj.path === "string" ? targetObj.path : undefined;
+  const timestamp =
+    typeof targetObj.timestamp === "string" ? targetObj.timestamp : undefined;
+
+  return { statusCode, errorTitle, path, timestamp };
+}
+
+const parseBackendError = (
+  error: unknown,
+  fallback = "An unexpected error occurred. Please try again."
+): CustomApiError => {
+  const messages = extractErrorList(error);
+  const message = messages.length > 0 ? messages.join(", ") : fallback;
+
+  if (typeof error !== "object" || error === null) {
+    return { message, messages };
+  }
+
+  const { statusCode, errorTitle, path, timestamp } = extractStatusAndDetails(
+    error as Record<string, unknown>
+  );
+
   return {
-    message: getErrorMessageStr(obj.message, obj.error),
-    statusCode: obj.statusCode,
-    error: obj.error,
+    message,
+    messages,
+    statusCode,
+    error: errorTitle,
+    path,
+    timestamp,
   };
-};
-
-const parseDirectErrorMessage = (response: unknown): CustomApiError | null => {
-  const msg = (response as { message?: unknown } | null)?.message;
-  return typeof msg === "string" ? { message: msg } : null;
-};
-
-const extractObjectMessage = (error: Record<string, unknown>): string | null => {
-  if (typeof error.message === "string") return error.message;
-  return "data" in error ? apiTransformer.transformErrorResponse(error).message : null;
 };
 
 export const apiTransformer = {
@@ -46,20 +76,13 @@ export const apiTransformer = {
   },
 
   transformErrorResponse: (response: unknown): CustomApiError => {
-    return (
-      parseNestedErrorData((response as { data?: unknown } | null)?.data) ??
-      parseDirectErrorMessage(response) ?? {
-        message: "An unexpected error occurred. Please try again.",
-      }
-    );
+    return parseBackendError(response);
   },
 
   transformError: (
     error: unknown,
     fallback = "An unexpected error occurred. Please try again."
   ): string => {
-    if (!error) return fallback;
-    if (typeof error === "string") return error;
-    return extractObjectMessage(error as Record<string, unknown>) ?? fallback;
+    return extractErrorMessage(error, fallback);
   },
 };

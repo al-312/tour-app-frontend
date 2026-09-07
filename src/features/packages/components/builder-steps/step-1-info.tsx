@@ -7,7 +7,6 @@ import {
   UserCheck,
   MapPin,
   Calendar,
-  Users as UsersIcon,
   ChevronRight,
   Plus,
   Clock,
@@ -30,54 +29,53 @@ import type { Destination } from "@/features/destinations/types/destination.type
 interface Step1InfoProps {
   packageName: string;
   setPackageName: (val: string) => void;
-  clientId: string;
-  setClientId: (val: string) => void;
+  clientId?: string | undefined;
+  setClientId?: ((val: string) => void) | undefined;
   destinationId: string;
   setDestinationId: (val: string) => void;
-  startDate: string;
-  setStartDate: (val: string) => void;
+  startDate?: string | undefined;
+  setStartDate?: ((val: string) => void) | undefined;
+  validFrom?: string | undefined;
+  setValidFrom?: ((val: string) => void) | undefined;
+  validTo?: string | undefined;
+  setValidTo?: ((val: string) => void) | undefined;
   numberOfDays: number;
   setNumberOfDays: (val: number) => void;
-  adults: number;
-  setAdults: (val: number) => void;
-  childrenCount: number;
-  setChildrenCount: (val: number) => void;
-  clients: Client[];
+  clients?: Client[] | undefined;
   destinations: Destination[];
   onNext: () => void;
-  showClientFields?: boolean;
+  showClientFields?: boolean | undefined;
 }
 
 export function Step1Info({
   packageName,
   setPackageName,
-  clientId,
+  clientId = "",
   setClientId,
   destinationId,
   setDestinationId,
-  startDate,
+  startDate = "",
   setStartDate,
+  validFrom = "",
+  setValidFrom,
+  validTo = "",
+  setValidTo,
   numberOfDays,
   setNumberOfDays,
-  adults,
-  setAdults,
-  childrenCount,
-  setChildrenCount,
-  clients,
+  clients = [],
   destinations,
   onNext,
-  showClientFields = true,
+  showClientFields = false,
 }: Step1InfoProps): React.JSX.Element {
   const [touched, setTouched] = React.useState(false);
   const [isClientModalOpen, setIsClientModalOpen] = React.useState(false);
 
   const validation = validateStep1Data({
     packageName,
-    clientId,
     destinationId,
-    startDate,
     numberOfDays,
-    adults,
+    validFrom,
+    validTo,
   });
 
   const errors: Step1ValidationErrors = touched ? validation.errors : {};
@@ -100,14 +98,14 @@ export function Step1Info({
           <div>
             <h2 className="text-lg font-bold text-foreground">Basic Package Details</h2>
             <p className="text-xs text-muted-foreground">
-              Define tour name, destination, duration, and traveler capacity.
+              Define tour name, destination, package validity dates, and duration.
             </p>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <Input
               label="Package Name *"
-              placeholder="e.g. 5-Day Scenic Kerala Escaped"
+              placeholder="e.g. 5-Day Scenic Kerala Escape"
               value={packageName}
               error={errors.packageName}
               onChange={(e) => {
@@ -116,7 +114,7 @@ export function Step1Info({
               icon={PackageCheck}
             />
 
-            {showClientFields ? (
+            {showClientFields && setClientId ? (
               <div className="flex flex-col gap-1">
                 <div className="flex items-center justify-between">
                   <span className="text-xs font-semibold tracking-wider text-muted-foreground uppercase">
@@ -172,7 +170,7 @@ export function Step1Info({
               ))}
             </Select>
 
-            {showClientFields ? (
+            {showClientFields && setStartDate ? (
               <Input
                 label="Tour Start Date (Optional)"
                 type="date"
@@ -180,6 +178,32 @@ export function Step1Info({
                 error={errors.startDate}
                 onChange={(e) => {
                   setStartDate(e.target.value);
+                }}
+                icon={Calendar}
+              />
+            ) : null}
+
+            {setValidFrom ? (
+              <Input
+                label="Valid From Date *"
+                type="date"
+                value={validFrom}
+                error={errors.validFrom}
+                onChange={(e) => {
+                  setValidFrom(e.target.value);
+                }}
+                icon={Calendar}
+              />
+            ) : null}
+
+            {setValidTo ? (
+              <Input
+                label="Valid To Date *"
+                type="date"
+                value={validTo}
+                error={errors.validTo}
+                onChange={(e) => {
+                  setValidTo(e.target.value);
                 }}
                 icon={Calendar}
               />
@@ -198,30 +222,6 @@ export function Step1Info({
               }}
               icon={Clock}
             />
-
-            <Input
-              label="Adult Travelers *"
-              type="number"
-              min={1}
-              value={adults === 0 ? "" : adults}
-              error={errors.adults}
-              onChange={(e) => {
-                const raw = e.target.value;
-                setAdults(raw === "" ? 0 : parseInt(raw, 10) || 0);
-              }}
-              icon={UsersIcon}
-            />
-
-            <Input
-              label="Child Travelers"
-              type="number"
-              min={0}
-              value={childrenCount === 0 ? "" : childrenCount}
-              onChange={(e) => {
-                const raw = e.target.value;
-                setChildrenCount(raw === "" ? 0 : parseInt(raw, 10) || 0);
-              }}
-            />
           </div>
 
           <div className="flex justify-end pt-4 border-t border-border">
@@ -239,7 +239,7 @@ export function Step1Info({
           setIsClientModalOpen(false);
         }}
         onSuccess={(newClient) => {
-          setClientId(newClient.id);
+          if (setClientId) setClientId(newClient.id);
         }}
       />
     </>

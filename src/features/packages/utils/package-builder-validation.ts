@@ -2,11 +2,12 @@ import type { DayItineraryItem } from "../components/builder-steps/step-2-itiner
 
 export interface Step1ValidationErrors {
   packageName?: string | undefined;
-  clientId?: string | undefined;
   destinationId?: string | undefined;
-  startDate?: string | undefined;
   numberOfDays?: string | undefined;
-  adults?: string | undefined;
+  clientId?: string | undefined;
+  startDate?: string | undefined;
+  validFrom?: string | undefined;
+  validTo?: string | undefined;
 }
 
 export interface Step1ValidationResult {
@@ -17,11 +18,10 @@ export interface Step1ValidationResult {
 
 export function validateStep1Data(data: {
   packageName: string;
-  clientId: string;
   destinationId: string;
-  startDate: string;
   numberOfDays: number;
-  adults: number;
+  validFrom?: string | undefined;
+  validTo?: string | undefined;
 }): Step1ValidationResult {
   const errors: Step1ValidationErrors = {};
 
@@ -34,8 +34,17 @@ export function validateStep1Data(data: {
   if (!data.numberOfDays || data.numberOfDays < 1) {
     errors.numberOfDays = "Number of days must be at least 1";
   }
-  if (!data.adults || data.adults < 1) {
-    errors.adults = "Adult travelers must be at least 1";
+  if (!data.validFrom) {
+    errors.validFrom = "Valid From date is required";
+  }
+  if (!data.validTo) {
+    errors.validTo = "Valid To date is required";
+  } else if (
+    data.validFrom &&
+    data.validTo &&
+    new Date(data.validTo) < new Date(data.validFrom)
+  ) {
+    errors.validTo = "Valid To date cannot be earlier than Valid From date";
   }
 
   const keys = Object.keys(errors) as (keyof Step1ValidationErrors)[];
@@ -93,11 +102,13 @@ export interface Step3ValidationResult {
   error?: string | undefined;
 }
 
-export function validateStep3Data(consultantId: string): Step3ValidationResult {
-  if (!consultantId) {
+export function validateStep3Data(data: {
+  adults?: number | undefined;
+}): Step3ValidationResult {
+  if (data.adults !== undefined && data.adults < 1) {
     return {
       isValid: false,
-      error: "Please select an assigned Travel Consultant",
+      error: "Adult travelers must be at least 1",
     };
   }
   return { isValid: true };
@@ -105,17 +116,12 @@ export function validateStep3Data(consultantId: string): Step3ValidationResult {
 
 export function validateAllSteps(data: {
   packageName: string;
-  clientId: string;
   destinationId: string;
-  startDate: string;
   numberOfDays: number;
-  adults: number;
   daysData: DayItineraryItem[];
-  consultantId: string;
-  isAdmin?: boolean;
 }): {
   isValid: boolean;
-  targetStep?: 1 | 2 | 3 | 4 | undefined;
+  targetStep?: 1 | 2 | 3 | undefined;
   firstError?: string | undefined;
 } {
   const v1 = validateStep1Data(data);
@@ -134,17 +140,6 @@ export function validateAllSteps(data: {
       targetStep: 2,
       firstError: v2.firstError ?? "Please complete Step 2: Daily Itinerary first",
     };
-  }
-
-  if (!data.isAdmin) {
-    const v3 = validateStep3Data(data.consultantId);
-    if (!v3.isValid) {
-      return {
-        isValid: false,
-        targetStep: 3,
-        firstError: v3.error ?? "Please select a Travel Consultant in Step 3 first",
-      };
-    }
   }
 
   return { isValid: true };

@@ -17,8 +17,8 @@ export const ADMIN_STEPS: StepItem[] = [
 
 export const CONSULTANT_STEPS: StepItem[] = [
   { id: 1, title: "Basic Info", sub: "Package & Client" },
-  { id: 2, title: "Daily Itinerary", sub: "Hotel Stay" },
-  { id: 3, title: "Select Consultant", sub: "Assign Consultant" },
+  { id: 2, title: "Daily Itinerary", sub: "Hotel & Room Stay" },
+  { id: 3, title: "Traveler Details", sub: "Adults & Children" },
   { id: 4, title: "Preview Proposal", sub: "Review & Save" },
 ];
 

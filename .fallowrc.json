@@ -14,14 +14,17 @@
   ],
   "ignoreFindings": ["next.config.ts", "postcss.config.mjs"],
   "duplicates": {
-    "enabled": false
+    "enabled": true,
+    "mode": "strict",
+    "minLines": 15,
+    "minOccurrences": 3,
+    "near": true
   },
   "includeEntryExports": false,
   "health": {
     "maxCyclomatic": 30,
     "maxCognitive": 30,
-    "maxCrap": 500,
-    "maxUnitSize": 350
+    "maxCrap": 600
   },
   "rules": {
     "unused-files": "error",

@@ -2,7 +2,13 @@
 
 import * as React from "react";
 import { toast } from "sonner";
-import { Calendar, Hotel as HotelIcon, ChevronLeft, ChevronRight } from "lucide-react";
+import {
+  Calendar,
+  Hotel as HotelIcon,
+  BedDouble,
+  ChevronLeft,
+  ChevronRight,
+} from "lucide-react";
 
 import Card from "@/components/ui/card";
 import Select from "@/components/ui/select";
@@ -17,6 +23,7 @@ import type { Hotel } from "@/features/hotels/types/hotel.types";
 export interface DayItineraryItem {
   dayNumber: number;
   hotelId: string;
+  roomTypeId?: string | undefined;
   notes: string;
 }
 
@@ -29,6 +36,7 @@ interface Step2ItineraryProps {
   hotels: Hotel[];
   onBack: () => void;
   onNext: () => void;
+  nextButtonText?: string | undefined;
 }
 
 export function Step2Itinerary({
@@ -40,6 +48,7 @@ export function Step2Itinerary({
   hotels,
   onBack,
   onNext,
+  nextButtonText = "Next: Consultant & Travelers",
 }: Step2ItineraryProps): React.JSX.Element {
   const [touched, setTouched] = React.useState(false);
 
@@ -55,7 +64,22 @@ export function Step2Itinerary({
 
   const activeHotelId = currentDayData.hotelId || firstHotelId;
 
+  const selectedHotel = React.useMemo(
+    () => hotels.find((h) => h.id === activeHotelId),
+    [hotels, activeHotelId]
+  );
+
+  const availableRoomTypes = React.useMemo(
+    () => selectedHotel?.roomTypes ?? [],
+    [selectedHotel]
+  );
+
+  const activeRoomTypeId = currentDayData.roomTypeId ?? availableRoomTypes[0]?.id ?? "";
+
   const updateActiveDayHotel = (hotelId: string): void => {
+    const newHotel = hotels.find((h) => h.id === hotelId);
+    const defaultRoomTypeId = newHotel?.roomTypes?.[0]?.id;
+
     setDaysData((prev) => {
       const exists = prev.some((d) => d.dayNumber === activeDay);
       if (!exists) {
@@ -66,13 +90,38 @@ export function Step2Itinerary({
             item ?? {
               dayNumber: i,
               hotelId: i === activeDay ? hotelId : firstHotelId,
+              roomTypeId: i === activeDay ? defaultRoomTypeId : undefined,
               notes: "",
             }
           );
         }
         return full;
       }
-      return prev.map((d) => (d.dayNumber === activeDay ? { ...d, hotelId } : d));
+      return prev.map((d) =>
+        d.dayNumber === activeDay ? { ...d, hotelId, roomTypeId: defaultRoomTypeId } : d
+      );
+    });
+  };
+
+  const updateActiveDayRoomType = (roomTypeId: string): void => {
+    setDaysData((prev) => {
+      const exists = prev.some((d) => d.dayNumber === activeDay);
+      if (!exists) {
+        const full: DayItineraryItem[] = [];
+        for (let i = 1; i <= numberOfDays; i += 1) {
+          const item = prev.find((d) => d.dayNumber === i);
+          full.push(
+            item ?? {
+              dayNumber: i,
+              hotelId: firstHotelId,
+              roomTypeId: i === activeDay ? roomTypeId : undefined,
+              notes: "",
+            }
+          );
+        }
+        return full;
+      }
+      return prev.map((d) => (d.dayNumber === activeDay ? { ...d, roomTypeId } : d));
     });
   };
 
@@ -130,27 +179,56 @@ export function Step2Itinerary({
                 Day {String(activeDay)} Accommodation & Details
               </h2>
               <p className="text-xs text-muted-foreground">
-                Assign hotel stay (required) and optional day notes/instructions.
+                Assign hotel stay and select room type (required) along with optional day
+                notes.
               </p>
             </div>
           </div>
 
           <div className="space-y-4">
-            <Select
-              label="Select Hotel Accommodation *"
-              value={activeHotelId}
-              error={touched && !activeHotelId ? "Hotel is required" : undefined}
-              onChange={(e) => {
-                updateActiveDayHotel(e.target.value);
-              }}
-              icon={HotelIcon}
-            >
-              {hotels.map((h) => (
-                <option key={h.id} value={h.id}>
-                  {h.name} ({String(h.starRating)} Stars)
-                </option>
-              ))}
-            </Select>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <Select
+                label="Select Hotel Accommodation *"
+                value={activeHotelId}
+                error={touched && !activeHotelId ? "Hotel is required" : undefined}
+                onChange={(e) => {
+                  updateActiveDayHotel(e.target.value);
+                }}
+                icon={HotelIcon}
+              >
+                {hotels.map((h) => (
+                  <option key={h.id} value={h.id}>
+                    {h.name} ({String(h.starRating)} Stars)
+                  </option>
+                ))}
+              </Select>
+
+              {availableRoomTypes.length > 0 ? (
+                <Select
+                  label="Select Room Type *"
+                  value={activeRoomTypeId}
+                  onChange={(e) => {
+                    updateActiveDayRoomType(e.target.value);
+                  }}
+                  icon={BedDouble}
+                >
+                  {availableRoomTypes.map((rt) => (
+                    <option key={rt.id} value={rt.id}>
+                      {rt.name} - ${String(rt.roomPrice)}/night ({String(rt.maxAdults)}{" "}
+                      Adults
+                      {rt.maxChildren > 0 ? `, ${String(rt.maxChildren)} Children` : ""})
+                    </option>
+                  ))}
+                </Select>
+              ) : (
+                <div className="flex flex-col justify-center px-4 py-2.5 rounded-xl border border-app-border/40 bg-app-surface-variant/30 text-xs text-app-muted">
+                  <span className="font-semibold text-app-fg">Room Type</span>
+                  <span className="text-[11px] text-app-muted mt-0.5">
+                    No specific room types configured for this hotel.
+                  </span>
+                </div>
+              )}
+            </div>
 
             <Textarea
               label="Day Notes / Instructions"
@@ -170,7 +248,7 @@ export function Step2Itinerary({
             Back
           </Button>
           <Button onClick={handleNextStep} className="gap-2">
-            Next: Select Consultant
+            {nextButtonText}
             <ChevronRight className="w-4 h-4" />
           </Button>
         </div>

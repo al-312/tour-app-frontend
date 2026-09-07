@@ -39,6 +39,8 @@ function StatusBadge({ status }: { status: PackageStatus }): React.JSX.Element {
       return <Badge variant="emerald">Confirmed</Badge>;
     case "CANCELLED":
       return <Badge variant="rose">Cancelled</Badge>;
+    case "EXPIRED":
+      return <Badge variant="amber">Expired</Badge>;
     default:
       return <Badge variant="muted">{status}</Badge>;
   }
@@ -109,6 +111,9 @@ export function PackageTable({
               <option value="CANCELLED" className="bg-app-surface text-app-fg">
                 Cancelled
               </option>
+              <option value="EXPIRED" className="bg-app-surface text-app-fg">
+                Expired
+              </option>
             </select>
             <Filter className="w-3.5 h-3.5 text-app-muted absolute left-3 top-3.5 pointer-events-none" />
           </div>
@@ -139,7 +144,7 @@ export function PackageTable({
               <Table.Head>Client</Table.Head>
               <Table.Head>Destination</Table.Head>
               <Table.Head>Travelers</Table.Head>
-              <Table.Head>Consultant</Table.Head>
+              <Table.Head>User</Table.Head>
               <Table.Head>Status</Table.Head>
               <Table.Head className="text-right">Actions</Table.Head>
             </Table.Row>
@@ -154,9 +159,11 @@ export function PackageTable({
                     </span>
                     <span className="text-xs text-app-muted font-medium mt-0.5">
                       {String(pkg.durationDays)} Days
-                      {pkg.startDate
-                        ? ` • Starts ${new Date(pkg.startDate).toLocaleDateString()}`
-                        : ""}
+                      {pkg.fromDatetimeUtc || pkg.toDatetimeUtc
+                        ? ` • Valid ${pkg.fromDatetimeUtc ? new Date(pkg.fromDatetimeUtc).toLocaleDateString() : "Open"}${pkg.toDatetimeUtc ? `–${new Date(pkg.toDatetimeUtc).toLocaleDateString()}` : " onwards"}`
+                        : pkg.startDate
+                          ? ` • Starts ${new Date(pkg.startDate).toLocaleDateString()}`
+                          : ""}
                     </span>
                   </div>
                 </Table.Cell>
@@ -204,20 +211,16 @@ export function PackageTable({
                 </Table.Cell>
 
                 <Table.Cell>
-                  {pkg.consultant ? (
-                    <div className="flex items-center gap-1.5 text-xs text-app-fg font-medium">
-                      <Briefcase className="w-3.5 h-3.5 text-app-muted shrink-0" />
-                      <span>
-                        {pkg.consultant.name ??
-                          ([pkg.consultant.firstName, pkg.consultant.lastName]
-                            .filter(Boolean)
-                            .join(" ") ||
-                            "Unassigned")}
-                      </span>
-                    </div>
-                  ) : (
-                    <span className="text-xs text-app-muted italic">Unassigned</span>
-                  )}
+                  <div className="flex items-center gap-1.5 text-xs text-app-fg font-medium">
+                    <Briefcase className="w-3.5 h-3.5 text-app-muted shrink-0" />
+                    <span>
+                      {pkg.consultant?.name ??
+                        ([pkg.consultant?.firstName, pkg.consultant?.lastName]
+                          .filter(Boolean)
+                          .join(" ") ||
+                          "User")}
+                    </span>
+                  </div>
                 </Table.Cell>
 
                 <Table.Cell>

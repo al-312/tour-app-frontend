@@ -7,6 +7,7 @@ import { PackageCheck, RefreshCw, AlertCircle, CheckCircle } from "lucide-react"
 import Card from "@/components/ui/card";
 import Button from "@/components/ui/button";
 import Heading from "@/components/ui/heading";
+import { useAppSelector } from "@/store/hooks";
 import { apiTransformer } from "@/lib/api/api-transformer";
 import { PackageTable } from "@/features/packages/components/package-table";
 import { useGetPackagesQuery } from "@/features/packages/services/packages-api.slice";
@@ -18,9 +19,12 @@ import type { Package, PackageStatus } from "@/features/packages/types/package.t
 
 export default function PackagesPage(): React.JSX.Element {
   const router = useRouter();
+  const { user } = useAppSelector((state) => state.auth);
+  const isConsultant = user?.role === "CONSULTANT";
+
   const [statusFilter, setStatusFilter] = React.useState<string>("ALL");
   const {
-    data: packages = [],
+    data: rawPackages = [],
     isLoading,
     isError,
     error,
@@ -28,6 +32,13 @@ export default function PackagesPage(): React.JSX.Element {
   } = useGetPackagesQuery(
     statusFilter !== "ALL" ? (statusFilter as PackageStatus) : undefined
   );
+
+  const packages = React.useMemo(() => {
+    if (isConsultant) {
+      return rawPackages.filter((p) => p.status !== "EXPIRED");
+    }
+    return rawPackages;
+  }, [rawPackages, isConsultant]);
 
   const [selectedForView, setSelectedForView] = React.useState<Package | null>(null);
   const [selectedForCancel, setSelectedForCancel] = React.useState<Package | null>(null);

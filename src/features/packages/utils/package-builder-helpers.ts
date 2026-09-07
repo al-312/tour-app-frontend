@@ -6,39 +6,60 @@ import type { DayItineraryItem } from "../components/builder-steps/step-2-itiner
 export function buildPackagePayload({
   packageName,
   destinationId,
+  clientId,
   numberOfDays,
+  adults,
+  childrenCount,
   status,
   daysData,
   startDate,
+  validFrom,
+  validTo,
   firstHotelId,
 }: {
   packageName: string;
   destinationId: string;
+  clientId?: string;
   numberOfDays: number;
-  status: "CONFIRMED" | "CANCELLED";
+  adults?: number;
+  childrenCount?: number;
+  status: "CONFIRMED" | "CANCELLED" | "EXPIRED";
   daysData: DayItineraryItem[];
-  startDate: string;
+  startDate?: string;
+  validFrom?: string;
+  validTo?: string;
   firstHotelId: string;
 }): CreatePackageRequest {
+  const fromDate = validFrom ?? startDate;
   const payload: CreatePackageRequest = {
     packageName,
     source: "Bangalore",
-    destinationId: destinationId ? destinationId : "",
+    destinationId: destinationId || "",
+    clientId: clientId ?? undefined,
     durationDays: numberOfDays,
+    adults: adults ?? 2,
+    children: childrenCount ?? 0,
     status,
+    fromDatetimeUtc: fromDate
+      ? new Date(fromDate).toISOString()
+      : new Date().toISOString(),
+    toDatetimeUtc: validTo ? new Date(validTo).toISOString() : new Date().toISOString(),
     packageDays: daysData.map((day) => {
       const hotelId = day.hotelId ? day.hotelId : firstHotelId;
-      const item: { dayNumber: number; hotelId?: string; notes?: string } = {
+      const item: {
+        dayNumber: number;
+        hotelId?: string;
+        roomTypeId?: string;
+        notes?: string;
+      } = {
         dayNumber: day.dayNumber,
       };
       if (hotelId) item.hotelId = hotelId;
+      if (day.roomTypeId) item.roomTypeId = day.roomTypeId;
       if (day.notes) item.notes = day.notes;
       return item;
     }),
   };
-  if (startDate) {
-    payload.fromDatetimeUtc = new Date(startDate).toISOString();
-  }
   return payload;
 }
 
@@ -71,16 +92,15 @@ function resolveEditDaysData(
   pkgDuration: number,
   firstHotelId: string
 ): DayItineraryItem[] {
-  if (existingPkg.packageDays.length > 0) {
-    return existingPkg.packageDays.map((d) => ({
-      dayNumber: d.dayNumber,
-      hotelId: d.hotelId ?? firstHotelId,
-      notes: d.notes ?? "",
-    }));
-  }
   const result: DayItineraryItem[] = [];
   for (let i = 1; i <= pkgDuration; i += 1) {
-    result.push({ dayNumber: i, hotelId: firstHotelId, notes: "" });
+    const existing = existingPkg.packageDays.find((d) => d.dayNumber === i);
+    result.push({
+      dayNumber: i,
+      hotelId: existing?.hotelId ?? firstHotelId,
+      roomTypeId: existing?.roomTypeId ?? undefined,
+      notes: existing?.notes ?? "",
+    });
   }
   return result;
 }
@@ -95,10 +115,12 @@ export function computeEditInitialState(
   clientId: string;
   destinationId: string;
   startDate: string;
+  validFrom: string;
+  validTo: string;
   numberOfDays: number;
   adults: number;
   childrenCount: number;
-  status: "CONFIRMED" | "CANCELLED";
+  status: "CONFIRMED" | "CANCELLED" | "EXPIRED";
   consultantId: string;
   daysData: DayItineraryItem[];
 } {
@@ -108,20 +130,36 @@ export function computeEditInitialState(
     consultants
   );
 
-  const rawDate = existingPkg.fromDatetimeUtc ?? existingPkg.startDate;
-  const formattedDate = rawDate ? new Date(rawDate).toISOString().split("T")[0] : "";
+  const rawFromDate = existingPkg.fromDatetimeUtc ?? existingPkg.startDate;
+  const formattedFromDate = rawFromDate
+    ? new Date(rawFromDate).toISOString().split("T")[0]
+    : "";
+  const rawToDate = existingPkg.toDatetimeUtc;
+  const formattedToDate = rawToDate
+    ? new Date(rawToDate).toISOString().split("T")[0]
+    : "";
+
   const pkgDuration = existingPkg.durationDays > 0 ? existingPkg.durationDays : 5;
   const daysData = resolveEditDaysData(existingPkg, pkgDuration, firstHotelId);
+
+  const initialStatus: "CONFIRMED" | "CANCELLED" | "EXPIRED" =
+    existingPkg.status === "EXPIRED"
+      ? "EXPIRED"
+      : existingPkg.status === "CANCELLED"
+        ? "CANCELLED"
+        : "CONFIRMED";
 
   return {
     packageName: existingPkg.packageName,
     clientId: validClientId,
     destinationId: existingPkg.destinationId ?? "",
-    startDate: formattedDate ?? "",
+    startDate: formattedFromDate ?? "",
+    validFrom: formattedFromDate ?? "",
+    validTo: formattedToDate ?? "",
     numberOfDays: pkgDuration,
     adults: existingPkg.adults ?? 2,
     childrenCount: existingPkg.children ?? 0,
-    status: existingPkg.status === "CANCELLED" ? "CANCELLED" : "CONFIRMED",
+    status: initialStatus,
     consultantId: validConsultantId,
     daysData,
   };

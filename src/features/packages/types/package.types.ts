@@ -3,7 +3,8 @@ import type { Client } from "@/features/clients/types/client.types";
 import type { Consultant } from "@/features/consultants/types/consultant.types";
 import type { Destination } from "@/features/destinations/types/destination.types";
 
-export type PackageStatus = "DRAFT" | "ACTIVE" | "INACTIVE" | "CONFIRMED" | "CANCELLED";
+export type PackageStatus =
+  "DRAFT" | "ACTIVE" | "INACTIVE" | "CONFIRMED" | "CANCELLED" | "EXPIRED";
 
 export interface PackageDay {
   id: string;
@@ -12,6 +13,7 @@ export interface PackageDay {
   destination?: Destination | null;
   hotelId: string | null;
   hotel?: Hotel | null;
+  roomTypeId?: string | null;
   sortOrder?: number;
   notes?: string;
 }
@@ -45,6 +47,7 @@ export interface CreatePackageDayInput {
   dayNumber: number;
   destinationId?: string;
   hotelId?: string;
+  roomTypeId?: string;
   notes?: string;
 }
 
@@ -52,13 +55,16 @@ export interface CreatePackageRequest {
   packageName: string;
   source: string;
   destinationId: string;
+  clientId?: string | undefined;
   durationDays: number;
-  fromDatetimeUtc?: string;
-  toDatetimeUtc?: string;
-  summary?: string;
-  startingPrice?: number;
-  status?: string;
-  packageDays?: CreatePackageDayInput[];
+  adults?: number | undefined;
+  children?: number | undefined;
+  fromDatetimeUtc: string;
+  toDatetimeUtc: string;
+  summary?: string | undefined;
+  startingPrice?: number | undefined;
+  status?: string | undefined;
+  packageDays?: CreatePackageDayInput[] | undefined;
 }
 
 export interface SearchPackagesParams {

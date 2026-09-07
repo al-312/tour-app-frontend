@@ -1,30 +1,23 @@
 "use client";
 
 import * as React from "react";
-import {
-  Search,
-  MapPin,
-  Calendar,
-  Users,
-  Clock,
-  ExternalLink,
-  Compass,
-} from "lucide-react";
+import { Search, MapPin, Calendar, Users, Clock, Compass } from "lucide-react";
 
 import Card from "@/components/ui/card";
 import Input from "@/components/ui/input";
-import Badge from "@/components/ui/badge";
 import Button from "@/components/ui/button";
 import { useSearchPackagesQuery } from "@/features/packages/services/packages-api.slice";
 import { useGetDestinationsQuery } from "@/features/destinations/services/destinations-api.slice";
+
+import { PackageSearchResultCard } from "./package-search-result-card";
 
 export default function ConsultantPackageSearchPage(): React.JSX.Element {
   const [destinationId, setDestinationId] = React.useState("");
   const [source, setSource] = React.useState("Bangalore");
   const [travelDate, setTravelDate] = React.useState("2026-10-15");
-  const [days, setDays] = React.useState(5);
-  const [adults, setAdults] = React.useState(2);
-  const [children, setChildren] = React.useState(0);
+  const [days, setDays] = React.useState<number | "">(5);
+  const [adults, setAdults] = React.useState<number | "">(2);
+  const [children, setChildren] = React.useState<number | "">(0);
 
   const [searchParams, setSearchParams] = React.useState<{
     destinationId?: string;
@@ -37,10 +30,14 @@ export default function ConsultantPackageSearchPage(): React.JSX.Element {
 
   const { data: destinations = [] } = useGetDestinationsQuery(undefined);
   const {
-    data: packages = [],
+    data: rawPackages = [],
     isLoading,
     isFetching,
   } = useSearchPackagesQuery(searchParams);
+
+  const packages = React.useMemo(() => {
+    return rawPackages.filter((p) => p.status !== "EXPIRED");
+  }, [rawPackages]);
 
   const handleSearch = (e: React.SyntheticEvent): void => {
     e.preventDefault();
@@ -53,24 +50,32 @@ export default function ConsultantPackageSearchPage(): React.JSX.Element {
       children?: number;
     } = {};
 
+    const finalDays = typeof days === "number" && days > 0 ? days : 1;
+    const finalAdults = typeof adults === "number" && adults > 0 ? adults : 1;
+    const finalChildren = typeof children === "number" && children >= 0 ? children : 0;
+
     if (destinationId) params.destinationId = destinationId;
     if (source) params.source = source;
     if (travelDate) params.travelDate = travelDate;
-    if (days) params.days = days;
-    if (adults) params.adults = adults;
-    if (children) params.children = children;
+    if (finalDays) params.days = finalDays;
+    if (finalAdults) params.adults = finalAdults;
+    if (finalChildren) params.children = finalChildren;
 
     setSearchParams(params);
   };
 
   const handleOpenCustomizeInNewTab = (pkgId: string): void => {
+    const finalDays = typeof days === "number" && days > 0 ? days : 1;
+    const finalAdults = typeof adults === "number" && adults > 0 ? adults : 1;
+    const finalChildren = typeof children === "number" && children >= 0 ? children : 0;
+
     const query = new URLSearchParams({
       destinationId,
       source,
       travelDate,
-      days: days.toString(),
-      adults: adults.toString(),
-      children: children.toString(),
+      days: finalDays.toString(),
+      adults: finalAdults.toString(),
+      children: finalChildren.toString(),
     });
     window.open(`/packages/${pkgId}/customize?${query.toString()}`, "_blank");
   };
@@ -108,7 +113,7 @@ export default function ConsultantPackageSearchPage(): React.JSX.Element {
               onChange={(e) => {
                 setDestinationId(e.target.value);
               }}
-              className="w-full h-10 px-3 rounded-xl border border-app-border bg-app-surface text-xs text-app-fg focus:outline-none focus:border-app-brand"
+              className="w-full h-10 px-3 rounded-xl border border-app-border bg-app-surface text-xs text-app-fg focus:outline-none focus:border-app-brand cursor-pointer"
             >
               <option value="">All Destinations</option>
               {destinations.map((d) => (
@@ -124,14 +129,20 @@ export default function ConsultantPackageSearchPage(): React.JSX.Element {
               <MapPin className="w-3.5 h-3.5 text-app-muted" />
               Source City
             </label>
-            <Input
-              type="text"
-              placeholder="e.g. Bangalore"
+            <select
               value={source}
               onChange={(e) => {
                 setSource(e.target.value);
               }}
-            />
+              className="w-full h-10 px-3 rounded-xl border border-app-border bg-app-surface text-xs text-app-fg focus:outline-none focus:border-app-brand cursor-pointer"
+            >
+              <option value="">All Sources</option>
+              {destinations.map((d) => (
+                <option key={d.id} value={d.name}>
+                  {d.name} ({d.country})
+                </option>
+              ))}
+            </select>
           </div>
 
           <div>
@@ -158,7 +169,18 @@ export default function ConsultantPackageSearchPage(): React.JSX.Element {
               min={1}
               value={days}
               onChange={(e) => {
-                setDays(parseInt(e.target.value, 10) || 1);
+                const val = e.target.value;
+                if (val === "") {
+                  setDays("");
+                } else {
+                  const parsed = parseInt(val, 10);
+                  setDays(isNaN(parsed) ? "" : parsed);
+                }
+              }}
+              onBlur={() => {
+                if (days === "" || days < 1) {
+                  setDays(1);
+                }
               }}
             />
           </div>
@@ -176,7 +198,18 @@ export default function ConsultantPackageSearchPage(): React.JSX.Element {
                 placeholder="Adults"
                 value={adults}
                 onChange={(e) => {
-                  setAdults(parseInt(e.target.value, 10) || 1);
+                  const val = e.target.value;
+                  if (val === "") {
+                    setAdults("");
+                  } else {
+                    const parsed = parseInt(val, 10);
+                    setAdults(isNaN(parsed) ? "" : parsed);
+                  }
+                }}
+                onBlur={() => {
+                  if (adults === "" || adults < 1) {
+                    setAdults(1);
+                  }
                 }}
               />
               <Input
@@ -186,7 +219,18 @@ export default function ConsultantPackageSearchPage(): React.JSX.Element {
                 placeholder="Children"
                 value={children}
                 onChange={(e) => {
-                  setChildren(parseInt(e.target.value, 10) || 0);
+                  const val = e.target.value;
+                  if (val === "") {
+                    setChildren("");
+                  } else {
+                    const parsed = parseInt(val, 10);
+                    setChildren(isNaN(parsed) ? "" : parsed);
+                  }
+                }}
+                onBlur={() => {
+                  if (children === "" || children < 0) {
+                    setChildren(0);
+                  }
                 }}
               />
             </div>
@@ -239,65 +283,12 @@ export default function ConsultantPackageSearchPage(): React.JSX.Element {
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
             {packages.map((pkg) => (
-              <Card
+              <PackageSearchResultCard
                 key={pkg.id}
-                className="p-6 flex flex-col justify-between hover:shadow-xl transition-all duration-300 group border-app-border/80"
-              >
-                <div className="flex flex-col gap-4">
-                  <div className="flex items-start justify-between gap-3">
-                    <div>
-                      <Badge variant="brand" className="mb-2">
-                        {pkg.durationDays} Days Tour
-                      </Badge>
-                      <h3 className="text-base font-extrabold text-app-fg group-hover:text-app-brand transition-colors line-clamp-1">
-                        {pkg.packageName}
-                      </h3>
-                    </div>
-                  </div>
-
-                  <p className="text-xs text-app-muted line-clamp-2 leading-relaxed">
-                    {pkg.summary ??
-                      "Complete curated tour itinerary package with premium hotels and transport."}
-                  </p>
-
-                  <div className="grid grid-cols-2 gap-2 p-3 rounded-2xl bg-app-surface-variant/60 border border-app-border/40 text-xs">
-                    <div>
-                      <span className="text-[10px] text-app-muted block font-medium">
-                        Source:
-                      </span>
-                      <span className="font-semibold text-app-fg">
-                        {pkg.source || source}
-                      </span>
-                    </div>
-                    <div>
-                      <span className="text-[10px] text-app-muted block font-medium">
-                        Destination:
-                      </span>
-                      <span className="font-semibold text-app-fg">
-                        {pkg.destination?.name ?? "Main Destination"}
-                      </span>
-                    </div>
-                  </div>
-                </div>
-
-                <div className="mt-6 pt-4 border-t border-app-border/40 flex items-center justify-between">
-                  <span className="text-[11px] font-medium text-app-muted flex items-center gap-1">
-                    <Clock className="w-3.5 h-3.5" />{" "}
-                    {pkg.packageDays.length || pkg.durationDays || 1} Days Itinerary
-                  </span>
-
-                  <Button
-                    type="button"
-                    onClick={() => {
-                      handleOpenCustomizeInNewTab(pkg.id);
-                    }}
-                    className="gap-2 text-xs py-2"
-                  >
-                    <span>Customize & Book</span>
-                    <ExternalLink className="w-3.5 h-3.5" />
-                  </Button>
-                </div>
-              </Card>
+                pkg={pkg}
+                source={source}
+                onCustomize={handleOpenCustomizeInNewTab}
+              />
             ))}
           </div>
         )}

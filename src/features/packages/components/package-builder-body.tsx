@@ -24,14 +24,18 @@ interface PackageBuilderBodyProps {
   setDestinationId: (val: string) => void;
   startDate: string;
   setStartDate: (val: string) => void;
+  validFrom?: string;
+  setValidFrom?: (val: string) => void;
+  validTo?: string;
+  setValidTo?: (val: string) => void;
   numberOfDays: number;
   handleNumberOfDaysChange: (count: number) => void;
   adults: number;
   setAdults: (val: number) => void;
   childrenCount: number;
   setChildrenCount: (val: number) => void;
-  status: "CONFIRMED" | "CANCELLED";
-  setStatus: (val: "CONFIRMED" | "CANCELLED") => void;
+  status: "CONFIRMED" | "CANCELLED" | "EXPIRED";
+  setStatus: (val: "CONFIRMED" | "CANCELLED" | "EXPIRED") => void;
   activeDay: number;
   setActiveDay: (day: number) => void;
   daysData: DayItineraryItem[];
@@ -60,6 +64,10 @@ export function PackageBuilderBody(props: PackageBuilderBodyProps): React.JSX.El
     setDestinationId,
     startDate,
     setStartDate,
+    validFrom,
+    setValidFrom,
+    validTo,
+    setValidTo,
     numberOfDays,
     handleNumberOfDaysChange,
     adults,
@@ -93,12 +101,12 @@ export function PackageBuilderBody(props: PackageBuilderBodyProps): React.JSX.El
         setDestinationId={setDestinationId}
         startDate={startDate}
         setStartDate={setStartDate}
+        validFrom={validFrom}
+        setValidFrom={setValidFrom}
+        validTo={validTo}
+        setValidTo={setValidTo}
         numberOfDays={numberOfDays}
         setNumberOfDays={handleNumberOfDaysChange}
-        adults={adults}
-        setAdults={setAdults}
-        childrenCount={childrenCount}
-        setChildrenCount={setChildrenCount}
         clients={clients}
         destinations={destinations}
         showClientFields={!isAdmin}
@@ -124,17 +132,19 @@ export function PackageBuilderBody(props: PackageBuilderBodyProps): React.JSX.El
         onNext={() => {
           setStep(3);
         }}
+        nextButtonText={isAdmin ? "Next: Preview & Save" : "Next: Traveler Details"}
       />
     );
   }
 
   if (isAdmin) {
-    // Admin 3rd step is Preview & Save Master Template
     return (
       <Step4PreviewExport
         mode={mode}
         packageName={packageName}
         startDate={startDate}
+        validFrom={validFrom}
+        validTo={validTo}
         numberOfDays={numberOfDays}
         adults={adults}
         childrenCount={childrenCount}
@@ -149,6 +159,7 @@ export function PackageBuilderBody(props: PackageBuilderBodyProps): React.JSX.El
           setStep(2);
         }}
         onSubmit={onSubmit}
+        isAdmin={true}
       />
     );
   }
@@ -158,7 +169,10 @@ export function PackageBuilderBody(props: PackageBuilderBodyProps): React.JSX.El
       <Step3ConsultantSelect
         consultantId={consultantId}
         setConsultantId={setConsultantId}
-        consultants={consultants}
+        adults={adults}
+        setAdults={setAdults}
+        childrenCount={childrenCount}
+        setChildrenCount={setChildrenCount}
         onBack={() => {
           setStep(2);
         }}
@@ -174,6 +188,8 @@ export function PackageBuilderBody(props: PackageBuilderBodyProps): React.JSX.El
       mode={mode}
       packageName={packageName}
       startDate={startDate}
+      validFrom={validFrom}
+      validTo={validTo}
       numberOfDays={numberOfDays}
       adults={adults}
       childrenCount={childrenCount}
@@ -188,6 +204,7 @@ export function PackageBuilderBody(props: PackageBuilderBodyProps): React.JSX.El
         setStep(3);
       }}
       onSubmit={onSubmit}
+      isAdmin={false}
     />
   );
 }

@@ -36,7 +36,7 @@ export interface CreateHotelRequest {
   description?: string;
   starRating: number;
   status?: string;
-  roomTypeIds?: string[] | undefined;
+  roomTypes?: CreateRoomTypeRequest[] | undefined;
 }
 
 export interface UpdateHotelRequest {
@@ -46,7 +46,7 @@ export interface UpdateHotelRequest {
   description?: string;
   starRating?: number | undefined;
   status?: string;
-  roomTypeIds?: string[] | undefined;
+  roomTypes?: CreateRoomTypeRequest[] | undefined;
 }
 
 export interface CreateRoomTypeRequest {
