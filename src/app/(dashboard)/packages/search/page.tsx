@@ -3,14 +3,12 @@
 import * as React from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { Search, MapPin, Calendar, Users, Clock, Compass } from "lucide-react";
+import { Search, Calendar, Users, Clock, Compass } from "lucide-react";
 
 import Card from "@/components/ui/card";
 import Input from "@/components/ui/input";
-import Select from "@/components/ui/select";
 import Button from "@/components/ui/button";
 import { useSearchPackagesQuery } from "@/features/packages/services/packages-api.slice";
-import { useGetDestinationsQuery } from "@/features/destinations/services/destinations-api.slice";
 import {
   searchPackageSchema,
   type SearchPackageFormData,
@@ -20,15 +18,12 @@ import { PackageSearchResultCard } from "./package-search-result-card";
 
 export default function ConsultantPackageSearchPage(): React.JSX.Element {
   const [searchParams, setSearchParams] = React.useState<{
-    destinationId?: string;
-    source?: string;
     travelDate?: string;
     days?: number;
     adults?: number;
     children?: number;
   }>({});
 
-  const { data: locations = [] } = useGetDestinationsQuery(undefined);
   const {
     data: rawPackages = [],
     isLoading,
@@ -43,8 +38,6 @@ export default function ConsultantPackageSearchPage(): React.JSX.Element {
   } = useForm<SearchPackageFormData>({
     resolver: zodResolver(searchPackageSchema),
     defaultValues: {
-      destinationId: "",
-      source: "",
       travelDate: "2026-10-15",
       days: 5,
       adults: 2,
@@ -52,44 +45,18 @@ export default function ConsultantPackageSearchPage(): React.JSX.Element {
     },
   });
 
-  const currentSource = watch("source") ?? "";
-
   const packages = React.useMemo(() => {
     return rawPackages.filter((p) => p.status !== "EXPIRED");
   }, [rawPackages]);
 
-  const sourceLocationOptions = React.useMemo(() => {
-    return [
-      { value: "", label: "All Source Locations" },
-      ...locations.map((loc) => ({
-        value: loc.name,
-        label: `${loc.name} (${loc.country})`,
-      })),
-    ];
-  }, [locations]);
-
-  const destinationLocationOptions = React.useMemo(() => {
-    return [
-      { value: "", label: "All Destination Locations" },
-      ...locations.map((loc) => ({
-        value: loc.id,
-        label: `${loc.name} (${loc.country})`,
-      })),
-    ];
-  }, [locations]);
-
   const onSearchSubmit = (data: SearchPackageFormData): void => {
     const params: {
-      destinationId?: string;
-      source?: string;
       travelDate?: string;
       days?: number;
       adults?: number;
       children?: number;
     } = {};
 
-    if (data.destinationId) params.destinationId = data.destinationId;
-    if (data.source?.trim()) params.source = data.source.trim();
     if (data.travelDate) params.travelDate = data.travelDate;
     if (data.days) params.days = data.days;
     if (data.adults) params.adults = data.adults;
@@ -101,8 +68,6 @@ export default function ConsultantPackageSearchPage(): React.JSX.Element {
   const handleOpenCustomizeInNewTab = (pkgId: string): void => {
     const formValues = watch();
     const query = new URLSearchParams({
-      destinationId: formValues.destinationId ?? "",
-      source: formValues.source ?? "",
       travelDate: formValues.travelDate ?? "2026-10-15",
       days: String(formValues.days ?? 5),
       adults: String(formValues.adults ?? 2),
@@ -124,9 +89,8 @@ export default function ConsultantPackageSearchPage(): React.JSX.Element {
             Search Tour Packages
           </h1>
           <p className="text-sm text-app-muted mt-2">
-            Select source and destination locations below to search available curated
-            travel packages for your clients. Selecting a package opens customization in a
-            new browser tab.
+            Select travel criteria below to search available curated travel packages for
+            your clients. Selecting a package opens customization in a new browser tab.
           </p>
         </div>
 
@@ -135,34 +99,8 @@ export default function ConsultantPackageSearchPage(): React.JSX.Element {
           onSubmit={(e): void => {
             void handleSubmit(onSearchSubmit)(e);
           }}
-          className="mt-6 bg-app-surface/90 border border-app-border/80 rounded-2xl p-5 shadow-lg grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-4 items-end"
+          className="mt-6 bg-app-surface/90 border border-app-border/80 rounded-2xl p-5 shadow-lg grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 items-end"
         >
-          <div>
-            <label className="block text-xs font-semibold text-app-fg mb-1.5 flex items-center gap-1.5">
-              <MapPin className="w-3.5 h-3.5 text-app-muted" />
-              Source Location
-            </label>
-            <Select
-              options={sourceLocationOptions}
-              className="h-10 text-xs"
-              error={errors.source?.message}
-              {...register("source")}
-            />
-          </div>
-
-          <div>
-            <label className="block text-xs font-semibold text-app-fg mb-1.5 flex items-center gap-1.5">
-              <MapPin className="w-3.5 h-3.5 text-app-brand" />
-              Destination Location
-            </label>
-            <Select
-              options={destinationLocationOptions}
-              className="h-10 text-xs"
-              error={errors.destinationId?.message}
-              {...register("destinationId")}
-            />
-          </div>
-
           <div>
             <label className="block text-xs font-semibold text-app-fg mb-1.5 flex items-center gap-1.5">
               <Calendar className="w-3.5 h-3.5 text-app-muted" />
@@ -257,8 +195,7 @@ export default function ConsultantPackageSearchPage(): React.JSX.Element {
             </div>
             <h3 className="text-base font-bold text-app-fg">No Packages Found</h3>
             <p className="text-xs text-app-muted max-w-md mt-1">
-              Try adjusting your search criteria such as destination, source location, or
-              number of days.
+              Try adjusting your search criteria such as travel date or number of days.
             </p>
           </Card>
         ) : (
@@ -267,7 +204,6 @@ export default function ConsultantPackageSearchPage(): React.JSX.Element {
               <PackageSearchResultCard
                 key={pkg.id}
                 pkg={pkg}
-                source={currentSource}
                 onCustomize={handleOpenCustomizeInNewTab}
               />
             ))}

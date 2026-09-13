@@ -20,7 +20,8 @@ interface CustomizeClientSectionProps {
   onAdultsChange: (val: number) => void;
   childrenCount: number;
   onChildrenCountChange: (val: number) => void;
-  initialSource: string;
+  packageName?: string | undefined;
+  totalCalculatedPackagePrice?: number | undefined;
   isSubmittingInquiry: boolean;
   onSubmitInquiry: () => Promise<void>;
 }
@@ -36,7 +37,8 @@ export function CustomizeClientSection({
   onAdultsChange,
   childrenCount,
   onChildrenCountChange,
-  initialSource,
+  packageName,
+  totalCalculatedPackagePrice,
   isSubmittingInquiry,
   onSubmitInquiry,
 }: CustomizeClientSectionProps): React.JSX.Element {
@@ -111,9 +113,15 @@ export function CustomizeClientSection({
             type="number"
             min={1}
             value={adults === 0 ? "" : adults}
+            placeholder="1"
             onChange={(e): void => {
-              const val = parseInt(e.target.value, 10);
-              onAdultsChange(Number.isNaN(val) ? 1 : Math.max(1, val));
+              const val = e.target.value;
+              if (val === "") {
+                onAdultsChange(0);
+                return;
+              }
+              const num = parseInt(val, 10);
+              onAdultsChange(Number.isNaN(num) ? 0 : Math.max(0, num));
             }}
             icon={UserCheck}
           />
@@ -121,20 +129,36 @@ export function CustomizeClientSection({
             label="Child Travelers"
             type="number"
             min={0}
-            value={childrenCount}
+            value={childrenCount === 0 ? "" : childrenCount}
+            placeholder="0"
             onChange={(e): void => {
-              const val = parseInt(e.target.value, 10);
-              onChildrenCountChange(Number.isNaN(val) ? 0 : Math.max(0, val));
+              const val = e.target.value;
+              if (val === "") {
+                onChildrenCountChange(0);
+                return;
+              }
+              const num = parseInt(val, 10);
+              onChildrenCountChange(Number.isNaN(num) ? 0 : Math.max(0, num));
             }}
             icon={Users}
           />
         </div>
 
         <div className="border-t border-app-border/40 pt-4 flex flex-col gap-2.5 text-xs">
-          <div className="flex justify-between">
-            <span className="text-app-muted">Departure City:</span>
-            <span className="font-semibold text-app-fg">{initialSource}</span>
-          </div>
+          {packageName && (
+            <div className="flex justify-between items-center">
+              <span className="text-app-muted">Package:</span>
+              <span className="font-bold text-app-fg line-clamp-1">{packageName}</span>
+            </div>
+          )}
+          {totalCalculatedPackagePrice !== undefined && (
+            <div className="flex justify-between items-center pt-2.5 border-t border-app-border/40">
+              <span className="font-bold text-app-fg">Total Package Price:</span>
+              <span className="text-base font-extrabold text-app-brand">
+                ${totalCalculatedPackagePrice}
+              </span>
+            </div>
+          )}
         </div>
 
         <div className="border-t border-app-border/40 pt-4">

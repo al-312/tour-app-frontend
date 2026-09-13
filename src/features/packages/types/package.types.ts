@@ -68,8 +68,7 @@ export interface CreatePackageRequest {
 }
 
 export interface SearchPackagesParams {
-  destinationId?: string;
-  source?: string;
+  destination?: string;
   travelDate?: string;
   days?: number;
   adults?: number;

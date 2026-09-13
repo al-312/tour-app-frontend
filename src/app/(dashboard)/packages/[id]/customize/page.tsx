@@ -7,6 +7,7 @@ import { useParams, useSearchParams, useRouter } from "next/navigation";
 import { useGetHotelsQuery } from "@/features/hotels/services/hotels-api.slice";
 import { useGetPackageByIdQuery } from "@/features/packages/services/packages-api.slice";
 import { useCreateInquiryMutation } from "@/features/inquiries/services/inquiries-api.slice";
+import { useGetDestinationsQuery } from "@/features/destinations/services/destinations-api.slice";
 import {
   useGetClientsQuery,
   useCreateClientMutation,
@@ -24,7 +25,6 @@ export default function PackageCustomizePage(): React.JSX.Element {
   const router = useRouter();
 
   const packageId = params.id as string;
-  const urlSource = searchParams.get("source");
   const paramTravelDate = searchParams.get("travelDate");
   const paramAdults = parseInt(searchParams.get("adults") ?? "2", 10);
   const paramChildren = parseInt(searchParams.get("children") ?? "0", 10);
@@ -39,15 +39,16 @@ export default function PackageCustomizePage(): React.JSX.Element {
   const { data: pkg, isLoading: isPkgLoading } = useGetPackageByIdQuery(packageId, {
     skip: !packageId,
   });
+  const { data: destinationsData } = useGetDestinationsQuery(undefined);
   const { data: hotelsData } = useGetHotelsQuery(undefined);
   const { data: clientsData } = useGetClientsQuery(undefined);
 
   const [createInquiry, { isLoading: isSubmittingInquiry }] = useCreateInquiryMutation();
   const [createClient, { isLoading: isCreatingClient }] = useCreateClientMutation();
 
+  const destinations = React.useMemo(() => destinationsData ?? [], [destinationsData]);
   const allHotels = React.useMemo(() => hotelsData ?? [], [hotelsData]);
   const clients = React.useMemo(() => clientsData ?? [], [clientsData]);
-  const initialSource = urlSource ?? pkg?.source ?? "Bangalore";
 
   const [selectedClientId, setSelectedClientId] = React.useState<string>("");
   const [travelDate, setTravelDate] = React.useState<string>(defaultDate);
@@ -61,11 +62,14 @@ export default function PackageCustomizePage(): React.JSX.Element {
   const {
     daySelections,
     handleAdultsChange,
+    handleDestinationChange,
     handleHotelOrRoomTypeChange,
+    handleRoomsOrBedsChange,
     totalCalculatedPackagePrice,
   } = useCustomizeInquiryState({
     pkg,
     allHotels,
+    destinations,
     adults,
     setAdults,
   });
@@ -108,20 +112,18 @@ export default function PackageCustomizePage(): React.JSX.Element {
           : pkg.packageDays.length > 0
             ? pkg.packageDays.length
             : 1;
+
       const inquiry = await createInquiry({
         clientId: selectedClientId,
         packageId: pkg.id,
-        source: initialSource,
-        destinationId: pkg.destinationId ?? "",
         travelDate,
         days: daysCount,
-        adults,
+        adults: Math.max(1, adults),
         children: childrenCount,
         calculatedTotal: totalCalculatedPackagePrice,
         packageSnapshot: {
           packageName: pkg.packageName,
           clientName: clients.find((c) => c.id === selectedClientId)?.name,
-          destinationName: pkg.destination?.name,
           hotelSelections,
         },
       }).unwrap();
@@ -167,29 +169,27 @@ export default function PackageCustomizePage(): React.JSX.Element {
           {pkg.packageDays.map((pd) => {
             const daySel = daySelections[pd.dayNumber] ?? {
               dayNumber: pd.dayNumber,
-              destinationId: pd.destinationId ?? pkg.destinationId ?? "",
-              destinationName:
-                pd.destination?.name ?? pkg.destination?.name ?? "Destination",
+              destinationId: pd.destinationId ?? "",
+              destinationName: pd.destination?.name ?? "Destination",
               hotelId: "",
               roomTypeId: "",
               roomsCount: 0,
               extraBedsCount: 0,
               calculatedPrice: 0,
             };
-            const dayDestId = pd.destinationId ?? pkg.destinationId ?? "";
 
             return (
               <CustomizeDayCard
                 key={pd.dayNumber}
                 dayNumber={pd.dayNumber}
                 notes={pd.notes}
-                destinationName={pd.destination?.name}
-                dayDestinationId={dayDestId}
-                mainDestinationName={pkg.destination?.name}
                 daySel={daySel}
+                destinations={destinations}
                 allHotels={allHotels}
                 initialAdults={adults}
+                onDestinationChange={handleDestinationChange}
                 onHotelOrRoomTypeChange={handleHotelOrRoomTypeChange}
+                onRoomsOrBedsChange={handleRoomsOrBedsChange}
               />
             );
           })}
@@ -208,7 +208,8 @@ export default function PackageCustomizePage(): React.JSX.Element {
           onAdultsChange={handleAdultsChange}
           childrenCount={childrenCount}
           onChildrenCountChange={setChildrenCount}
-          initialSource={initialSource}
+          packageName={pkg.packageName}
+          totalCalculatedPackagePrice={totalCalculatedPackagePrice}
           isSubmittingInquiry={isSubmittingInquiry}
           onSubmitInquiry={handleSubmitInquiry}
         />

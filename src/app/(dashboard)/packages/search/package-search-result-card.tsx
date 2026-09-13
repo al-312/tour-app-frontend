@@ -11,16 +11,13 @@ import type { Package } from "@/features/packages/types/package.types";
 
 interface PackageSearchResultCardProps {
   pkg: Package;
-  source: string;
   onCustomize: (pkgId: string) => void;
 }
 
 export function PackageSearchResultCard({
   pkg,
-  source,
   onCustomize,
 }: PackageSearchResultCardProps): React.JSX.Element {
-  const displaySource = pkg.source !== "" ? pkg.source : source;
   const daysCount =
     pkg.packageDays.length > 0 ? pkg.packageDays.length : pkg.durationDays;
 
@@ -42,21 +39,6 @@ export function PackageSearchResultCard({
           {pkg.summary ??
             "Complete curated tour itinerary package with premium hotels and transport."}
         </p>
-
-        <div className="grid grid-cols-2 gap-2 p-3 rounded-2xl bg-app-surface-variant/60 border border-app-border/40 text-xs">
-          <div>
-            <span className="text-[10px] text-app-muted block font-medium">Source:</span>
-            <span className="font-semibold text-app-fg">{displaySource}</span>
-          </div>
-          <div>
-            <span className="text-[10px] text-app-muted block font-medium">
-              Destination:
-            </span>
-            <span className="font-semibold text-app-fg">
-              {pkg.destination?.name ?? "Main Destination"}
-            </span>
-          </div>
-        </div>
       </div>
 
       <div className="mt-6 pt-4 border-t border-app-border/40 flex items-center justify-between">

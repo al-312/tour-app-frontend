@@ -26,9 +26,7 @@ const packagesApiSlice = apiSlice.injectEndpoints({
     searchPackages: builder.query<Package[], SearchPackagesParams>({
       query: (params) => {
         const searchParams = new URLSearchParams();
-        if (params.destinationId)
-          searchParams.append("destinationId", params.destinationId);
-        if (params.source) searchParams.append("source", params.source);
+        if (params.destination) searchParams.append("destination", params.destination);
         if (params.travelDate) searchParams.append("travelDate", params.travelDate);
         if (params.days) searchParams.append("days", params.days.toString());
         if (params.adults) searchParams.append("adults", params.adults.toString());

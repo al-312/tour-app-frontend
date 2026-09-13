@@ -10,6 +10,8 @@ import type { Inquiry } from "@/features/inquiries/services/inquiries-api.slice"
 
 export interface HotelSelectionSnapshot {
   dayNumber?: number;
+  destinationId?: string;
+  destinationName?: string;
   hotelName?: string;
   roomTypeName?: string;
   numberOfRooms?: number;
@@ -43,6 +45,18 @@ export function HotelBreakdownCard({
       ? inquiry.hotelSelections
       : (snap.hotelSelections ?? []);
 
+  const destSet = new Set<string>();
+  for (const sel of selections) {
+    if (sel.destinationName) destSet.add(sel.destinationName);
+    if (sel.hotel?.name) {
+      const hDest = (sel as unknown as { hotel?: { destination?: { name?: string } } })
+        .hotel?.destination?.name;
+      if (hDest) destSet.add(hDest);
+    }
+  }
+  if (snap.destinationName) destSet.add(snap.destinationName);
+  const locationsStr = Array.from(destSet).filter(Boolean).join(", ") || "N/A";
+
   return (
     <Card className="p-6 border-app-border/80 flex flex-col gap-5">
       <div className="flex items-center justify-between border-b border-app-border/40 pb-3">
@@ -57,16 +71,10 @@ export function HotelBreakdownCard({
         <Badge variant="muted">{inquiry.days} Days</Badge>
       </div>
 
-      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 p-3.5 rounded-2xl bg-app-surface-variant/40 border border-app-border/40 text-xs">
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 p-3.5 rounded-2xl bg-app-surface-variant/40 border border-app-border/40 text-xs">
         <div>
-          <span className="text-[10px] text-app-muted block">Source:</span>
-          <span className="font-semibold text-app-fg">{inquiry.source}</span>
-        </div>
-        <div>
-          <span className="text-[10px] text-app-muted block">Destination:</span>
-          <span className="font-semibold text-app-fg">
-            {inquiry.destination?.name ?? snap.destinationName}
-          </span>
+          <span className="text-[10px] text-app-muted block">Destinations:</span>
+          <span className="font-semibold text-app-fg">{locationsStr}</span>
         </div>
         <div>
           <span className="text-[10px] text-app-muted block">Travel Date:</span>
@@ -91,6 +99,7 @@ export function HotelBreakdownCard({
         </h4>
         {selections.map((sel: HotelSelectionSnapshot, idx: number) => {
           const dayNum = sel.dayNumber ?? idx + 1;
+          const destName = sel.destinationName;
           const hName = sel.hotel?.name ?? sel.hotelName ?? "N/A";
           const rName = sel.roomType?.name ?? sel.roomTypeName ?? "N/A";
           const rooms = sel.numberOfRooms ?? 1;
@@ -110,10 +119,15 @@ export function HotelBreakdownCard({
               className="p-4 rounded-2xl border border-app-border/60 bg-app-surface flex flex-col gap-3 text-xs"
             >
               <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-app-border/40 pb-2.5">
-                <div className="flex items-center gap-2">
+                <div className="flex flex-wrap items-center gap-2">
                   <span className="font-extrabold text-app-brand bg-app-brand/10 px-2.5 py-0.5 rounded-full text-[11px]">
                     Day {dayNum}
                   </span>
+                  {destName && (
+                    <span className="text-xs font-semibold text-app-fg/80 bg-app-surface-variant px-2 py-0.5 rounded-md border border-app-border/40">
+                      {destName}
+                    </span>
+                  )}
                   <strong className="text-app-fg text-sm">{hName}</strong>
                   <span className="text-app-muted text-xs">• {rName}</span>
                 </div>

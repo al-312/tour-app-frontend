@@ -8,10 +8,12 @@ import { useCalculateAllocationMutation } from "@/features/hotels/services/hotel
 import type { DaySelectionState } from "./customize-day-card";
 import type { Hotel } from "@/features/hotels/types/hotel.types";
 import type { Package } from "@/features/packages/types/package.types";
+import type { Destination } from "@/features/destinations/types/destination.types";
 
 interface UseCustomizeInquiryStateParams {
   pkg?: Package | undefined;
   allHotels: Hotel[];
+  destinations: Destination[];
   adults: number;
   setAdults: (n: number) => void;
 }
@@ -19,16 +21,23 @@ interface UseCustomizeInquiryStateParams {
 export function useCustomizeInquiryState({
   pkg,
   allHotels,
+  destinations,
   adults,
   setAdults,
 }: UseCustomizeInquiryStateParams): {
   daySelections: Record<number, DaySelectionState>;
   handleAdultsChange: (newAdults: number) => void;
+  handleDestinationChange: (dayNumber: number, destinationId: string) => void;
   handleHotelOrRoomTypeChange: (
     dayNumber: number,
     hotelId: string,
     roomTypeId: string
   ) => Promise<void>;
+  handleRoomsOrBedsChange: (
+    dayNumber: number,
+    roomsCount: number,
+    extraBedsCount: number
+  ) => void;
   totalCalculatedPackagePrice: number;
 } {
   const [daySelections, setDaySelections] = React.useState<
@@ -41,18 +50,21 @@ export function useCustomizeInquiryState({
     if (pkg?.packageDays && pkg.packageDays.length > 0) {
       const initialMap: Record<number, DaySelectionState> = {};
       pkg.packageDays.forEach((pd) => {
-        const destId = pd.destinationId ?? pkg.destinationId ?? "";
+        const destId = pd.destinationId ?? "";
+        const destObj = destinations.find((d) => d.id === destId) ?? pd.destination;
+        const destName = destObj ? `${destObj.name} (${destObj.country})` : "Destination";
+
         const defaultHotel = allHotels.find((h) => h.destinationId === destId);
         const defaultRoomType = defaultHotel?.roomTypes?.[0];
 
         const alloc = defaultRoomType
-          ? calculateRoomAllocationLocal(adults, defaultRoomType)
+          ? calculateRoomAllocationLocal(Math.max(1, adults), defaultRoomType)
           : { numberOfRooms: 0, numberOfExtraBeds: 0, calculatedTotal: 0 };
 
         initialMap[pd.dayNumber] = {
           dayNumber: pd.dayNumber,
           destinationId: destId,
-          destinationName: pd.destination?.name ?? pkg.destination?.name ?? "Destination",
+          destinationName: destName,
           hotelId: defaultHotel?.id ?? "",
           roomTypeId: defaultRoomType?.id ?? "",
           roomsCount: alloc.numberOfRooms,
@@ -65,7 +77,7 @@ export function useCustomizeInquiryState({
         setDaySelections(initialMap);
       });
     }
-  }, [allHotels, pkg, adults]);
+  }, [allHotels, destinations, pkg, adults]);
 
   const handleAdultsChange = (newAdults: number): void => {
     setAdults(newAdults);
@@ -82,7 +94,10 @@ export function useCustomizeInquiryState({
           (rt) => rt.id === daySel.roomTypeId
         );
         if (selectedRoom) {
-          const alloc = calculateRoomAllocationLocal(newAdults, selectedRoom);
+          const alloc = calculateRoomAllocationLocal(
+            Math.max(1, newAdults),
+            selectedRoom
+          );
           updated[dayNum] = {
             ...daySel,
             roomsCount: alloc.numberOfRooms,
@@ -95,6 +110,36 @@ export function useCustomizeInquiryState({
       }
       return updated;
     });
+  };
+
+  const handleDestinationChange = (dayNumber: number, newDestinationId: string): void => {
+    const current = daySelections[dayNumber];
+    if (!current) return;
+
+    const newDest = destinations.find((d) => d.id === newDestinationId);
+    const newDestName = newDest ? `${newDest.name} (${newDest.country})` : "Destination";
+
+    const eligibleHotels = allHotels.filter((h) => h.destinationId === newDestinationId);
+    const defaultHotel = eligibleHotels[0];
+    const defaultRoomType = defaultHotel?.roomTypes?.[0];
+
+    const alloc = defaultRoomType
+      ? calculateRoomAllocationLocal(Math.max(1, adults), defaultRoomType)
+      : { numberOfRooms: 0, numberOfExtraBeds: 0, calculatedTotal: 0 };
+
+    setDaySelections((prev) => ({
+      ...prev,
+      [dayNumber]: {
+        ...current,
+        destinationId: newDestinationId,
+        destinationName: newDestName,
+        hotelId: defaultHotel?.id ?? "",
+        roomTypeId: defaultRoomType?.id ?? "",
+        roomsCount: alloc.numberOfRooms,
+        extraBedsCount: alloc.numberOfExtraBeds,
+        calculatedPrice: alloc.calculatedTotal,
+      },
+    }));
   };
 
   const handleHotelOrRoomTypeChange = async (
@@ -124,7 +169,7 @@ export function useCustomizeInquiryState({
       const res = await calculateAllocation({
         hotelId,
         roomTypeId,
-        adults,
+        adults: Math.max(1, adults),
         nights: 1,
       }).unwrap();
       setDaySelections((prev) => ({
@@ -142,7 +187,7 @@ export function useCustomizeInquiryState({
       const selectedHotel = allHotels.find((h) => h.id === hotelId);
       const selectedRoom = selectedHotel?.roomTypes?.find((rt) => rt.id === roomTypeId);
       if (selectedRoom) {
-        const alloc = calculateRoomAllocationLocal(adults, selectedRoom);
+        const alloc = calculateRoomAllocationLocal(Math.max(1, adults), selectedRoom);
         setDaySelections((prev) => ({
           ...prev,
           [dayNumber]: {
@@ -158,6 +203,34 @@ export function useCustomizeInquiryState({
     }
   };
 
+  const handleRoomsOrBedsChange = (
+    dayNumber: number,
+    roomsCount: number,
+    extraBedsCount: number
+  ): void => {
+    const current = daySelections[dayNumber];
+    if (!current?.hotelId || !current.roomTypeId) return;
+
+    const selectedHotel = allHotels.find((h) => h.id === current.hotelId);
+    const selectedRoom = selectedHotel?.roomTypes?.find(
+      (rt) => rt.id === current.roomTypeId
+    );
+
+    const roomPrice = selectedRoom?.roomPrice ?? 0;
+    const extraBedPrice = selectedRoom?.extraBedPrice ?? 0;
+    const calculatedPrice = roomsCount * roomPrice + extraBedsCount * extraBedPrice;
+
+    setDaySelections((prev) => ({
+      ...prev,
+      [dayNumber]: {
+        ...current,
+        roomsCount,
+        extraBedsCount,
+        calculatedPrice,
+      },
+    }));
+  };
+
   const totalCalculatedPackagePrice = React.useMemo(() => {
     return Object.values(daySelections).reduce(
       (sum, item) => sum + item.calculatedPrice,
@@ -168,7 +241,9 @@ export function useCustomizeInquiryState({
   return {
     daySelections,
     handleAdultsChange,
+    handleDestinationChange,
     handleHotelOrRoomTypeChange,
+    handleRoomsOrBedsChange,
     totalCalculatedPackagePrice,
   };
 }
