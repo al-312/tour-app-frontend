@@ -27,12 +27,12 @@ const subscribeTheme = (callback: () => void): (() => void) => {
 };
 
 const getThemeSnapshot = (): Theme => {
-  if (typeof window === "undefined") return "dark";
+  if (typeof window === "undefined") return "light";
   const saved = localStorage.getItem("theme");
-  return saved === "light" ? "light" : "dark";
+  return saved === "dark" ? "dark" : "light";
 };
 
-const getThemeServerSnapshot = (): Theme => "dark";
+const getThemeServerSnapshot = (): Theme => "light";
 
 export function ThemeProvider({
   children,

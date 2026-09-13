@@ -21,6 +21,20 @@ function PackageSummaryHeader({ pkg }: { pkg: Package }): React.JSX.Element {
     pkg.client?.name ??
     [pkg.client?.firstName, pkg.client?.lastName].filter(Boolean).join(" ");
 
+  const destinationNames = React.useMemo(() => {
+    const names = pkg.packageDays
+      .map((d) => (d.destination ? d.destination.name : null))
+      .filter((n): n is string => Boolean(n));
+    return Array.from(new Set(names));
+  }, [pkg.packageDays]);
+
+  const destinationText =
+    destinationNames.length > 0
+      ? destinationNames.join(" • ")
+      : pkg.destination
+        ? `${pkg.destination.name}, ${pkg.destination.country}`
+        : "No Destination Selected";
+
   return (
     <div className="p-4 rounded-xl bg-app-surface-variant/80 border border-app-border/80 space-y-3">
       <div className="flex flex-wrap items-center justify-between gap-2">
@@ -28,9 +42,7 @@ function PackageSummaryHeader({ pkg }: { pkg: Package }): React.JSX.Element {
           <h3 className="text-lg font-extrabold text-app-fg">{pkg.packageName}</h3>
           <p className="text-xs font-semibold text-app-muted flex items-center gap-1.5 mt-0.5">
             <MapPin className="w-3.5 h-3.5 text-app-brand" />
-            {pkg.destination
-              ? `${pkg.destination.name}, ${pkg.destination.country}`
-              : "No Destination Selected"}
+            {destinationText}
           </p>
         </div>
         {pkg.status === "CONFIRMED" || pkg.status === "ACTIVE" ? (
@@ -118,6 +130,7 @@ function DailyScheduleItem({ day }: { day: PackageDay }): React.JSX.Element {
       <div className="flex flex-wrap items-center justify-between gap-2">
         <span className="text-xs font-bold text-app-brand">
           Day {String(day.dayNumber)}
+          {day.destination ? ` - ${day.destination.name}` : ""}
         </span>
         {day.hotel ? (
           <div className="flex flex-wrap items-center gap-2">

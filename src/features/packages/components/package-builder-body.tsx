@@ -131,6 +131,7 @@ export function PackageBuilderBody(props: PackageBuilderBodyProps): React.JSX.El
         setActiveDay={setActiveDay}
         daysData={daysData}
         setDaysData={setDaysData}
+        destinations={destinations}
         hotels={hotels}
         onBack={() => {
           setStep(1);
@@ -160,6 +161,7 @@ export function PackageBuilderBody(props: PackageBuilderBodyProps): React.JSX.El
         selectedConsultant={consultants.find((c) => c.id === consultantId)}
         daysData={daysData}
         hotels={hotels}
+        destinations={destinations}
         isSubmitting={isSubmitting}
         onBack={() => {
           setStep(2);

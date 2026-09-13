@@ -21,8 +21,8 @@ export interface PackageDay {
 export interface Package {
   id: string;
   packageName: string;
-  source: string;
-  destinationId: string | null;
+  source?: string | null;
+  destinationId?: string | null;
   destination?: Destination | null;
   durationDays: number;
   numberOfDays?: number;
@@ -53,8 +53,8 @@ export interface CreatePackageDayInput {
 
 export interface CreatePackageRequest {
   packageName: string;
-  source: string;
-  destinationId: string;
+  source?: string | undefined;
+  destinationId?: string | undefined;
   clientId?: string | undefined;
   durationDays: number;
   adults?: number | undefined;

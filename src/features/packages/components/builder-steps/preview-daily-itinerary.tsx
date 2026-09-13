@@ -5,15 +5,18 @@ import { Building2, BedDouble } from "lucide-react";
 
 import type { DayItineraryItem } from "./step-2-itinerary";
 import type { Hotel } from "@/features/hotels/types/hotel.types";
+import type { Destination } from "@/features/destinations/types/destination.types";
 
 interface PreviewDailyItineraryProps {
   daysData: DayItineraryItem[];
   hotels: Hotel[];
+  destinations?: Destination[] | undefined;
 }
 
 export function PreviewDailyItinerary({
   daysData,
   hotels,
+  destinations = [],
 }: PreviewDailyItineraryProps): React.JSX.Element {
   return (
     <div className="space-y-4">
@@ -23,6 +26,9 @@ export function PreviewDailyItinerary({
 
       <div className="space-y-3">
         {daysData.map((d) => {
+          const destObj = d.destinationId
+            ? destinations.find((dest) => dest.id === d.destinationId)
+            : undefined;
           const hotelObj = d.hotelId ? hotels.find((h) => h.id === d.hotelId) : undefined;
           const roomTypeObj = d.roomTypeId
             ? hotelObj?.roomTypes?.find((rt) => rt.id === d.roomTypeId)
@@ -36,6 +42,7 @@ export function PreviewDailyItinerary({
               <div className="flex flex-wrap items-center justify-between gap-2">
                 <span className="text-xs font-bold text-primary">
                   Day {String(d.dayNumber)}
+                  {destObj ? ` - ${destObj.name}` : ""}
                 </span>
                 {hotelObj ? (
                   <div className="flex flex-wrap items-center gap-2">

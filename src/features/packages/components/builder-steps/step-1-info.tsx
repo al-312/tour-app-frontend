@@ -7,11 +7,11 @@ import { zodResolver } from "@hookform/resolvers/zod";
 
 import Card from "@/components/ui/card";
 import Button from "@/components/ui/button";
+import { CreateClientModal } from "@/features/clients/components/client-modals/create-client-modal";
 import {
   step1Schema,
   type Step1FormData,
 } from "@/features/packages/schemas/package.schema";
-import { CreateClientModal } from "@/features/clients/components/client-modals/create-client-modal";
 
 import {
   Step1FieldsGrid,
@@ -57,9 +57,9 @@ export function Step1Info({
   startDate = "",
   setStartDate,
   validFrom = "",
-  setValidTo,
-  validTo = "",
   setValidFrom,
+  validTo = "",
+  setValidTo,
   numberOfDays,
   setNumberOfDays,
   clients = [],
@@ -76,7 +76,7 @@ export function Step1Info({
     formState: { errors },
   } = useForm<Step1FormData>({
     resolver: zodResolver(step1Schema),
-    defaultValues: {
+    values: {
       packageName: packageName || "",
       source: source || "",
       destinationId: destinationId || "",
@@ -100,8 +100,8 @@ export function Step1Info({
 
   const onFormSubmit = (data: Step1FormData): void => {
     setPackageName(data.packageName);
-    setSource(data.source);
-    setDestinationId(data.destinationId);
+    if (data.source) setSource(data.source);
+    if (data.destinationId) setDestinationId(data.destinationId);
     if (setClientId && data.clientId) setClientId(data.clientId);
     if (setStartDate && data.startDate) setStartDate(data.startDate);
     if (setValidFrom) setValidFrom(data.validFrom);
@@ -122,8 +122,7 @@ export function Step1Info({
           <div>
             <h2 className="text-lg font-bold text-foreground">Basic Package Details</h2>
             <p className="text-xs text-muted-foreground">
-              Define tour name, source location, destination location, package validity
-              dates, and duration.
+              Define tour name, package validity dates, and duration.
             </p>
           </div>
 
