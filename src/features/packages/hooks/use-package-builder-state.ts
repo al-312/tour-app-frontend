@@ -105,7 +105,13 @@ export function usePackageBuilderState({
   const [syncedHotelKey, setSyncedHotelKey] = React.useState("");
   const currentHotelKey = `${destinationId}:${firstHotelId}:${String(hotels.length)}`;
 
-  if (syncedHotelKey !== currentHotelKey && hotels.length > 0 && firstHotelId) {
+  if (
+    mode === "create" &&
+    destinationId &&
+    syncedHotelKey !== currentHotelKey &&
+    hotels.length > 0 &&
+    firstHotelId
+  ) {
     setSyncedHotelKey(currentHotelKey);
     setDaysData((prev) =>
       prev.map((d) => {

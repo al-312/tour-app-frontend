@@ -8,11 +8,56 @@ import Card from "@/components/ui/card";
 import Badge from "@/components/ui/badge";
 import Input from "@/components/ui/input";
 import { useAppSelector } from "@/store/hooks";
-import { useGetInquiriesQuery } from "@/features/inquiries/services/inquiries-api.slice";
+import {
+  useGetInquiriesQuery,
+  type Inquiry,
+} from "@/features/inquiries/services/inquiries-api.slice";
 
 interface PackageSnapshotPartial {
   packageName?: string;
   clientName?: string;
+  destinationName?: string;
+  hotelSelections?: { destinationName?: string }[];
+  itinerary?: { destinationName?: string }[];
+}
+
+function getInquiryLocations(inq: Inquiry): string {
+  const snap = (inq.packageSnapshot ?? {}) as PackageSnapshotPartial;
+  const dests = new Set<string>();
+
+  if (snap.hotelSelections) {
+    for (const sel of snap.hotelSelections) {
+      if (sel.destinationName) dests.add(sel.destinationName);
+    }
+  }
+
+  if (inq.hotelSelections) {
+    for (const sel of inq.hotelSelections) {
+      const hDest = (sel as unknown as { hotel?: { destination?: { name?: string } } })
+        .hotel?.destination?.name;
+      if (hDest) dests.add(hDest);
+    }
+  }
+
+  if (snap.itinerary) {
+    for (const item of snap.itinerary) {
+      if (item.destinationName) dests.add(item.destinationName);
+    }
+  }
+
+  const pkgDays = (
+    inq.package as
+      { packageDays?: { destination?: { name?: string } | null }[] } | undefined
+  )?.packageDays;
+  if (pkgDays) {
+    for (const pd of pkgDays) {
+      const dName = pd.destination?.name;
+      if (dName) dests.add(dName);
+    }
+  }
+
+  const list = Array.from(dests).filter(Boolean);
+  return list.length > 0 ? list.join(", ") : "N/A";
 }
 
 export default function InquiriesListPage(): React.JSX.Element {
@@ -27,11 +72,13 @@ export default function InquiriesListPage(): React.JSX.Element {
       const matchesStatus = statusFilter === "ALL" || inq.status === statusFilter;
       const q = searchQuery.toLowerCase();
       const snap = (inq.packageSnapshot ?? {}) as PackageSnapshotPartial;
+      const locs = getInquiryLocations(inq).toLowerCase();
       const matchesSearch =
         searchQuery === "" ||
         inq.inquiryNumber.toLowerCase().includes(q) ||
         (inq.client?.name?.toLowerCase().includes(q) ?? false) ||
-        (snap.packageName?.toLowerCase().includes(q) ?? false);
+        (snap.packageName?.toLowerCase().includes(q) ?? false) ||
+        locs.includes(q);
 
       return matchesStatus && matchesSearch;
     });
@@ -104,7 +151,7 @@ export default function InquiriesListPage(): React.JSX.Element {
           <Search className="w-4 h-4 absolute left-3 top-3 text-app-muted" />
           <Input
             type="text"
-            placeholder="Search by Inquiry ID, Client, or Package..."
+            placeholder="Search by Inquiry ID, Client, Package, or Location..."
             value={searchQuery}
             onChange={(e) => {
               setSearchQuery(e.target.value);
@@ -152,6 +199,7 @@ export default function InquiriesListPage(): React.JSX.Element {
                 <th className="p-4">Client</th>
                 <th className="p-4">Consultant</th>
                 <th className="p-4">Package</th>
+                <th className="p-4">Destinations</th>
                 <th className="p-4">Travel Date</th>
                 <th className="p-4">Calculated Total</th>
                 <th className="p-4">Status</th>
@@ -182,6 +230,8 @@ export default function InquiriesListPage(): React.JSX.Element {
                   (consultantFullName !== "" ? consultantFullName : null) ??
                   "Consultant";
 
+                const locationsDisplay = getInquiryLocations(inq);
+
                 return (
                   <tr
                     key={inq.id}
@@ -192,6 +242,9 @@ export default function InquiriesListPage(): React.JSX.Element {
                     <td className="p-4 text-app-muted">{consultantDisplayName}</td>
                     <td className="p-4 max-w-xs truncate">
                       {snap.packageName ?? inq.package?.packageName}
+                    </td>
+                    <td className="p-4 text-app-fg font-semibold max-w-xs truncate">
+                      {locationsDisplay}
                     </td>
                     <td className="p-4 text-app-muted">
                       {new Date(inq.travelDate).toLocaleDateString()}

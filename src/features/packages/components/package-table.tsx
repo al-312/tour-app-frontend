@@ -7,7 +7,6 @@ import {
   Edit3,
   Eye,
   Filter,
-  MapPin,
   PackageCheck,
   Plus,
   Search,
@@ -62,14 +61,10 @@ export function PackageTable({
       const consultantName =
         p.consultant?.name ??
         [p.consultant?.firstName, p.consultant?.lastName].filter(Boolean).join(" ");
-      const destName = p.destination?.name ?? "";
-      const sourceName = p.source;
 
       return (
         p.packageName.toLowerCase().includes(search.toLowerCase()) ||
-        sourceName.toLowerCase().includes(search.toLowerCase()) ||
-        consultantName.toLowerCase().includes(search.toLowerCase()) ||
-        destName.toLowerCase().includes(search.toLowerCase())
+        consultantName.toLowerCase().includes(search.toLowerCase())
       );
     });
   }, [packages, search]);
@@ -85,7 +80,7 @@ export function PackageTable({
               onChange={(e) => {
                 setSearch(e.target.value);
               }}
-              placeholder="Search by package name, source, or destination..."
+              placeholder="Search by package name..."
               className="w-full pl-9 pr-4 py-2.5 bg-app-surface-variant/80 border border-app-border/80 rounded-xl text-xs sm:text-sm text-app-fg placeholder:text-app-muted/60 outline-none focus:border-app-brand focus:ring-2 focus:ring-app-brand/20"
             />
             <Search className="w-4 h-4 text-app-muted absolute left-3 top-3 pointer-events-none" />
@@ -138,8 +133,6 @@ export function PackageTable({
           <Table.Header>
             <Table.Row>
               <Table.Head>Package Details</Table.Head>
-              <Table.Head>Source</Table.Head>
-              <Table.Head>Destination</Table.Head>
               <Table.Head>Travelers</Table.Head>
               <Table.Head>User</Table.Head>
               <Table.Head>Status</Table.Head>
@@ -163,26 +156,6 @@ export function PackageTable({
                           : ""}
                     </span>
                   </div>
-                </Table.Cell>
-
-                <Table.Cell>
-                  <div className="flex items-center gap-1.5 text-xs text-app-fg font-medium">
-                    <MapPin className="w-3.5 h-3.5 text-app-muted shrink-0" />
-                    <span>{pkg.source || "N/A"}</span>
-                  </div>
-                </Table.Cell>
-
-                <Table.Cell>
-                  {pkg.destination ? (
-                    <div className="flex items-center gap-1.5 text-xs text-app-fg font-medium">
-                      <MapPin className="w-3.5 h-3.5 text-app-brand shrink-0" />
-                      <span>
-                        {pkg.destination.name}, {pkg.destination.country}
-                      </span>
-                    </div>
-                  ) : (
-                    <span className="text-xs text-app-muted italic">Unassigned</span>
-                  )}
                 </Table.Cell>
 
                 <Table.Cell>

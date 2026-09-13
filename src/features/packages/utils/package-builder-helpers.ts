@@ -20,7 +20,7 @@ export function buildPackagePayload({
 }: {
   packageName: string;
   source?: string;
-  destinationId: string;
+  destinationId?: string;
   clientId?: string;
   numberOfDays: number;
   adults?: number;
@@ -35,8 +35,8 @@ export function buildPackagePayload({
   const fromDate = validFrom ?? startDate;
   const payload: CreatePackageRequest = {
     packageName,
-    source: source?.trim() ? source.trim() : "Bangalore",
-    destinationId: destinationId || "",
+    source: source?.trim() ? source.trim() : undefined,
+    destinationId: destinationId ?? undefined,
     clientId: clientId ?? undefined,
     durationDays: numberOfDays,
     adults: adults ?? 2,
@@ -50,12 +50,14 @@ export function buildPackagePayload({
       const hotelId = day.hotelId ? day.hotelId : firstHotelId;
       const item: {
         dayNumber: number;
+        destinationId?: string;
         hotelId?: string;
         roomTypeId?: string;
         notes?: string;
       } = {
         dayNumber: day.dayNumber,
       };
+      if (day.destinationId) item.destinationId = day.destinationId;
       if (hotelId) item.hotelId = hotelId;
       if (day.roomTypeId) item.roomTypeId = day.roomTypeId;
       if (day.notes) item.notes = day.notes;
@@ -92,15 +94,28 @@ function resolveEditClientAndConsultant(
 function resolveEditDaysData(
   existingPkg: Package,
   pkgDuration: number,
-  firstHotelId: string
+  _firstHotelId: string
 ): DayItineraryItem[] {
+  const firstDayWithDest = existingPkg.packageDays.find(
+    (d) => Boolean(d.destinationId) || Boolean(d.destination?.id)
+  );
+  const primaryDestId =
+    firstDayWithDest?.destinationId ??
+    firstDayWithDest?.destination?.id ??
+    existingPkg.destinationId ??
+    "";
+
   const result: DayItineraryItem[] = [];
   for (let i = 1; i <= pkgDuration; i += 1) {
     const existing = existingPkg.packageDays.find((d) => d.dayNumber === i);
+    const destId = existing?.destinationId ?? existing?.destination?.id ?? primaryDestId;
+    const hotelId = existing?.hotelId ?? existing?.hotel?.id ?? "";
+    const roomTypeId = existing?.roomTypeId ?? undefined;
     result.push({
       dayNumber: i,
-      hotelId: existing?.hotelId ?? firstHotelId,
-      roomTypeId: existing?.roomTypeId ?? undefined,
+      destinationId: destId ? destId : undefined,
+      hotelId,
+      roomTypeId,
       notes: existing?.notes ?? "",
     });
   }
@@ -154,7 +169,7 @@ export function computeEditInitialState(
 
   return {
     packageName: existingPkg.packageName,
-    source: existingPkg.source,
+    source: existingPkg.source ?? "",
     clientId: validClientId,
     destinationId: existingPkg.destinationId ?? "",
     startDate: formattedFromDate ?? "",

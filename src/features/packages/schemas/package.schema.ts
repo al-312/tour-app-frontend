@@ -17,8 +17,8 @@ export type PackageFormData = z.infer<typeof packageSchema>;
 export const step1Schema = z
   .object({
     packageName: z.string().min(1, "Package name is required"),
-    source: z.string().min(1, "Source city is required"),
-    destinationId: z.string().min(1, "Please select a destination"),
+    source: z.string().optional(),
+    destinationId: z.string().optional(),
     clientId: z.string().optional(),
     startDate: z.string().optional(),
     validFrom: z.string().min(1, "Valid From date is required"),

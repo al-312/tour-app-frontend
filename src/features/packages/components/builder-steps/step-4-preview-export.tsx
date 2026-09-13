@@ -30,6 +30,7 @@ interface Step4PreviewExportProps {
   selectedConsultant?: Consultant | undefined;
   daysData: DayItineraryItem[];
   hotels: Hotel[];
+  destinations?: Destination[] | undefined;
   isSubmitting: boolean;
   onBack: () => void;
   onSubmit: () => Promise<void>;
@@ -156,14 +157,29 @@ export function Step4PreviewExport({
   selectedConsultant,
   daysData,
   hotels,
+  destinations = [],
   isSubmitting,
   onBack,
   onSubmit,
   isAdmin = false,
 }: Step4PreviewExportProps): React.JSX.Element {
-  const destinationText = selectedDestination
-    ? `${selectedDestination.name}, ${selectedDestination.country}`
-    : "No destination selected";
+  const uniqueDestNames = React.useMemo(() => {
+    const names = daysData
+      .map((d) => {
+        if (!d.destinationId) return undefined;
+        const found = destinations.find((dest) => dest.id === d.destinationId);
+        return found ? found.name : undefined;
+      })
+      .filter((name): name is string => Boolean(name));
+    return Array.from(new Set(names));
+  }, [daysData, destinations]);
+
+  const destinationText =
+    uniqueDestNames.length > 0
+      ? uniqueDestNames.join(" • ")
+      : selectedDestination
+        ? `${selectedDestination.name}, ${selectedDestination.country}`
+        : "Daily Itinerary Destinations";
 
   const showConsultantCard = !isAdmin && Boolean(selectedConsultant);
 
@@ -177,7 +193,9 @@ export function Step4PreviewExport({
             <h3 className="text-xl font-bold text-foreground">
               {packageName !== "" ? packageName : "Untitled Package"}
             </h3>
-            <p className="text-xs text-muted-foreground">{destinationText}</p>
+            {destinationText ? (
+              <p className="text-xs text-muted-foreground">{destinationText}</p>
+            ) : null}
           </div>
           <span className="px-3 py-1 text-xs font-bold rounded-full bg-primary/20 text-primary uppercase">
             {status}
@@ -196,7 +214,11 @@ export function Step4PreviewExport({
         />
       </div>
 
-      <PreviewDailyItinerary daysData={daysData} hotels={hotels} />
+      <PreviewDailyItinerary
+        daysData={daysData}
+        hotels={hotels}
+        destinations={destinations}
+      />
 
       {showConsultantCard && selectedConsultant ? (
         <PreviewConsultantCard selectedConsultant={selectedConsultant} />

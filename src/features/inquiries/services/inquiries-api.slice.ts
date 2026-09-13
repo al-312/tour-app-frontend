@@ -26,9 +26,9 @@ export interface Inquiry {
   package?: { id: string; packageName: string };
   packageSnapshot?: unknown;
   hotelSelections?: InquiryHotelSelectionItem[];
-  source: string;
-  destinationId: string;
-  destination?: { id: string; name: string };
+  source?: string | null;
+  destinationId?: string | null;
+  destination?: { id: string; name: string } | null;
   travelDate: string;
   days: number;
   adults: number;
@@ -70,8 +70,8 @@ export interface InquiryHotelSelectionItem {
 export interface CreateInquiryInput {
   packageId: string;
   clientId: string;
-  source: string;
-  destinationId: string;
+  source?: string;
+  destinationId?: string;
   travelDate: string;
   days: number;
   adults: number;

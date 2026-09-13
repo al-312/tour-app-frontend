@@ -1,7 +1,7 @@
 "use client";
 
 import * as React from "react";
-import { PackageCheck, UserCheck, MapPin, Calendar, Plus, Clock } from "lucide-react";
+import { PackageCheck, UserCheck, Calendar, Plus, Clock } from "lucide-react";
 
 import Input from "@/components/ui/input";
 import Select from "@/components/ui/select";
@@ -90,14 +90,14 @@ export interface Step1FieldsGridProps {
   register: UseFormRegister<Step1FormData>;
   errors: FieldErrors<Step1FormData>;
   setPackageName: (val: string) => void;
-  sourceOptions: { value: string; label: string }[];
-  setSource: (val: string) => void;
+  sourceOptions?: { value: string; label: string }[] | undefined;
+  setSource?: ((val: string) => void) | undefined;
   showClientFields?: boolean | undefined;
   setClientId?: ((val: string) => void) | undefined;
   clients: Client[];
   onOpenClientModal: () => void;
-  destinationOptions: { value: string; label: string }[];
-  setDestinationId: (val: string) => void;
+  destinationOptions?: { value: string; label: string }[] | undefined;
+  setDestinationId?: ((val: string) => void) | undefined;
   setStartDate?: ((val: string) => void) | undefined;
   setValidFrom?: ((val: string) => void) | undefined;
   setValidTo?: ((val: string) => void) | undefined;
@@ -108,14 +108,10 @@ export function Step1FieldsGrid({
   register,
   errors,
   setPackageName,
-  sourceOptions,
-  setSource,
   showClientFields,
   setClientId,
   clients,
   onOpenClientModal,
-  destinationOptions,
-  setDestinationId,
   setStartDate,
   setValidFrom,
   setValidTo,
@@ -135,18 +131,6 @@ export function Step1FieldsGrid({
         })}
       />
 
-      <Select
-        label="Source Location *"
-        icon={MapPin}
-        error={errors.source?.message}
-        options={sourceOptions}
-        {...register("source", {
-          onChange: (e: React.ChangeEvent<HTMLSelectElement>) => {
-            setSource(e.target.value);
-          },
-        })}
-      />
-
       {showClientFields && setClientId ? (
         <ClientSelectField
           clients={clients}
@@ -156,18 +140,6 @@ export function Step1FieldsGrid({
           onOpenModal={onOpenClientModal}
         />
       ) : null}
-
-      <Select
-        label="Destination Location *"
-        icon={MapPin}
-        error={errors.destinationId?.message}
-        options={destinationOptions}
-        {...register("destinationId", {
-          onChange: (e: React.ChangeEvent<HTMLSelectElement>) => {
-            setDestinationId(e.target.value);
-          },
-        })}
-      />
 
       {showClientFields && setStartDate ? (
         <Input

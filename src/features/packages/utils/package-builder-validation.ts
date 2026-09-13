@@ -20,7 +20,7 @@ export interface Step1ValidationResult {
 export function validateStep1Data(data: {
   packageName: string;
   source?: string | undefined;
-  destinationId: string;
+  destinationId?: string | undefined;
   numberOfDays: number;
   validFrom?: string | undefined;
   validTo?: string | undefined;
@@ -29,12 +29,6 @@ export function validateStep1Data(data: {
 
   if (!data.packageName.trim()) {
     errors.packageName = "Package name is required";
-  }
-  if (!data.source?.trim()) {
-    errors.source = "Source city is required";
-  }
-  if (!data.destinationId) {
-    errors.destinationId = "Please select a destination";
   }
   if (!data.numberOfDays || data.numberOfDays < 1) {
     errors.numberOfDays = "Number of days must be at least 1";
@@ -78,22 +72,29 @@ export function validateStep2Data(
   daysData: DayItineraryItem[],
   numberOfDays: number
 ): Step2ValidationResult {
-  const emptyDays: number[] = [];
+  const invalidDays: { dayNumber: number; reason: "destination" | "hotel" }[] = [];
 
   for (let i = 1; i <= numberOfDays; i += 1) {
     const day = daysData.find((d) => d.dayNumber === i);
-    const hasHotel = Boolean(day?.hotelId);
+    const hasDestination = Boolean(day?.destinationId?.trim());
+    const hasHotel = Boolean(day?.hotelId.trim());
 
-    if (!hasHotel) {
-      emptyDays.push(i);
+    if (!hasDestination) {
+      invalidDays.push({ dayNumber: i, reason: "destination" });
+    } else if (!hasHotel) {
+      invalidDays.push({ dayNumber: i, reason: "hotel" });
     }
   }
 
-  const isValid = emptyDays.length === 0;
-  const firstError =
-    emptyDays.length > 0
-      ? `Hotel selection is required for Day ${String(emptyDays[0])}. Please select a hotel.`
-      : undefined;
+  const isValid = invalidDays.length === 0;
+  const emptyDays = invalidDays.map((d) => d.dayNumber);
+  const firstInvalid = invalidDays[0];
+
+  const firstError = firstInvalid
+    ? firstInvalid.reason === "destination"
+      ? `Destination selection is required for Day ${String(firstInvalid.dayNumber)}. Please select a destination.`
+      : `Hotel selection is required for Day ${String(firstInvalid.dayNumber)}. Please select a hotel.`
+    : undefined;
 
   return {
     isValid,
@@ -122,7 +123,7 @@ export function validateStep3Data(data: {
 export function validateAllSteps(data: {
   packageName: string;
   source?: string | undefined;
-  destinationId: string;
+  destinationId?: string | undefined;
   numberOfDays: number;
   daysData: DayItineraryItem[];
 }): {

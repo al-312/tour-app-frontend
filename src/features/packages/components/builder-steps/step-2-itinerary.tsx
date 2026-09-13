@@ -8,6 +8,7 @@ import {
   BedDouble,
   ChevronLeft,
   ChevronRight,
+  MapPin,
 } from "lucide-react";
 
 import Card from "@/components/ui/card";
@@ -19,9 +20,11 @@ import { DayHeaderTabs } from "./day-header-tabs";
 import { validateStep2Data } from "../../utils/package-builder-validation";
 
 import type { Hotel } from "@/features/hotels/types/hotel.types";
+import type { Destination } from "@/features/destinations/types/destination.types";
 
 export interface DayItineraryItem {
   dayNumber: number;
+  destinationId?: string | undefined;
   hotelId: string;
   roomTypeId?: string | undefined;
   notes: string;
@@ -33,6 +36,7 @@ interface Step2ItineraryProps {
   setActiveDay: (day: number) => void;
   daysData: DayItineraryItem[];
   setDaysData: React.Dispatch<React.SetStateAction<DayItineraryItem[]>>;
+  destinations?: Destination[] | undefined;
   hotels: Hotel[];
   onBack: () => void;
   onNext: () => void;
@@ -45,6 +49,7 @@ export function Step2Itinerary({
   setActiveDay,
   daysData,
   setDaysData,
+  destinations = [],
   hotels,
   onBack,
   onNext,
@@ -54,15 +59,26 @@ export function Step2Itinerary({
 
   const validation = validateStep2Data(daysData, numberOfDays);
 
-  const firstHotelId = hotels[0]?.id ?? "";
-
   const currentDayData = daysData.find((d) => d.dayNumber === activeDay) ?? {
     dayNumber: activeDay,
-    hotelId: firstHotelId,
+    destinationId: "",
+    hotelId: "",
     notes: "",
   };
 
-  const activeHotelId = currentDayData.hotelId || firstHotelId;
+  const activeDestinationId = currentDayData.destinationId ?? "";
+
+  const availableHotelsForDay = React.useMemo(() => {
+    if (!activeDestinationId) return [];
+    return hotels.filter((h) => h.destinationId === activeDestinationId);
+  }, [hotels, activeDestinationId]);
+
+  const defaultHotelId = availableHotelsForDay[0]?.id ?? "";
+  const activeHotelId =
+    activeDestinationId &&
+    availableHotelsForDay.some((h) => h.id === currentDayData.hotelId)
+      ? currentDayData.hotelId
+      : defaultHotelId;
 
   const selectedHotel = React.useMemo(
     () => hotels.find((h) => h.id === activeHotelId),
@@ -76,74 +92,47 @@ export function Step2Itinerary({
 
   const activeRoomTypeId = currentDayData.roomTypeId ?? availableRoomTypes[0]?.id ?? "";
 
+  const updateActiveDayDestination = (destId: string): void => {
+    const destHotels = destId ? hotels.filter((h) => h.destinationId === destId) : [];
+    const newHotelId = destHotels[0]?.id ?? "";
+    const newHotel = destHotels.find((h) => h.id === newHotelId);
+    const newRoomTypeId = newHotel?.roomTypes?.[0]?.id;
+
+    setDaysData((prev) =>
+      prev.map((d) =>
+        d.dayNumber === activeDay
+          ? {
+              ...d,
+              destinationId: destId,
+              hotelId: newHotelId,
+              roomTypeId: newRoomTypeId,
+            }
+          : d
+      )
+    );
+  };
+
   const updateActiveDayHotel = (hotelId: string): void => {
     const newHotel = hotels.find((h) => h.id === hotelId);
     const defaultRoomTypeId = newHotel?.roomTypes?.[0]?.id;
 
-    setDaysData((prev) => {
-      const exists = prev.some((d) => d.dayNumber === activeDay);
-      if (!exists) {
-        const full: DayItineraryItem[] = [];
-        for (let i = 1; i <= numberOfDays; i += 1) {
-          const item = prev.find((d) => d.dayNumber === i);
-          full.push(
-            item ?? {
-              dayNumber: i,
-              hotelId: i === activeDay ? hotelId : firstHotelId,
-              roomTypeId: i === activeDay ? defaultRoomTypeId : undefined,
-              notes: "",
-            }
-          );
-        }
-        return full;
-      }
-      return prev.map((d) =>
+    setDaysData((prev) =>
+      prev.map((d) =>
         d.dayNumber === activeDay ? { ...d, hotelId, roomTypeId: defaultRoomTypeId } : d
-      );
-    });
+      )
+    );
   };
 
   const updateActiveDayRoomType = (roomTypeId: string): void => {
-    setDaysData((prev) => {
-      const exists = prev.some((d) => d.dayNumber === activeDay);
-      if (!exists) {
-        const full: DayItineraryItem[] = [];
-        for (let i = 1; i <= numberOfDays; i += 1) {
-          const item = prev.find((d) => d.dayNumber === i);
-          full.push(
-            item ?? {
-              dayNumber: i,
-              hotelId: firstHotelId,
-              roomTypeId: i === activeDay ? roomTypeId : undefined,
-              notes: "",
-            }
-          );
-        }
-        return full;
-      }
-      return prev.map((d) => (d.dayNumber === activeDay ? { ...d, roomTypeId } : d));
-    });
+    setDaysData((prev) =>
+      prev.map((d) => (d.dayNumber === activeDay ? { ...d, roomTypeId } : d))
+    );
   };
 
   const updateActiveDayNotes = (notes: string): void => {
-    setDaysData((prev) => {
-      const exists = prev.some((d) => d.dayNumber === activeDay);
-      if (!exists) {
-        const full: DayItineraryItem[] = [];
-        for (let i = 1; i <= numberOfDays; i += 1) {
-          const item = prev.find((d) => d.dayNumber === i);
-          full.push(
-            item ?? {
-              dayNumber: i,
-              hotelId: firstHotelId,
-              notes: i === activeDay ? notes : "",
-            }
-          );
-        }
-        return full;
-      }
-      return prev.map((d) => (d.dayNumber === activeDay ? { ...d, notes } : d));
-    });
+    setDaysData((prev) =>
+      prev.map((d) => (d.dayNumber === activeDay ? { ...d, notes } : d))
+    );
   };
 
   const handleNextStep = (): void => {
@@ -176,36 +165,76 @@ export function Step2Itinerary({
             <div>
               <h2 className="text-lg font-bold text-foreground flex items-center gap-2">
                 <Calendar className="w-5 h-5 text-primary" />
-                Day {String(activeDay)} Accommodation & Details
+                Day {String(activeDay)} Destination & Accommodation
               </h2>
               <p className="text-xs text-muted-foreground">
-                Assign hotel stay and select room type (required) along with optional day
-                notes.
+                Select destination location, assign hotel stay, and set room type & notes.
               </p>
             </div>
           </div>
 
           <div className="space-y-4">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               <Select
-                label="Select Hotel Accommodation *"
+                label="Day Destination *"
+                value={activeDestinationId}
+                error={
+                  touched && !activeDestinationId
+                    ? "Destination is required for each itinerary day"
+                    : undefined
+                }
+                onChange={(e) => {
+                  updateActiveDayDestination(e.target.value);
+                }}
+                icon={MapPin}
+              >
+                <option value="">Select destination...</option>
+                {destinations.map((d) => (
+                  <option key={d.id} value={d.id}>
+                    {d.name} ({d.country})
+                  </option>
+                ))}
+              </Select>
+
+              <Select
+                label="Hotel Accommodation *"
                 value={activeHotelId}
-                error={touched && !activeHotelId ? "Hotel is required" : undefined}
+                disabled={!activeDestinationId}
+                error={
+                  touched && !activeHotelId
+                    ? !activeDestinationId
+                      ? "Select destination first"
+                      : "Hotel is required"
+                    : undefined
+                }
                 onChange={(e) => {
                   updateActiveDayHotel(e.target.value);
                 }}
                 icon={HotelIcon}
               >
-                {hotels.map((h) => (
-                  <option key={h.id} value={h.id}>
-                    {h.name} ({String(h.starRating)} Stars)
-                  </option>
-                ))}
+                {!activeDestinationId ? (
+                  <option value="">Select destination first...</option>
+                ) : availableHotelsForDay.length === 0 ? (
+                  <option value="">No hotels available for this destination</option>
+                ) : (
+                  availableHotelsForDay.map((h) => (
+                    <option key={h.id} value={h.id}>
+                      {h.name} ({String(h.starRating)} Stars)
+                    </option>
+                  ))
+                )}
               </Select>
 
-              {availableRoomTypes.length > 0 ? (
+              {!activeDestinationId ? (
+                <div className="flex flex-col justify-center px-4 py-2.5 rounded-xl border border-app-border/40 bg-app-surface-variant/30 text-xs text-app-muted">
+                  <span className="font-semibold text-app-fg">Room Type</span>
+                  <span className="text-[11px] text-app-muted mt-0.5">
+                    Select destination & hotel first.
+                  </span>
+                </div>
+              ) : availableRoomTypes.length > 0 ? (
                 <Select
-                  label="Select Room Type *"
+                  label="Room Type *"
                   value={activeRoomTypeId}
                   onChange={(e) => {
                     updateActiveDayRoomType(e.target.value);
@@ -214,9 +243,7 @@ export function Step2Itinerary({
                 >
                   {availableRoomTypes.map((rt) => (
                     <option key={rt.id} value={rt.id}>
-                      {rt.name} - ${String(rt.roomPrice)}/night ({String(rt.maxAdults)}{" "}
-                      Adults
-                      {rt.maxChildren > 0 ? `, ${String(rt.maxChildren)} Children` : ""})
+                      {rt.name} - ${String(rt.roomPrice)}/night
                     </option>
                   ))}
                 </Select>
@@ -224,7 +251,7 @@ export function Step2Itinerary({
                 <div className="flex flex-col justify-center px-4 py-2.5 rounded-xl border border-app-border/40 bg-app-surface-variant/30 text-xs text-app-muted">
                   <span className="font-semibold text-app-fg">Room Type</span>
                   <span className="text-[11px] text-app-muted mt-0.5">
-                    No specific room types configured for this hotel.
+                    No specific room types configured.
                   </span>
                 </div>
               )}
@@ -233,7 +260,7 @@ export function Step2Itinerary({
             <Textarea
               label="Day Notes / Instructions"
               rows={4}
-              placeholder="e.g. Breakfast at hotel, sightseeing tours, transfer at 3 PM..."
+              placeholder="e.g. Arrival in destination, city tour, resort check-in..."
               value={currentDayData.notes}
               onChange={(e) => {
                 updateActiveDayNotes(e.target.value);
