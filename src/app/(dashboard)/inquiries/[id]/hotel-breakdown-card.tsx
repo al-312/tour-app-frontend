@@ -28,6 +28,7 @@ interface PackageSnapshot {
   packageName?: string;
   clientName?: string;
   destinationName?: string;
+  itinerary?: { destinationName?: string; destination?: { name?: string } }[];
   hotelSelections?: HotelSelectionSnapshot[];
 }
 
@@ -46,15 +47,29 @@ export function HotelBreakdownCard({
       : (snap.hotelSelections ?? []);
 
   const destSet = new Set<string>();
+  if (inquiry.destination?.name) destSet.add(inquiry.destination.name);
   for (const sel of selections) {
     if (sel.destinationName) destSet.add(sel.destinationName);
-    if (sel.hotel?.name) {
-      const hDest = (sel as unknown as { hotel?: { destination?: { name?: string } } })
-        .hotel?.destination?.name;
-      if (hDest) destSet.add(hDest);
+    const hDest = (sel as unknown as { hotel?: { destination?: { name?: string } } })
+      .hotel?.destination?.name;
+    if (hDest) destSet.add(hDest);
+  }
+  const pkgWithDays = inquiry.package as
+    | { packageDays?: { destination?: { name?: string }; destinationName?: string }[] }
+    | undefined;
+  if (pkgWithDays?.packageDays) {
+    for (const day of pkgWithDays.packageDays) {
+      if (day.destination?.name) destSet.add(day.destination.name);
+      if (day.destinationName) destSet.add(day.destinationName);
     }
   }
   if (snap.destinationName) destSet.add(snap.destinationName);
+  if (snap.itinerary) {
+    for (const item of snap.itinerary) {
+      if (item.destinationName) destSet.add(item.destinationName);
+      if (item.destination?.name) destSet.add(item.destination.name);
+    }
+  }
   const locationsStr = Array.from(destSet).filter(Boolean).join(", ") || "N/A";
 
   return (
